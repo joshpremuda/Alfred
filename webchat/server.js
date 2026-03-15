@@ -2,7 +2,6 @@ const express = require('express');
 const http = require('http');
 const WebSocket = require('ws');
 const path = require('path');
-const { spawn, execSync } = require('child_process');
 
 const app = express();
 const server = http.createServer(app);
@@ -10,47 +9,59 @@ const wss = new WebSocket.Server({ server });
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Resolve openclaw binary once at startup (npm global bin may not be in child PATH)
-let OPENCLAW_BIN;
-try {
-  OPENCLAW_BIN = execSync('which openclaw 2>/dev/null || npm root -g 2>/dev/null | xargs -I{} find {} -name openclaw -maxdepth 3 2>/dev/null | head -1', { encoding: 'utf8' }).trim();
-} catch {}
-if (!OPENCLAW_BIN) OPENCLAW_BIN = 'openclaw'; // fallback: let spawn fail with clear error
-console.log('[Alfred] openclaw binary:', OPENCLAW_BIN || '(not found)');
+const OLLAMA_HOST = process.env.OLLAMA_HOST || 'http://localhost:11434';
+const OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'llama3.2';
+const AGENT_NAME = process.env.ALFRED_AGENT_NAME || 'Alfred';
 
+const SYSTEM_PROMPT = `You are ${AGENT_NAME}, a helpful personal AI assistant. Be concise and friendly.`;
+
+// Per-connection conversation history
 wss.on('connection', (ws) => {
-  ws.send(JSON.stringify({ role: 'system', text: 'Connected. Say hello!' }));
+  const history = [];
 
-  ws.on('message', (raw) => {
+  ws.send(JSON.stringify({ role: 'system', text: `Connected to ${AGENT_NAME} (${OLLAMA_MODEL})` }));
+
+  ws.on('message', async (raw) => {
     let text;
     try { text = JSON.parse(raw).text; } catch { text = raw.toString(); }
     if (!text) return;
 
-    const child = spawn(OPENCLAW_BIN, ['send', text], {
-      env: { ...process.env },
-    });
+    history.push({ role: 'user', content: text });
 
-    let reply = '';
-    child.stdout.on('data', (d) => { reply += d.toString(); });
-    child.stderr.on('data', (d) => { console.error('[openclaw]', d.toString().trim()); });
+    try {
+      const res = await fetch(`${OLLAMA_HOST}/api/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: OLLAMA_MODEL,
+          messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...history],
+          stream: false,
+        }),
+      });
 
-    child.on('close', (code) => {
-      if (ws.readyState !== WebSocket.OPEN) return;
-      if (reply.trim()) {
-        ws.send(JSON.stringify({ role: 'agent', text: reply.trim() }));
-      } else {
-        ws.send(JSON.stringify({ role: 'system', text: `(openclaw exited ${code} with no output)` }));
+      if (!res.ok) {
+        const err = await res.text();
+        ws.send(JSON.stringify({ role: 'system', text: `Ollama error ${res.status}: ${err}` }));
+        return;
       }
-    });
 
-    child.on('error', (err) => {
-      if (ws.readyState !== WebSocket.OPEN) return;
-      ws.send(JSON.stringify({ role: 'system', text: `Error: ${err.message}` }));
-    });
+      const data = await res.json();
+      const reply = data.message?.content || '(no response)';
+      history.push({ role: 'assistant', content: reply });
+
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ role: 'agent', text: reply }));
+      }
+    } catch (err) {
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ role: 'system', text: `Could not reach Ollama at ${OLLAMA_HOST} — is it running? (ollama serve)` }));
+      }
+    }
   });
 });
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`[Alfred] Web chat at http://localhost:${PORT}`);
+  console.log(`[Alfred] Using ${OLLAMA_MODEL} via ${OLLAMA_HOST}`);
 });

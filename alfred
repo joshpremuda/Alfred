@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# alfred — management script for your personal AI agent (no Docker)
-# Usage: ./alfred [start|stop|restart|status|logs|chat|setup|update]
+# alfred — management script for your personal AI agent
+# Usage: ./alfred [setup|start|stop|restart|status|logs|chat|update]
 
 set -euo pipefail
 
@@ -11,7 +11,6 @@ ENV_FILE="$SCRIPT_DIR/.env"
 PIDS_DIR="$SCRIPT_DIR/.pids"
 LOG_DIR="$SCRIPT_DIR/.logs"
 
-# ─── Colors ──────────────────────────────────────────────────────────────────
 RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'
 BLUE='\033[0;34m'; BOLD='\033[1m'; RESET='\033[0m'
 
@@ -20,21 +19,18 @@ success() { echo -e "${GREEN}[Alfred]${RESET} $*"; }
 warn()    { echo -e "${YELLOW}[Alfred]${RESET} $*"; }
 error()   { echo -e "${RED}[Alfred]${RESET} $*" >&2; }
 
-# macOS sed requires -i '' ; Linux requires -i  — this handles both
 sedi() { sed -i '' "$@" 2>/dev/null || sed -i "$@"; }
 
-# ─── Helpers ─────────────────────────────────────────────────────────────────
 check_env() {
   if [[ ! -f "$ENV_FILE" ]]; then
-    error ".env file not found. Run:  ./alfred setup"
+    error ".env not found — run:  ./alfred setup"
     exit 1
   fi
   source "$ENV_FILE"
-
-  local ollama_host="${OLLAMA_HOST:-http://localhost:11434}"
-  if ! curl -sf --connect-timeout 2 --max-time 3 "${ollama_host}/api/tags" > /dev/null 2>&1; then
-    warn "Ollama doesn't appear to be running at ${ollama_host}"
-    warn "Start it with: ollama serve  (or open the Ollama app)"
+  local host="${OLLAMA_HOST:-http://localhost:11434}"
+  if ! curl -sf --connect-timeout 2 --max-time 3 "${host}/api/tags" > /dev/null 2>&1; then
+    warn "Ollama not responding at ${host}"
+    warn "Start it with:  ollama serve  (or open the Ollama app)"
     echo ""
     read -r -p "Continue anyway? [y/N] " cont
     [[ "$cont" =~ ^[Yy]$ ]] || exit 1
@@ -42,88 +38,62 @@ check_env() {
 }
 
 is_running() {
-  local name="$1"
-  local pid_file="$PIDS_DIR/${name}.pid"
+  local pid_file="$PIDS_DIR/${1}.pid"
   [[ -f "$pid_file" ]] && kill -0 "$(cat "$pid_file")" 2>/dev/null
 }
 
 stop_service() {
-  local name="$1"
-  local pid_file="$PIDS_DIR/${name}.pid"
-  if is_running "$name"; then
+  local pid_file="$PIDS_DIR/${1}.pid"
+  if is_running "$1"; then
     kill "$(cat "$pid_file")" 2>/dev/null && rm -f "$pid_file"
-    success "Stopped $name"
+    success "Stopped $1"
   fi
 }
 
-# ─── Commands ────────────────────────────────────────────────────────────────
 cmd_setup() {
-  echo -e "${BOLD}Alfred Setup Wizard${RESET}"
-  echo "─────────────────────────────────────────"
-
+  echo -e "${BOLD}Alfred Setup${RESET}"
+  echo "─────────────────────────────"
   mkdir -p "$PIDS_DIR" "$LOG_DIR"
 
-  if [[ ! -f "$ENV_FILE" ]]; then
-    cp "$SCRIPT_DIR/.env.example" "$ENV_FILE"
-    info "Created .env from template"
-  fi
+  [[ -f "$ENV_FILE" ]] || { cp "$ENV_FILE.example" "$ENV_FILE"; info "Created .env"; }
 
-  # ── Step 1: Node ──
-  echo ""
-  echo -e "${BOLD}Step 1: Checking Node.js${RESET}"
+  # Node
   if ! command -v node &>/dev/null; then
-    error "Node.js is not installed. Install it from https://nodejs.org (v22+)"
-    exit 1
+    error "Node.js not installed — https://nodejs.org (v18+)"; exit 1
   fi
-  success "Node $(node --version) found."
+  success "Node $(node --version)"
 
-  # ── Step 2: OpenClaw ──
-  echo ""
-  echo -e "${BOLD}Step 2: Installing OpenClaw${RESET}"
-  npm install -g openclaw@latest
-  success "OpenClaw installed."
-
-  # ── Step 3: Webchat deps ──
-  echo ""
-  echo -e "${BOLD}Step 3: Installing web chat dependencies${RESET}"
+  # Web chat deps
   npm install --prefix "$SCRIPT_DIR/webchat" --quiet
-  success "Web chat ready."
+  success "Web chat dependencies installed"
 
-  # ── Step 4: Ollama model ──
-  echo ""
-  echo -e "${BOLD}Step 4: Ollama model${RESET}"
+  # Ollama
   if ! command -v ollama &>/dev/null; then
-    error "Ollama is not installed. Download from https://ollama.com/download"
-    exit 1
+    error "Ollama not installed — https://ollama.com/download"; exit 1
   fi
-  success "Ollama found."
-  echo ""
-  echo "  Recommended: llama3.2 (4GB, fast)"
-  echo "  Other options: mistral, qwen2.5, phi3"
-  echo ""
-  read -r -p "Which model? [llama3.2]: " chosen_model
-  chosen_model="${chosen_model:-llama3.2}"
-  sedi "s|OLLAMA_MODEL=.*|OLLAMA_MODEL=$chosen_model|" "$ENV_FILE"
-  info "Pulling $chosen_model (may take a few minutes on first run)..."
-  ollama pull "$chosen_model"
-  success "Model ready."
+  success "Ollama found"
 
-  # ── Step 5: Telegram (optional) ──
   echo ""
-  echo -e "${BOLD}Step 5: Telegram (optional — skip with Enter)${RESET}"
-  echo "  1. Message @BotFather on Telegram → /newbot"
-  echo "  2. Paste the token below"
-  read -r -p "Telegram bot token [skip]: " tg_token
-  if [[ -n "$tg_token" ]]; then
-    sedi "s|TELEGRAM_BOT_TOKEN=.*|TELEGRAM_BOT_TOKEN=$tg_token|" "$ENV_FILE"
-    read -r -p "Your Telegram user ID (@userinfobot) [skip]: " tg_owner
-    [[ -n "$tg_owner" ]] && sedi "s|OPENCLAW_OWNER_ID=.*|OPENCLAW_OWNER_ID=$tg_owner|" "$ENV_FILE"
+  echo "  Recommended models: llama3.2 (4GB)  mistral (4GB)  phi3 (2GB)"
+  read -r -p "Which model? [llama3.2]: " model
+  model="${model:-llama3.2}"
+  sedi "s|OLLAMA_MODEL=.*|OLLAMA_MODEL=$model|" "$ENV_FILE"
+  info "Pulling $model…"
+  ollama pull "$model"
+  success "Model ready"
+
+  # Telegram (optional)
+  echo ""
+  echo "Telegram bot (optional — press Enter to skip)"
+  read -r -p "Bot token from @BotFather: " token
+  if [[ -n "$token" ]]; then
+    sedi "s|TELEGRAM_BOT_TOKEN=.*|TELEGRAM_BOT_TOKEN=$token|" "$ENV_FILE"
+    read -r -p "Your Telegram user ID (@userinfobot): " owner
+    [[ -n "$owner" ]] && sedi "s|TELEGRAM_OWNER_ID=.*|TELEGRAM_OWNER_ID=$owner|" "$ENV_FILE"
   fi
 
   echo ""
-  success "All done! Start Alfred with:  ./alfred start"
-  echo "  Web chat : http://localhost:3000"
-  echo "  Model    : $chosen_model (free via Ollama)"
+  success "Setup complete — run:  ./alfred start"
 }
 
 cmd_start() {
@@ -131,53 +101,49 @@ cmd_start() {
   source "$ENV_FILE"
   mkdir -p "$PIDS_DIR" "$LOG_DIR"
 
-  # ── OpenClaw ──
-  if is_running "openclaw"; then
-    warn "OpenClaw is already running (PID $(cat "$PIDS_DIR/openclaw.pid"))"
+  if is_running "webchat"; then
+    warn "Web chat already running (PID $(cat "$PIDS_DIR/webchat.pid"))"
   else
-    info "Starting OpenClaw..."
     OLLAMA_HOST="${OLLAMA_HOST:-http://localhost:11434}" \
     OLLAMA_MODEL="${OLLAMA_MODEL:-llama3.2}" \
-    TELEGRAM_BOT_TOKEN="${TELEGRAM_BOT_TOKEN:-}" \
-    OPENCLAW_AGENT_NAME="${OPENCLAW_AGENT_NAME:-Alfred}" \
-    OPENCLAW_OWNER_ID="${OPENCLAW_OWNER_ID:-}" \
-      openclaw start >> "$LOG_DIR/openclaw.log" 2>&1 &
-    echo $! > "$PIDS_DIR/openclaw.pid"
-    success "OpenClaw started (PID $!)"
-  fi
-
-  # ── Web chat ──
-  if is_running "webchat"; then
-    warn "Web chat is already running"
-  else
-    info "Starting web chat..."
+    ALFRED_AGENT_NAME="${ALFRED_AGENT_NAME:-Alfred}" \
       node "$SCRIPT_DIR/webchat/server.js" >> "$LOG_DIR/webchat.log" 2>&1 &
     echo $! > "$PIDS_DIR/webchat.pid"
-    success "Web chat started (PID $!)"
+    success "Alfred started (PID $!)"
+  fi
+
+  # Telegram bot
+  if [[ -n "${TELEGRAM_BOT_TOKEN:-}" ]]; then
+    if is_running "telegram"; then
+      warn "Telegram bot already running"
+    elif [[ -f "$SCRIPT_DIR/telegram/bot.js" ]]; then
+      TELEGRAM_BOT_TOKEN="$TELEGRAM_BOT_TOKEN" \
+      TELEGRAM_OWNER_ID="${TELEGRAM_OWNER_ID:-}" \
+      OLLAMA_HOST="${OLLAMA_HOST:-http://localhost:11434}" \
+      OLLAMA_MODEL="${OLLAMA_MODEL:-llama3.2}" \
+        node "$SCRIPT_DIR/telegram/bot.js" >> "$LOG_DIR/telegram.log" 2>&1 &
+      echo $! > "$PIDS_DIR/telegram.pid"
+      success "Telegram bot started"
+    fi
   fi
 
   echo ""
-  echo "  Web chat : http://localhost:3000"
-  [[ -n "${TELEGRAM_BOT_TOKEN:-}" ]] && echo "  Telegram : message your bot"
+  echo "  Chat: http://localhost:3000"
   echo ""
-  echo "  Logs  : ./alfred logs"
-  echo "  Stop  : ./alfred stop"
+  echo "  Logs: ./alfred logs"
+  echo "  Stop: ./alfred stop"
 }
 
 cmd_stop() {
-  stop_service "openclaw"
   stop_service "webchat"
+  stop_service "telegram"
 }
 
-cmd_restart() {
-  cmd_stop
-  sleep 1
-  cmd_start
-}
+cmd_restart() { cmd_stop; sleep 1; cmd_start; }
 
 cmd_status() {
   echo ""
-  for svc in openclaw webchat; do
+  for svc in webchat telegram; do
     if is_running "$svc"; then
       echo -e "  ${GREEN}●${RESET} $svc  (PID $(cat "$PIDS_DIR/${svc}.pid"))"
     else
@@ -189,45 +155,35 @@ cmd_status() {
 
 cmd_logs() {
   mkdir -p "$LOG_DIR"
-  touch "$LOG_DIR/openclaw.log" "$LOG_DIR/webchat.log"
-  tail -f "$LOG_DIR/openclaw.log" "$LOG_DIR/webchat.log"
+  touch "$LOG_DIR/webchat.log"
+  tail -f "$LOG_DIR"/*.log
 }
 
 cmd_chat() {
   open "http://localhost:3000" 2>/dev/null \
     || xdg-open "http://localhost:3000" 2>/dev/null \
-    || echo "Open http://localhost:3000 in your browser"
+    || echo "Open http://localhost:3000"
 }
 
-cmd_update() {
-  info "Updating OpenClaw..."
-  npm install -g openclaw@latest
-  npm install --prefix "$SCRIPT_DIR/webchat" --quiet
-  success "Updated. Restart with: ./alfred restart"
-}
-
-# ─── Main ────────────────────────────────────────────────────────────────────
 case "${1:-help}" in
-  setup)    cmd_setup ;;
-  start)    cmd_start ;;
-  stop)     cmd_stop ;;
-  restart)  cmd_restart ;;
-  status)   cmd_status ;;
-  logs)     cmd_logs ;;
-  chat)     cmd_chat ;;
-  update)   cmd_update ;;
-  help|*)
+  setup)   cmd_setup ;;
+  start)   cmd_start ;;
+  stop)    cmd_stop ;;
+  restart) cmd_restart ;;
+  status)  cmd_status ;;
+  logs)    cmd_logs ;;
+  chat)    cmd_chat ;;
+  *)
     echo ""
     echo -e "${BOLD}Alfred — Personal AI Agent${RESET}"
     echo ""
     echo "  ./alfred setup     First-time setup"
     echo "  ./alfred start     Start Alfred"
     echo "  ./alfred stop      Stop Alfred"
-    echo "  ./alfred restart   Restart Alfred"
-    echo "  ./alfred status    Show running services"
+    echo "  ./alfred restart   Restart"
+    echo "  ./alfred status    Show service status"
     echo "  ./alfred logs      Tail live logs"
-    echo "  ./alfred chat      Open web chat in browser"
-    echo "  ./alfred update    Update OpenClaw"
+    echo "  ./alfred chat      Open browser"
     echo ""
     ;;
 esac
