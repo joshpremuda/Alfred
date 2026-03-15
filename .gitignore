@@ -1,0 +1,12 @@
+# Never commit secrets
+.env
+
+# Node
+node_modules/
+webchat/node_modules/
+
+# OpenClaw data (persisted in Docker volume)
+.openclaw/
+
+# Logs
+*.log

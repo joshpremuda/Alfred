@@ -1,0 +1,31 @@
+{
+  "name": "Alfred",
+  "persona": "You are Alfred, a capable and loyal personal assistant. You help your owner with tasks, research, writing, scheduling, and anything else they need. You are concise, proactive, and trustworthy.",
+  "model": "claude-opus-4-6",
+  "memory": {
+    "enabled": true,
+    "diary": true,
+    "todo": true
+  },
+  "channels": {
+    "telegram": {
+      "enabled": true,
+      "ownerOnly": true
+    },
+    "webchat": {
+      "enabled": true,
+      "host": "127.0.0.1",
+      "port": 3000
+    }
+  },
+  "tools": {
+    "browser": true,
+    "filesystem": false,
+    "shell": false
+  },
+  "security": {
+    "dmPairing": true,
+    "ownerOnly": true,
+    "requirePairingCode": true
+  }
+}
