@@ -1,0 +1,156 @@
+{
+  "name": "VALET — Daily Briefing",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": { "interval": [{ "field": "cronExpression", "expression": "0 7 * * *" }] }
+      },
+      "id": "cron-trigger",
+      "name": "7am Cron",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "getAll",
+        "returnAll": false,
+        "limit": 20,
+        "filters": {
+          "q": "is:unread newer_than:1d"
+        }
+      },
+      "id": "fetch-gmail",
+      "name": "Fetch Gmail (unread 24h)",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [440, 180],
+      "credentials": { "gmailOAuth2": { "id": "gmail-cred", "name": "Gmail OAuth2" } }
+    },
+    {
+      "parameters": {
+        "resource": "event",
+        "operation": "getAll",
+        "calendar": { "__rl": true, "value": "primary", "mode": "id" },
+        "timeMin": "={{ $now.toISO() }}",
+        "timeMax": "={{ $now.plus({days: 2}).startOf('day').toISO() }}",
+        "options": { "singleEvents": true, "orderBy": "startTime" }
+      },
+      "id": "fetch-calendar",
+      "name": "Fetch Calendar",
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [440, 300],
+      "credentials": { "googleCalendarOAuth2Api": { "id": "gcal-cred", "name": "Google Calendar" } }
+    },
+    {
+      "parameters": {
+        "feedUrl": "https://sprudge.com/feed",
+        "options": { "limit": 3 }
+      },
+      "id": "rss-sprudge",
+      "name": "RSS — Sprudge",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.1,
+      "position": [440, 420]
+    },
+    {
+      "parameters": {
+        "feedUrl": "https://dailycoffeenews.com/feed",
+        "options": { "limit": 3 }
+      },
+      "id": "rss-dcn",
+      "name": "RSS — Daily Coffee News",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.1,
+      "position": [440, 520]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://newsapi.org/v2/everything",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            { "name": "q", "value": "specialty coffee OR jasper indiana" },
+            { "name": "sortBy", "value": "publishedAt" },
+            { "name": "pageSize", "value": "5" },
+            { "name": "language", "value": "en" },
+            { "name": "apiKey", "value": "={{ $env.NEWSAPI_KEY }}" }
+          ]
+        }
+      },
+      "id": "newsapi",
+      "name": "NewsAPI",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [440, 620]
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combinationMode": "mergeByPosition",
+        "options": {}
+      },
+      "id": "merge-data",
+      "name": "Merge All Data",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [640, 400]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "x-api-key", "value": "={{ $env.ANTHROPIC_API_KEY }}" },
+            { "name": "anthropic-version", "value": "2023-06-01" },
+            { "name": "content-type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "bodyContentType": "json",
+        "jsonBody": "={\n  \"model\": \"claude-haiku-4-5-20251001\",\n  \"max_tokens\": 600,\n  \"system\": \"You are Josh's Chief of Staff at Smalley Coffee. Write a tight morning briefing.\\nFormat exactly as:\\n\\n☀️ GOOD MORNING, JOSH\\n\\n📅 TODAY\\n[calendar events as bullet list — omit section if empty]\\n\\n📬 INBOX ([N] unread)\\n[top 3 most important emails, one line each, flagged ⚠️ if urgent]\\n\\n☕ COFFEE + TRADE NEWS\\n[top 3 headlines from his sources, one line each]\\n\\n📍 LOCAL\\n[any Jasper/Indiana news if present — omit entire section if none]\\n\\nKeep it under 300 words. Dry, direct, no fluff.\",\n  \"messages\": [{\"role\": \"user\", \"content\": \"CALENDAR:\\n{{ $node['Fetch Calendar'].json.items.map(e => e.summary).join('\\\\n') }}\\n\\nUNREAD EMAILS ({{ $node['Fetch Gmail (unread 24h)'].json.length }}):\\n{{ $node['Fetch Gmail (unread 24h)'].json.slice(0,10).map(e => e.subject + ' — from ' + e.from).join('\\\\n') }}\\n\\nNEWS:\\n{{ [$node['RSS — Sprudge'].json, $node['RSS — Daily Coffee News'].json].flat().map(i => i.title).join('\\\\n') }}\\n{{ $node['NewsAPI'].json.articles.map(a => a.title).join('\\\\n') }}\"}]\n}"
+      },
+      "id": "haiku-briefing",
+      "name": "Haiku — Write Briefing",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [840, 400]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.telegram.org/bot{{ $env.TELEGRAM_BOT_TOKEN }}/sendMessage",
+        "sendBody": true,
+        "bodyContentType": "json",
+        "jsonBody": "={\n  \"chat_id\": \"{{ $env.TELEGRAM_OWNER_ID }}\",\n  \"text\": \"{{ $json.content[0].text }}\"\n}"
+      },
+      "id": "send-telegram",
+      "name": "Send to Telegram",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1040, 400]
+    }
+  ],
+  "connections": {
+    "7am Cron": { "main": [[
+      { "node": "Fetch Gmail (unread 24h)", "type": "main", "index": 0 },
+      { "node": "Fetch Calendar", "type": "main", "index": 0 },
+      { "node": "RSS — Sprudge", "type": "main", "index": 0 },
+      { "node": "RSS — Daily Coffee News", "type": "main", "index": 0 },
+      { "node": "NewsAPI", "type": "main", "index": 0 }
+    ]] },
+    "Fetch Gmail (unread 24h)": { "main": [[{ "node": "Merge All Data", "type": "main", "index": 0 }]] },
+    "Fetch Calendar": { "main": [[{ "node": "Merge All Data", "type": "main", "index": 1 }]] },
+    "RSS — Sprudge": { "main": [[{ "node": "Merge All Data", "type": "main", "index": 2 }]] },
+    "RSS — Daily Coffee News": { "main": [[{ "node": "Merge All Data", "type": "main", "index": 3 }]] },
+    "NewsAPI": { "main": [[{ "node": "Merge All Data", "type": "main", "index": 4 }]] },
+    "Merge All Data": { "main": [[{ "node": "Haiku — Write Briefing", "type": "main", "index": 0 }]] },
+    "Haiku — Write Briefing": { "main": [[{ "node": "Send to Telegram", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "timezone": "America/Chicago", "saveManualExecutions": true }
+}

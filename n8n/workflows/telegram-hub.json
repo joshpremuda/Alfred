@@ -1,0 +1,160 @@
+{
+  "name": "VALET — Telegram Command Hub",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "telegram-webhook",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Telegram Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.body.message.from.id.toString() }}",
+              "value2": "={{ $env.TELEGRAM_OWNER_ID }}",
+              "operation": "equal"
+            }
+          ]
+        }
+      },
+      "id": "owner-check",
+      "name": "Owner Only",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [440, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "x-api-key", "value": "={{ $env.ANTHROPIC_API_KEY }}" },
+            { "name": "anthropic-version", "value": "2023-06-01" },
+            { "name": "content-type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "bodyContentType": "json",
+        "jsonBody": "={\n  \"model\": \"{{ $env.HAIKU_MODEL || 'claude-haiku-4-5-20251001' }}\",\n  \"max_tokens\": 20,\n  \"system\": \"You are an intent classifier for a personal assistant bot.\\nClassify the user message into exactly one of these intents:\\n- BRIEFING: asking about today's schedule, emails, news, or morning briefing\\n- CRM: anything about contacts, follow-ups, wholesale leads, email drafts, or the sales pipeline\\n- DESIGN: requests for graphics, social posts, images, coffee bag mockups, or visual content\\n- POLYMARKET: anything about prediction markets, bets, paper trades, or market research\\n- UNKNOWN: anything else\\n\\nRespond with only the intent word, nothing else.\",\n  \"messages\": [{\"role\": \"user\", \"content\": \"{{ $json.body.message.text }}\"}]\n}"
+      },
+      "id": "intent-router",
+      "name": "Haiku Intent Router",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [640, 240]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            { "conditions": { "string": [{ "value1": "={{ $json.content[0].text }}", "value2": "BRIEFING", "operation": "equal" }] }, "renameOutput": true, "outputKey": "BRIEFING" },
+            { "conditions": { "string": [{ "value1": "={{ $json.content[0].text }}", "value2": "CRM", "operation": "equal" }] }, "renameOutput": true, "outputKey": "CRM" },
+            { "conditions": { "string": [{ "value1": "={{ $json.content[0].text }}", "value2": "DESIGN", "operation": "equal" }] }, "renameOutput": true, "outputKey": "DESIGN" },
+            { "conditions": { "string": [{ "value1": "={{ $json.content[0].text }}", "value2": "POLYMARKET", "operation": "equal" }] }, "renameOutput": true, "outputKey": "POLYMARKET" }
+          ]
+        },
+        "fallbackOutput": "extra"
+      },
+      "id": "intent-switch",
+      "name": "Route by Intent",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [840, 240]
+    },
+    {
+      "parameters": {
+        "workflowId": { "__rl": true, "mode": "name", "value": "VALET — Daily Briefing" },
+        "options": {}
+      },
+      "id": "call-briefing",
+      "name": "Trigger Briefing",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1,
+      "position": [1040, 120]
+    },
+    {
+      "parameters": {
+        "workflowId": { "__rl": true, "mode": "name", "value": "VALET — CRM Handler" },
+        "options": {}
+      },
+      "id": "call-crm",
+      "name": "Trigger CRM",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1,
+      "position": [1040, 240]
+    },
+    {
+      "parameters": {
+        "workflowId": { "__rl": true, "mode": "name", "value": "VALET — Design Agent" },
+        "options": {}
+      },
+      "id": "call-design",
+      "name": "Trigger Design",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1,
+      "position": [1040, 360]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "x-api-key", "value": "={{ $env.ANTHROPIC_API_KEY }}" },
+            { "name": "anthropic-version", "value": "2023-06-01" },
+            { "name": "content-type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "bodyContentType": "json",
+        "jsonBody": "={\n  \"model\": \"{{ $env.SONNET_MODEL || 'claude-sonnet-4-6' }}\",\n  \"max_tokens\": 500,\n  \"system\": \"You are VALET, a personal assistant for Josh Premuda, owner of Smalley Coffee in Jasper, Indiana. Smalley Coffee is a craft roaster established in 2014. Be concise, direct, and helpful. Keep responses under 200 words unless detail is specifically requested.\",\n  \"messages\": [{\"role\": \"user\", \"content\": \"{{ $node['Telegram Webhook'].json.body.message.text }}\"}]\n}"
+      },
+      "id": "general-sonnet",
+      "name": "General (Sonnet)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1040, 480]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.telegram.org/bot{{ $env.TELEGRAM_BOT_TOKEN }}/sendMessage",
+        "sendBody": true,
+        "bodyContentType": "json",
+        "jsonBody": "={\n  \"chat_id\": \"{{ $node['Telegram Webhook'].json.body.message.chat.id }}\",\n  \"text\": \"{{ $json.content[0].text }}\",\n  \"parse_mode\": \"Markdown\"\n}"
+      },
+      "id": "reply-telegram",
+      "name": "Reply to Telegram",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1240, 480]
+    }
+  ],
+  "connections": {
+    "Telegram Webhook": { "main": [[{ "node": "Owner Only", "type": "main", "index": 0 }]] },
+    "Owner Only": { "main": [[{ "node": "Haiku Intent Router", "type": "main", "index": 0 }]] },
+    "Haiku Intent Router": { "main": [[{ "node": "Route by Intent", "type": "main", "index": 0 }]] },
+    "Route by Intent": {
+      "BRIEFING": [{ "node": "Trigger Briefing", "type": "main", "index": 0 }],
+      "CRM": [{ "node": "Trigger CRM", "type": "main", "index": 0 }],
+      "DESIGN": [{ "node": "Trigger Design", "type": "main", "index": 0 }],
+      "extra": [{ "node": "General (Sonnet)", "type": "main", "index": 0 }]
+    },
+    "General (Sonnet)": { "main": [[{ "node": "Reply to Telegram", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "timezone": "America/Chicago", "saveManualExecutions": true }
+}

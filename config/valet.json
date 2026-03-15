@@ -1,0 +1,39 @@
+{
+  "identity": {
+    "name": "Smalley VALET",
+    "owner": "Josh Premuda",
+    "business": "Smalley Coffee",
+    "location": "Jasper, Indiana",
+    "founded": 2014
+  },
+  "brand": {
+    "aesthetic": "Rat Pack / Palm Springs mid-century modern meets golf culture and craft coffee",
+    "palette": ["warm neutrals", "deep greens", "sand", "cognac brown", "coral accent"],
+    "typography": "clean, confident, slightly retro",
+    "mood": "sophisticated without being stuffy",
+    "avoid": ["trendy", "millennial-minimalist"],
+    "copyTone": "Rat Pack — smooth, unhurried, sure of themselves"
+  },
+  "schedule": {
+    "briefingCron": "0 7 * * *",
+    "followupCron": "0 9 * * *",
+    "healthCheckCron": "0 * * * *",
+    "backupCron": "0 2 * * 0",
+    "timezone": "America/Chicago"
+  },
+  "crm": {
+    "followupAfterDays": 7,
+    "followupStatuses": ["prospect", "sampled"],
+    "maxDraftLength": 150
+  },
+  "briefing": {
+    "maxWords": 300,
+    "newsQueries": ["specialty coffee", "Jasper Indiana", "craft roaster"],
+    "emailLookbackHours": 24
+  },
+  "models": {
+    "router": "claude-haiku-4-5-20251001",
+    "drafter": "claude-sonnet-4-6",
+    "vision": "claude-sonnet-4-6"
+  }
+}

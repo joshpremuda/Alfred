@@ -1,0 +1,22 @@
+{
+  "name": "smalley-valet",
+  "version": "1.0.0",
+  "description": "Autonomous AI staff system for Smalley Coffee",
+  "main": "telegram/valet.js",
+  "scripts": {
+    "valet": "node telegram/valet.js",
+    "webchat": "node webchat/server.js",
+    "setup-notion": "node scripts/setup-notion.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.78.0",
+    "@notionhq/client": "^2.2.15",
+    "axios": "^1.7.2",
+    "cron": "^3.1.7",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "node-telegram-bot-api": "^0.64.0",
+    "rss-parser": "^3.13.0",
+    "ws": "^8.17.0"
+  }
+}

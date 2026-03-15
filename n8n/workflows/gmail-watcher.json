@@ -1,0 +1,133 @@
+{
+  "name": "VALET — Gmail Watcher (CRM)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": { "interval": [{ "field": "minutes", "minutesInterval": 30 }] }
+      },
+      "id": "poll-trigger",
+      "name": "Poll Every 30min",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "getAll",
+        "returnAll": false,
+        "limit": 10,
+        "filters": { "q": "is:unread newer_than:1h" }
+      },
+      "id": "fetch-new-emails",
+      "name": "Fetch New Emails",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [440, 300],
+      "credentials": { "gmailOAuth2": { "id": "gmail-cred", "name": "Gmail OAuth2" } }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "x-api-key", "value": "={{ $env.ANTHROPIC_API_KEY }}" },
+            { "name": "anthropic-version", "value": "2023-06-01" },
+            { "name": "content-type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "bodyContentType": "json",
+        "jsonBody": "={\n  \"model\": \"claude-haiku-4-5-20251001\",\n  \"max_tokens\": 5,\n  \"system\": \"You classify emails. Reply YES or NO only.\",\n  \"messages\": [{\"role\": \"user\", \"content\": \"Does this email appear to be from a potential wholesale coffee customer, café, or restaurant?\\n\\nFrom: {{ $json.from }}\\nSubject: {{ $json.subject }}\\nPreview: {{ $json.snippet }}\"}]\n}"
+      },
+      "id": "classify-email",
+      "name": "Classify: Wholesale Lead?",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [640, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [{ "value1": "={{ $json.content[0].text.toUpperCase() }}", "value2": "YES", "operation": "startsWith" }]
+        }
+      },
+      "id": "is-lead",
+      "name": "Is Wholesale Lead?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [840, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "x-api-key", "value": "={{ $env.ANTHROPIC_API_KEY }}" },
+            { "name": "anthropic-version", "value": "2023-06-01" },
+            { "name": "content-type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "bodyContentType": "json",
+        "jsonBody": "={\n  \"model\": \"claude-haiku-4-5-20251001\",\n  \"max_tokens\": 200,\n  \"system\": \"Extract contact info from an email. Reply with JSON only: {\\\"name\\\":\\\"\\\",\\\"company\\\":\\\"\\\",\\\"email\\\":\\\"\\\",\\\"phone\\\":\\\"\\\"}. Use empty string for unknown fields.\",\n  \"messages\": [{\"role\": \"user\", \"content\": \"From: {{ $node['Fetch New Emails'].json.from }}\\nSubject: {{ $node['Fetch New Emails'].json.subject }}\\nBody: {{ $node['Fetch New Emails'].json.snippet }}\"}]\n}"
+      },
+      "id": "extract-contact",
+      "name": "Extract Contact Info",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1040, 240]
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "create",
+        "databaseId": { "__rl": true, "mode": "id", "value": "={{ $env.NOTION_CONTACTS_DB_ID }}" },
+        "title": "={{ JSON.parse($node['Extract Contact Info'].json.content[0].text).name || 'Unknown' }}",
+        "propertiesUi": {
+          "propertyValues": [
+            { "key": "Company", "type": "richText", "textValue": "={{ JSON.parse($node['Extract Contact Info'].json.content[0].text).company }}" },
+            { "key": "Email", "type": "email", "emailValue": "={{ JSON.parse($node['Extract Contact Info'].json.content[0].text).email }}" },
+            { "key": "Phone", "type": "phoneNumber", "phoneValue": "={{ JSON.parse($node['Extract Contact Info'].json.content[0].text).phone }}" },
+            { "key": "Source", "type": "select", "selectValue": "email" },
+            { "key": "Status", "type": "select", "selectValue": "prospect" },
+            { "key": "Last Contact", "type": "date", "dateValue": "={{ $now.toISO().split('T')[0] }}" }
+          ]
+        }
+      },
+      "id": "create-notion-contact",
+      "name": "Create Notion Contact",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [1240, 240],
+      "credentials": { "notionApi": { "id": "notion-cred", "name": "Notion API" } }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.telegram.org/bot{{ $env.TELEGRAM_BOT_TOKEN }}/sendMessage",
+        "sendBody": true,
+        "bodyContentType": "json",
+        "jsonBody": "={\n  \"chat_id\": \"{{ $env.TELEGRAM_OWNER_ID }}\",\n  \"text\": \"📇 New contact logged: *{{ JSON.parse($node['Extract Contact Info'].json.content[0].text).name }}* at {{ JSON.parse($node['Extract Contact Info'].json.content[0].text).company }}\\n\\nFrom: {{ $node['Fetch New Emails'].json.from }}\\nSubject: {{ $node['Fetch New Emails'].json.subject }}\",\n  \"parse_mode\": \"Markdown\"\n}"
+      },
+      "id": "notify-telegram",
+      "name": "Notify Telegram",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1440, 240]
+    }
+  ],
+  "connections": {
+    "Poll Every 30min": { "main": [[{ "node": "Fetch New Emails", "type": "main", "index": 0 }]] },
+    "Fetch New Emails": { "main": [[{ "node": "Classify: Wholesale Lead?", "type": "main", "index": 0 }]] },
+    "Classify: Wholesale Lead?": { "main": [[{ "node": "Is Wholesale Lead?", "type": "main", "index": 0 }]] },
+    "Is Wholesale Lead?": { "main": [[{ "node": "Extract Contact Info", "type": "main", "index": 0 }]] },
+    "Extract Contact Info": { "main": [[{ "node": "Create Notion Contact", "type": "main", "index": 0 }]] },
+    "Create Notion Contact": { "main": [[{ "node": "Notify Telegram", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "timezone": "America/Chicago", "saveManualExecutions": true }
+}

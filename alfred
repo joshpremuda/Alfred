@@ -112,15 +112,17 @@ cmd_start() {
     success "Alfred started (PID $!)"
   fi
 
-  # Telegram bot
+  # VALET Telegram bot (preferred) or legacy bot.js
   if [[ -n "${TELEGRAM_BOT_TOKEN:-}" ]]; then
     if is_running "telegram"; then
       warn "Telegram bot already running"
+    elif [[ -f "$SCRIPT_DIR/telegram/valet.js" ]]; then
+      node "$SCRIPT_DIR/telegram/valet.js" >> "$LOG_DIR/telegram.log" 2>&1 &
+      echo $! > "$PIDS_DIR/telegram.pid"
+      success "VALET Telegram bot started (PID $!)"
     elif [[ -f "$SCRIPT_DIR/telegram/bot.js" ]]; then
       TELEGRAM_BOT_TOKEN="$TELEGRAM_BOT_TOKEN" \
       TELEGRAM_OWNER_ID="${TELEGRAM_OWNER_ID:-}" \
-      OLLAMA_HOST="${OLLAMA_HOST:-http://localhost:11434}" \
-      OLLAMA_MODEL="${OLLAMA_MODEL:-llama3.2}" \
         node "$SCRIPT_DIR/telegram/bot.js" >> "$LOG_DIR/telegram.log" 2>&1 &
       echo $! > "$PIDS_DIR/telegram.pid"
       success "Telegram bot started"
@@ -140,6 +142,28 @@ cmd_stop() {
 }
 
 cmd_restart() { cmd_stop; sleep 1; cmd_start; }
+
+cmd_valet_setup() {
+  info "Installing VALET dependencies…"
+  npm install --prefix "$SCRIPT_DIR" --quiet
+  success "Dependencies installed"
+  echo ""
+  info "Next: edit .env with your API keys, then run:  ./alfred start"
+  echo ""
+  echo "  Required for VALET:"
+  echo "    ANTHROPIC_API_KEY — https://console.anthropic.com/keys"
+  echo "    TELEGRAM_BOT_TOKEN — @BotFather on Telegram"
+  echo "    TELEGRAM_OWNER_ID — @userinfobot on Telegram"
+  echo ""
+  echo "  Optional (enable features):"
+  echo "    NOTION_TOKEN + NOTION_PAGE_ID — CRM"
+  echo "    GOOGLE_CLIENT_ID/SECRET/REFRESH_TOKEN — Gmail + Calendar briefing"
+  echo "    NEWSAPI_KEY — news in briefing"
+  echo "    FAL_API_KEY — design generation"
+  echo ""
+  echo "  After adding API keys, create Notion databases:"
+  echo "    node scripts/setup-notion.js"
+}
 
 cmd_status() {
   echo ""
@@ -166,24 +190,29 @@ cmd_chat() {
 }
 
 case "${1:-help}" in
-  setup)   cmd_setup ;;
-  start)   cmd_start ;;
-  stop)    cmd_stop ;;
-  restart) cmd_restart ;;
-  status)  cmd_status ;;
-  logs)    cmd_logs ;;
-  chat)    cmd_chat ;;
+  setup)        cmd_setup ;;
+  valet-setup)  cmd_valet_setup ;;
+  start)        cmd_start ;;
+  stop)         cmd_stop ;;
+  restart)      cmd_restart ;;
+  status)       cmd_status ;;
+  logs)         cmd_logs ;;
+  chat)         cmd_chat ;;
   *)
     echo ""
-    echo -e "${BOLD}Alfred — Personal AI Agent${RESET}"
+    echo -e "${BOLD}Smalley VALET / Alfred — Personal AI Agent${RESET}"
     echo ""
-    echo "  ./alfred setup     First-time setup"
-    echo "  ./alfred start     Start Alfred"
-    echo "  ./alfred stop      Stop Alfred"
-    echo "  ./alfred restart   Restart"
-    echo "  ./alfred status    Show service status"
-    echo "  ./alfred logs      Tail live logs"
-    echo "  ./alfred chat      Open browser"
+    echo "  ${BOLD}Core${RESET}"
+    echo "  ./alfred valet-setup   Install VALET dependencies"
+    echo "  ./alfred start         Start all services (web chat + VALET bot)"
+    echo "  ./alfred stop          Stop all services"
+    echo "  ./alfred restart       Restart"
+    echo "  ./alfred status        Show service status"
+    echo "  ./alfred logs          Tail live logs"
+    echo ""
+    echo "  ${BOLD}Web chat (local)${RESET}"
+    echo "  ./alfred setup         First-time setup for Ollama/web chat"
+    echo "  ./alfred chat          Open web chat in browser"
     echo ""
     ;;
 esac

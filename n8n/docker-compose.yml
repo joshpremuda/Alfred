@@ -1,0 +1,54 @@
+version: '3.8'
+
+# Smalley VALET — n8n orchestration layer
+# Deploy to: /opt/valet/n8n/
+# Start:      docker-compose up -d
+# Logs:       docker-compose logs -f n8n
+
+services:
+  n8n:
+    image: n8nio/n8n:latest
+    restart: always
+    ports:
+      - "127.0.0.1:5678:5678"   # Nginx will proxy HTTPS → this port
+    environment:
+      # Auth
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=valet
+      - N8N_BASIC_AUTH_PASSWORD=${N8N_PASSWORD}
+      # Hosting
+      - N8N_HOST=${N8N_DOMAIN}
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=https
+      - WEBHOOK_URL=https://${N8N_DOMAIN}/
+      # Timezone
+      - GENERIC_TIMEZONE=America/Chicago
+      - TZ=America/Chicago
+      # Pass through all VALET secrets so n8n Code nodes can use them
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - TELEGRAM_OWNER_ID=${TELEGRAM_OWNER_ID}
+      - NOTION_TOKEN=${NOTION_TOKEN}
+      - NOTION_PAGE_ID=${NOTION_PAGE_ID}
+      - NOTION_CONTACTS_DB_ID=${NOTION_CONTACTS_DB_ID:-}
+      - NOTION_PIPELINE_DB_ID=${NOTION_PIPELINE_DB_ID:-}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-}
+      - GOOGLE_REFRESH_TOKEN=${GOOGLE_REFRESH_TOKEN:-}
+      - NEWSAPI_KEY=${NEWSAPI_KEY:-}
+      - NEWS_RSS_FEEDS=${NEWS_RSS_FEEDS:-}
+      - FAL_API_KEY=${FAL_API_KEY:-}
+      - HAIKU_MODEL=${HAIKU_MODEL:-claude-haiku-4-5-20251001}
+      - SONNET_MODEL=${SONNET_MODEL:-claude-sonnet-4-6}
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ./workflows:/opt/valet/workflows:ro   # Pre-built workflow JSONs
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:5678/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  n8n_data:
+    name: valet_n8n_data

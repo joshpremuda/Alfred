@@ -1,0 +1,105 @@
+{
+  "name": "VALET — Follow-up Drafter",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": { "interval": [{ "field": "cronExpression", "expression": "0 9 * * *" }] }
+      },
+      "id": "cron-9am",
+      "name": "9am Cron",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "getAll",
+        "databaseId": { "__rl": true, "mode": "id", "value": "={{ $env.NOTION_CONTACTS_DB_ID }}" },
+        "returnAll": true,
+        "filterType": "json",
+        "filterJson": "={\n  \"and\": [\n    { \"property\": \"Status\", \"select\": { \"is_one_of\": [\"prospect\", \"sampled\"] } },\n    { \"property\": \"Last Contact\", \"date\": { \"on_or_before\": \"{{ $now.minus({days: 7}).toISO().split('T')[0] }}\" } }\n  ]\n}"
+      },
+      "id": "query-notion-contacts",
+      "name": "Contacts Needing Follow-up",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [440, 300],
+      "credentials": { "notionApi": { "id": "notion-cred", "name": "Notion API" } }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [{ "value1": "={{ $items().length }}", "value2": 0, "operation": "larger" }]
+        }
+      },
+      "id": "has-contacts",
+      "name": "Any Contacts?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [640, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "x-api-key", "value": "={{ $env.ANTHROPIC_API_KEY }}" },
+            { "name": "anthropic-version", "value": "2023-06-01" },
+            { "name": "content-type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "bodyContentType": "json",
+        "jsonBody": "={\n  \"model\": \"{{ $env.SONNET_MODEL || 'claude-sonnet-4-6' }}\",\n  \"max_tokens\": 400,\n  \"system\": \"You are writing a follow-up email for Josh Premuda, owner of Smalley Coffee in Jasper, Indiana.\\nSmalley Coffee is a craft roaster operating since 2014. Josh is offering wholesale accounts and private label options.\\nThe tone is: confident, warm, not pushy. Like the Rat Pack — smooth, unhurried, sure of themselves.\\nWrite a follow-up email based on the contact context provided.\\nKeep it under 150 words. Include a subject line on the first line as 'Subject: ...'.\\nThen a blank line, then the email body. Sign as Josh at Smalley Coffee.\",\n  \"messages\": [{\"role\": \"user\", \"content\": \"Contact: {{ $json.properties.Name.title[0].text.content }} at {{ $json.properties.Company.rich_text[0].text.content || 'their company' }}\\nEmail: {{ $json.properties.Email.email }}\\nStatus: {{ $json.properties.Status.select.name }}\\nLast contact: {{ $json.properties['Last Contact'].date.start }}\\nNotes: {{ $json.properties.Notes.rich_text[0]?.text?.content || 'No prior notes' }}\"}]\n}"
+      },
+      "id": "draft-followup",
+      "name": "Sonnet — Draft Follow-up",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [840, 240]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.telegram.org/bot{{ $env.TELEGRAM_BOT_TOKEN }}/sendMessage",
+        "sendBody": true,
+        "bodyContentType": "json",
+        "jsonBody": "={\n  \"chat_id\": \"{{ $env.TELEGRAM_OWNER_ID }}\",\n  \"text\": \"📧 *Follow-up draft for {{ $node['Contacts Needing Follow-up'].json.properties.Name.title[0].text.content }}*\\n\\n{{ $json.content[0].text }}\\n\\nReply:\\n• *SEND* — send this\\n• *SKIP* — ignore\",\n  \"parse_mode\": \"Markdown\"\n}"
+      },
+      "id": "send-draft-telegram",
+      "name": "Send Draft to Telegram",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1040, 240]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.telegram.org/bot{{ $env.TELEGRAM_BOT_TOKEN }}/sendMessage",
+        "sendBody": true,
+        "bodyContentType": "json",
+        "jsonBody": "={\n  \"chat_id\": \"{{ $env.TELEGRAM_OWNER_ID }}\",\n  \"text\": \"✅ No follow-ups needed today. Pipeline is fresh.\"\n}"
+      },
+      "id": "no-followups-msg",
+      "name": "No Follow-ups Needed",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [840, 400]
+    }
+  ],
+  "connections": {
+    "9am Cron": { "main": [[{ "node": "Contacts Needing Follow-up", "type": "main", "index": 0 }]] },
+    "Contacts Needing Follow-up": { "main": [[{ "node": "Any Contacts?", "type": "main", "index": 0 }]] },
+    "Any Contacts?": {
+      "main": [
+        [{ "node": "Sonnet — Draft Follow-up", "type": "main", "index": 0 }],
+        [{ "node": "No Follow-ups Needed", "type": "main", "index": 0 }]
+      ]
+    },
+    "Sonnet — Draft Follow-up": { "main": [[{ "node": "Send Draft to Telegram", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "timezone": "America/Chicago", "saveManualExecutions": true }
+}

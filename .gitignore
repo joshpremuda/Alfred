@@ -4,6 +4,7 @@
 # Runtime
 .pids/
 .logs/
+logs/
 
 # Node
 node_modules/
@@ -11,3 +12,9 @@ webchat/node_modules/
 
 # OpenClaw data
 .openclaw/
+
+# VALET backups (stay on server only)
+backups/
+
+# n8n data volume (Docker managed)
+n8n/data/
