@@ -2,13 +2,21 @@ const express = require('express');
 const http = require('http');
 const WebSocket = require('ws');
 const path = require('path');
-const { spawn } = require('child_process');
+const { spawn, execSync } = require('child_process');
 
 const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
 app.use(express.static(path.join(__dirname, 'public')));
+
+// Resolve openclaw binary once at startup (npm global bin may not be in child PATH)
+let OPENCLAW_BIN;
+try {
+  OPENCLAW_BIN = execSync('which openclaw 2>/dev/null || npm root -g 2>/dev/null | xargs -I{} find {} -name openclaw -maxdepth 3 2>/dev/null | head -1', { encoding: 'utf8' }).trim();
+} catch {}
+if (!OPENCLAW_BIN) OPENCLAW_BIN = 'openclaw'; // fallback: let spawn fail with clear error
+console.log('[Alfred] openclaw binary:', OPENCLAW_BIN || '(not found)');
 
 wss.on('connection', (ws) => {
   ws.send(JSON.stringify({ role: 'system', text: 'Connected. Say hello!' }));
@@ -18,7 +26,7 @@ wss.on('connection', (ws) => {
     try { text = JSON.parse(raw).text; } catch { text = raw.toString(); }
     if (!text) return;
 
-    const child = spawn('openclaw', ['send', text], {
+    const child = spawn(OPENCLAW_BIN, ['send', text], {
       env: { ...process.env },
     });
 
