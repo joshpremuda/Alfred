@@ -19,6 +19,9 @@ success() { echo -e "${GREEN}[Alfred]${RESET} $*"; }
 warn()    { echo -e "${YELLOW}[Alfred]${RESET} $*"; }
 error()   { echo -e "${RED}[Alfred]${RESET} $*" >&2; }
 
+# macOS sed requires -i '' ; Linux requires -i  — this handles both
+sedi() { sed -i '' "$@" 2>/dev/null || sed -i "$@"; }
+
 # ─── Helpers ─────────────────────────────────────────────────────────────────
 check_env() {
   if [[ ! -f "$ENV_FILE" ]]; then
@@ -71,7 +74,7 @@ cmd_setup() {
   echo ""
   read -r -p "Which model? [llama3.2]: " chosen_model
   chosen_model="${chosen_model:-llama3.2}"
-  sed -i "s|OLLAMA_MODEL=.*|OLLAMA_MODEL=$chosen_model|" "$ENV_FILE"
+  sedi"s|OLLAMA_MODEL=.*|OLLAMA_MODEL=$chosen_model|" "$ENV_FILE"
 
   info "Pulling model '$chosen_model' (may take a few minutes)..."
   ollama pull "$chosen_model"
@@ -85,13 +88,13 @@ cmd_setup() {
   echo "  3. Paste the token below (or press Enter to skip)"
   read -r -p "Telegram bot token [skip]: " tg_token
   if [[ -n "$tg_token" ]]; then
-    sed -i "s|TELEGRAM_BOT_TOKEN=.*|TELEGRAM_BOT_TOKEN=$tg_token|" "$ENV_FILE"
+    sedi"s|TELEGRAM_BOT_TOKEN=.*|TELEGRAM_BOT_TOKEN=$tg_token|" "$ENV_FILE"
     echo ""
     echo "  To restrict Alfred to yourself only, enter your Telegram user ID."
     echo "  Find it by messaging @userinfobot on Telegram."
     read -r -p "Your Telegram user ID [skip]: " tg_owner
     if [[ -n "$tg_owner" ]]; then
-      sed -i "s|OPENCLAW_OWNER_ID=.*|OPENCLAW_OWNER_ID=$tg_owner|" "$ENV_FILE"
+      sedi"s|OPENCLAW_OWNER_ID=.*|OPENCLAW_OWNER_ID=$tg_owner|" "$ENV_FILE"
     fi
   fi
 
