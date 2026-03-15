@@ -151,7 +151,6 @@ cmd_start() {
     warn "Web chat is already running"
   else
     info "Starting web chat..."
-    OPENCLAW_WS="ws://localhost:18789" \
       node "$SCRIPT_DIR/webchat/server.js" >> "$LOG_DIR/webchat.log" 2>&1 &
     echo $! > "$PIDS_DIR/webchat.pid"
     success "Web chat started (PID $!)"

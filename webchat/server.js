@@ -2,49 +2,47 @@ const express = require('express');
 const http = require('http');
 const WebSocket = require('ws');
 const path = require('path');
+const { spawn } = require('child_process');
 
 const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
-const OPENCLAW_WS = process.env.OPENCLAW_WS || 'ws://localhost:18789';
-
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Proxy browser WebSocket connections to OpenClaw gateway
-wss.on('connection', (browserWs) => {
-  const agentWs = new WebSocket(OPENCLAW_WS);
+wss.on('connection', (ws) => {
+  ws.send(JSON.stringify({ role: 'system', text: 'Connected. Say hello!' }));
 
-  agentWs.on('open', () => {
-    console.log('[Alfred] Connected to OpenClaw gateway');
-  });
+  ws.on('message', (raw) => {
+    let text;
+    try { text = JSON.parse(raw).text; } catch { text = raw.toString(); }
+    if (!text) return;
 
-  agentWs.on('message', (data) => {
-    if (browserWs.readyState === WebSocket.OPEN) {
-      browserWs.send(data.toString());
-    }
-  });
+    const child = spawn('openclaw', ['send', text], {
+      env: { ...process.env },
+    });
 
-  browserWs.on('message', (data) => {
-    if (agentWs.readyState === WebSocket.OPEN) {
-      agentWs.send(data.toString());
-    }
-  });
+    let reply = '';
+    child.stdout.on('data', (d) => { reply += d.toString(); });
+    child.stderr.on('data', (d) => { console.error('[openclaw]', d.toString().trim()); });
 
-  const cleanup = () => {
-    agentWs.close();
-    browserWs.close();
-  };
+    child.on('close', (code) => {
+      if (ws.readyState !== WebSocket.OPEN) return;
+      if (reply.trim()) {
+        ws.send(JSON.stringify({ role: 'agent', text: reply.trim() }));
+      } else {
+        ws.send(JSON.stringify({ role: 'system', text: `(openclaw exited ${code} with no output)` }));
+      }
+    });
 
-  browserWs.on('close', cleanup);
-  agentWs.on('close', cleanup);
-  agentWs.on('error', (err) => {
-    console.error('[Alfred] Agent connection error:', err.message);
-    cleanup();
+    child.on('error', (err) => {
+      if (ws.readyState !== WebSocket.OPEN) return;
+      ws.send(JSON.stringify({ role: 'system', text: `Error: ${err.message}` }));
+    });
   });
 });
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, '0.0.0.0', () => {
-  console.log(`[Alfred] Web chat available at http://localhost:${PORT}`);
+  console.log(`[Alfred] Web chat at http://localhost:${PORT}`);
 });

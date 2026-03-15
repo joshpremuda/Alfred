@@ -139,8 +139,7 @@
       ws.onmessage = (e) => {
         try {
           const msg = JSON.parse(e.data);
-          const text = msg.text || msg.content || msg.message || JSON.stringify(msg);
-          addMessage(text, 'agent');
+          addMessage(msg.text || JSON.stringify(msg), msg.role || 'agent');
         } catch {
           addMessage(e.data, 'agent');
         }
