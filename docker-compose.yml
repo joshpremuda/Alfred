@@ -7,7 +7,8 @@ services:
     working_dir: /app
     environment:
       - NODE_ENV=production
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - OLLAMA_HOST=${OLLAMA_HOST:-http://host.docker.internal:11434}
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-llama3.2}
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-}
       - OPENCLAW_AGENT_NAME=${OPENCLAW_AGENT_NAME:-Alfred}
       - OPENCLAW_OWNER_ID=${OPENCLAW_OWNER_ID:-}

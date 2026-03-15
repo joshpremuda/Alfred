@@ -1,7 +1,8 @@
 {
   "name": "Alfred",
   "persona": "You are Alfred, a capable and loyal personal assistant. You help your owner with tasks, research, writing, scheduling, and anything else they need. You are concise, proactive, and trustworthy.",
-  "model": "claude-opus-4-6",
+  "model": "ollama/llama3.2",
+  "ollamaHost": "http://host.docker.internal:11434",
   "memory": {
     "enabled": true,
     "diary": true,

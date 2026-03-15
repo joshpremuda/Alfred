@@ -27,10 +27,16 @@ check_env() {
   fi
   # shellcheck source=/dev/null
   source "$ENV_FILE"
-  if [[ -z "${ANTHROPIC_API_KEY:-}" || "$ANTHROPIC_API_KEY" == "sk-ant-REPLACE_ME" ]]; then
-    error "ANTHROPIC_API_KEY is not set in .env"
-    error "Edit .env and add your key from https://console.anthropic.com/keys"
-    exit 1
+
+  # Check Ollama is reachable (skip check inside Docker)
+  local ollama_host="${OLLAMA_HOST:-http://localhost:11434}"
+  if ! curl -sf "${ollama_host}/api/tags" > /dev/null 2>&1; then
+    warn "Ollama doesn't appear to be running at ${ollama_host}"
+    warn "Start it with: ollama serve  (or open the Ollama app)"
+    warn "Then pull a model: ollama pull ${OLLAMA_MODEL:-llama3.2}"
+    echo ""
+    read -r -p "Continue anyway? [y/N] " cont
+    [[ "$cont" =~ ^[Yy]$ ]] || exit 1
   fi
 }
 
@@ -44,25 +50,42 @@ cmd_setup() {
     info "Created .env from template"
   fi
 
+  # ── Step 1: Ollama ──
   echo ""
-  echo "You need an Anthropic API key to proceed."
-  echo "  Get one at: https://console.anthropic.com/keys"
-  echo ""
-  read -r -p "Paste your Anthropic API key: " api_key
-  if [[ -z "$api_key" ]]; then
-    error "No key entered. Aborting."; exit 1
+  echo -e "${BOLD}Step 1: Ollama (your free local AI)${RESET}"
+  if command -v ollama &>/dev/null; then
+    success "Ollama is already installed."
+  else
+    echo "  Ollama is not installed. Install it now:"
+    echo ""
+    echo "    macOS:  https://ollama.com/download  (download the app)"
+    echo "    Linux:  curl -fsSL https://ollama.com/install.sh | sh"
+    echo ""
+    echo "  After installing, come back and re-run:  ./alfred setup"
+    exit 0
   fi
-  sed -i "s|ANTHROPIC_API_KEY=.*|ANTHROPIC_API_KEY=$api_key|" "$ENV_FILE"
 
   echo ""
-  echo "Optional: Telegram bot (easiest way to chat from your phone)"
+  echo "  Recommended model: llama3.2 (4GB, fast, great for chat)"
+  echo "  Other options:     mistral, qwen2.5, phi3"
+  echo ""
+  read -r -p "Which model? [llama3.2]: " chosen_model
+  chosen_model="${chosen_model:-llama3.2}"
+  sed -i "s|OLLAMA_MODEL=.*|OLLAMA_MODEL=$chosen_model|" "$ENV_FILE"
+
+  info "Pulling model '$chosen_model' (may take a few minutes)..."
+  ollama pull "$chosen_model"
+  success "Model ready."
+
+  # ── Step 2: Telegram (optional) ──
+  echo ""
+  echo -e "${BOLD}Step 2: Telegram (optional — chat from your phone)${RESET}"
   echo "  1. Message @BotFather on Telegram"
   echo "  2. Send /newbot and follow instructions"
   echo "  3. Paste the token below (or press Enter to skip)"
   read -r -p "Telegram bot token [skip]: " tg_token
   if [[ -n "$tg_token" ]]; then
     sed -i "s|TELEGRAM_BOT_TOKEN=.*|TELEGRAM_BOT_TOKEN=$tg_token|" "$ENV_FILE"
-
     echo ""
     echo "  To restrict Alfred to yourself only, enter your Telegram user ID."
     echo "  Find it by messaging @userinfobot on Telegram."
@@ -75,7 +98,8 @@ cmd_setup() {
   echo ""
   success "Setup complete! Start Alfred with:  ./alfred start"
   echo ""
-  echo "  Web chat will be at: http://localhost:3000"
+  echo "  Web chat : http://localhost:3000"
+  echo "  Model    : $chosen_model (running free via Ollama)"
 }
 
 cmd_start() {
