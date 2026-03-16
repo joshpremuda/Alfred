@@ -8,6 +8,10 @@
 # Node
 node_modules/
 webchat/node_modules/
+integrations/node_modules/
+
+# Google OAuth token (contains refresh token — never commit)
+integrations/token.json
 
 # OpenClaw data
 .openclaw/

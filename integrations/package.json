@@ -1,0 +1,15 @@
+{
+  "name": "alfred-crm-integrations",
+  "version": "1.0.0",
+  "description": "CRM integration: Notion + Google Sheets + Gmail → Notion CRM for Smalley Coffee",
+  "main": "crm-sync.js",
+  "scripts": {
+    "sync": "node crm-sync.js",
+    "auth": "node auth-setup.js"
+  },
+  "dependencies": {
+    "@notionhq/client": "^2.2.15",
+    "googleapis": "^144.0.0",
+    "dotenv": "^16.4.5"
+  }
+}
