@@ -1,97 +1,150 @@
-# Alfred — Personal AI Agent
+# Valet — Alfred
 
-Alfred is a secured, Docker-isolated instance of [OpenClaw](https://openclaw.ai) running on your laptop as your personal agent.
-
-## Quick Start
-
-### 1. First-time setup (one time only)
-```bash
-./alfred setup
-```
-The wizard will ask for:
-- Your **Anthropic API key** (required) — get one at https://console.anthropic.com/keys
-- Your **Telegram bot token** (optional but recommended for mobile access)
-
-### 2. Start Alfred
-```bash
-./alfred start
-```
-
-### 3. Talk to Alfred
-| Interface | How |
-|-----------|-----|
-| **Web browser** | Open http://localhost:3000 |
-| **Telegram** | Message your bot directly |
+Your personal Chief of Staff. A local-first AI operating system built on Next.js + SQLite + Claude.
 
 ---
 
-## All Commands
+## What is Alfred?
 
-| Command | What it does |
+Alfred is your second brain and executive assistant. He knows your projects, tracks your ideas, stores your knowledge, and helps you understand what matters right now.
+
+Ask Alfred:
+- *"What should I work on today?"*
+- *"Brief me."*
+- *"What projects are stalled?"*
+- *"What do I know about specialty coffee media?"*
+- *"Save this for later."*
+
+---
+
+## Setup
+
+### 1. Prerequisites
+
+- Node.js 18+
+- An Anthropic API key — [get one here](https://console.anthropic.com/keys)
+
+### 2. Install
+
+```bash
+git clone <this-repo>
+cd Alfred
+npm install
+```
+
+### 3. Configure
+
+```bash
+cp .env.example .env.local
+```
+
+Edit `.env.local` and add your Anthropic API key:
+
+```
+ANTHROPIC_API_KEY=sk-ant-...
+```
+
+### 4. Seed initial data
+
+```bash
+node scripts/seed.js
+```
+
+This creates your projects, ideas, and collections from the initial setup.
+
+### 5. Start
+
+```bash
+npm run dev       # Development (hot reload)
+# or
+npm run build && npm start   # Production
+```
+
+Open [http://localhost:3000](http://localhost:3000)
+
+---
+
+## Auto-start on macOS
+
+To have Valet start automatically when you log in:
+
+1. Edit `com.valet.alfred.plist` — replace `/path/to/Alfred` with your actual path
+2. Copy to launchd:
+
+```bash
+cp com.valet.alfred.plist ~/Library/LaunchAgents/
+launchctl load ~/Library/LaunchAgents/com.valet.alfred.plist
+```
+
+Logs at `/tmp/valet.log`
+
+---
+
+## Remote Access via Tailscale
+
+1. Install [Tailscale](https://tailscale.com)
+2. Start Valet on your MacBook
+3. Access from any device on your Tailnet at `http://your-mac-hostname:3000`
+
+---
+
+## Features
+
+| Feature | Description |
 |---------|-------------|
-| `./alfred setup` | First-time setup wizard |
-| `./alfred start` | Start Alfred |
-| `./alfred stop` | Stop Alfred |
-| `./alfred restart` | Restart Alfred |
-| `./alfred status` | Show container status |
-| `./alfred logs` | Stream live logs |
-| `./alfred chat` | Open web chat in browser |
-| `./alfred update` | Pull latest OpenClaw version |
-| `./alfred onboard` | Re-run OpenClaw onboarding |
+| **Chat** | Natural language interface with Alfred |
+| **Brief Me** | On-demand executive briefing |
+| **Knowledge Vault** | Save URLs, upload PDFs, search everything |
+| **Projects** | Track status and next actions |
+| **Ideas** | Permanent idea reservoir |
+| **Collections** | Organized knowledge by topic |
+| **Notifications** | Quiet notification center |
+| **Themes** | Light, Dark, Sunny |
 
 ---
 
-## Auto-start on Login (optional)
+## Future Agents
 
-### systemd (Linux)
-```bash
-sudo cp alfred.service /etc/systemd/system/
-sudo systemctl enable alfred
-sudo systemctl start alfred
+| Agent | Role | Status |
+|-------|------|--------|
+| Wayne | COO of Smalley Coffee | Planned |
+| Q | Systems Architect | Planned |
+| Creative | Design & Writing Director | Planned |
+
+---
+
+## Project Structure
+
 ```
-
----
-
-## Security Model
-
-- **Docker-isolated** — Alfred runs inside a container with `no-new-privileges` and all capabilities dropped
-- **Localhost-only** — ports are bound to `127.0.0.1`, not exposed to your network
-- **Owner-only access** — DM pairing requires an explicit pairing code; Telegram restricted to your user ID
-- **No host filesystem access** — the container cannot read your files unless you explicitly grant it
-- **Secrets in `.env`** — your API key is never committed to git (`.gitignore` blocks it)
-
----
-
-## Customising Alfred
-
-Edit `config/agent.json` to change:
-- Agent name and persona
-- Which tools are enabled (browser, filesystem, shell)
-- Which channels are active
-
-Then restart: `./alfred restart`
-
----
-
-## Updating OpenClaw
-
-```bash
-./alfred update
+src/
+  app/
+    chat/          # Primary interface
+    knowledge/     # Knowledge vault
+    projects/      # Project tracker
+    ideas/         # Idea reservoir
+    collections/   # Collections
+    api/           # All API routes
+  components/      # Shared UI components
+  lib/
+    alfred.ts      # Alfred AI + Claude integration
+    db.ts          # SQLite database
+    ingest.ts      # File/URL content extraction
+data/              # SQLite database (gitignored)
+uploads/           # Uploaded files (gitignored)
+scripts/           # Seed and utility scripts
 ```
 
 ---
 
 ## Troubleshooting
 
-**Alfred won't start**
-- Run `./alfred logs` to see errors
-- Make sure `.env` has a valid `ANTHROPIC_API_KEY`
-- Make sure Docker is running: `docker info`
+**Alfred can't connect to Claude**
+- Check `ANTHROPIC_API_KEY` is set in `.env.local`
+- Verify your key at console.anthropic.com
 
-**Web chat shows "Connecting…"**
-- Wait ~30 seconds for the container to install OpenClaw on first boot
-- Check logs: `./alfred logs`
+**Database errors on first run**
+- Run `node scripts/seed.js` first
+- The `data/` directory must be writable
 
-**Telegram not working**
-- Confirm `TELEGRAM_BOT_TOKEN` is set in `.env`
-- Re-run onboarding: `./alfred onboard`
+**Port already in use**
+- Set `PORT=3001` in `.env.local`

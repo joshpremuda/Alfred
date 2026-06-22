@@ -1,13 +1,32 @@
 # Secrets
 .env
+.env.local
+.env.*.local
 
-# Runtime
-.pids/
-.logs/
+# Next.js
+.next/
+out/
 
 # Node
 node_modules/
-webchat/node_modules/
 
-# OpenClaw data
+# Data (local only — never commit)
+data/
+uploads/
+
+# OS
+.DS_Store
+*.pem
+
+# Debug
+npm-debug.log*
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# Legacy
+webchat/node_modules/
 .openclaw/
+.pids/
+.logs/

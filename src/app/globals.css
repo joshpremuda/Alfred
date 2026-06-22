@@ -1,0 +1,133 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #FAFAF9;
+  --surface: #FFFFFF;
+  --border: #E5E5E3;
+  --text: #1A1A1A;
+  --text-secondary: #6B7280;
+  --accent: #2563EB;
+  --accent-hover: #1D4ED8;
+}
+
+.dark {
+  --bg: #111110;
+  --surface: #1C1C1A;
+  --border: #2A2A28;
+  --text: #F5F5F4;
+  --text-secondary: #A8A29E;
+  --accent: #60A5FA;
+  --accent-hover: #93C5FD;
+}
+
+.sunny {
+  --bg: #F5F0E8;
+  --surface: #FFFBF0;
+  --border: #E8DEC8;
+  --text: #2C2416;
+  --text-secondary: #8B7355;
+  --accent: #B45309;
+  --accent-hover: #92400E;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+
+/* Markdown prose styles */
+.prose-alfred {
+  @apply leading-relaxed;
+}
+
+.prose-alfred p {
+  @apply mb-3;
+}
+
+.prose-alfred h1 {
+  @apply text-xl font-semibold mb-3 mt-5;
+}
+
+.prose-alfred h2 {
+  @apply text-lg font-semibold mb-2 mt-4;
+}
+
+.prose-alfred h3 {
+  @apply text-base font-semibold mb-2 mt-3;
+}
+
+.prose-alfred ul {
+  @apply mb-3 space-y-1;
+}
+
+.prose-alfred ul li {
+  @apply flex gap-2;
+}
+
+.prose-alfred ul li::before {
+  content: '—';
+  @apply text-[var(--text-secondary)] flex-shrink-0;
+}
+
+.prose-alfred ol {
+  @apply mb-3 space-y-1 list-decimal list-inside;
+}
+
+.prose-alfred code {
+  @apply font-mono text-sm bg-[var(--border)] px-1.5 py-0.5 rounded;
+}
+
+.prose-alfred pre {
+  @apply bg-[var(--surface)] border border-[var(--border)] rounded-lg p-4 overflow-x-auto mb-3;
+}
+
+.prose-alfred pre code {
+  @apply bg-transparent p-0;
+}
+
+.prose-alfred blockquote {
+  @apply border-l-2 border-[var(--accent)] pl-4 italic text-[var(--text-secondary)] mb-3;
+}
+
+.prose-alfred strong {
+  @apply font-semibold;
+}
+
+.prose-alfred em mark {
+  @apply not-italic;
+}
+
+mark {
+  background-color: #FEF08A;
+  color: inherit;
+  padding: 0 2px;
+  border-radius: 2px;
+}
+
+.dark mark {
+  background-color: #713F12;
+}
+
+.sunny mark {
+  background-color: #FEF3C7;
+}
