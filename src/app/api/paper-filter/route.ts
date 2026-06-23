@@ -67,19 +67,29 @@ export async function GET() {
 
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-  const msg = await client.messages.create({
-    model: MODEL,
-    max_tokens: 1500,
-    system: BRIEFING_SYSTEM,
-    messages: [
-      {
-        role: 'user',
-        content: `Here are today's headlines from across the briefing sources:\n${context}\n\nGenerate The Brief.`,
-      },
-    ],
-  });
-
-  const brief = msg.content[0]?.type === 'text' ? msg.content[0].text : 'Unable to generate brief.';
+  let brief: string;
+  try {
+    const msg = await client.messages.create({
+      model: MODEL,
+      max_tokens: 1500,
+      system: BRIEFING_SYSTEM,
+      messages: [
+        {
+          role: 'user',
+          content: `Here are today's headlines from across the briefing sources:\n${context}\n\nGenerate The Brief.`,
+        },
+      ],
+    });
+    brief = msg.content[0]?.type === 'text' ? msg.content[0].text : 'Unable to generate brief.';
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : 'Unknown error';
+    const isCredits = msg.includes('credit balance');
+    return Response.json({
+      error: isCredits
+        ? 'Anthropic API credits needed. Add credits at console.anthropic.com/billing, then try again.'
+        : `Claude API error: ${msg}`,
+    }, { status: 402 });
+  }
 
   return Response.json({
     brief,
