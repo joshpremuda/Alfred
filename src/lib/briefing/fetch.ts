@@ -87,9 +87,10 @@ async function scrapeHeadlines(source: FeedSource): Promise<FeedResult> {
   return { source: source.name, items: items.slice(0, 8), method: 'scrape' };
 }
 
-export async function fetchAllFeeds(): Promise<FeedResult[]> {
+export async function fetchAllFeeds(extra: FeedSource[] = []): Promise<FeedResult[]> {
+  const allFeeds = [...BRIEFING_FEEDS, ...extra];
   const results = await Promise.allSettled(
-    BRIEFING_FEEDS.map(async (source): Promise<FeedResult> => {
+    allFeeds.map(async (source): Promise<FeedResult> => {
       try {
         return await fetchRss(source);
       } catch {
@@ -106,7 +107,7 @@ export async function fetchAllFeeds(): Promise<FeedResult[]> {
   return results.map((r, i) =>
     r.status === 'fulfilled'
       ? r.value
-      : { source: BRIEFING_FEEDS[i].name, items: [], error: String(r.reason), method: 'failed' as const }
+      : { source: allFeeds[i].name, items: [], error: String(r.reason), method: 'failed' as const }
   );
 }
 

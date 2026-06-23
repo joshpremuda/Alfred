@@ -121,5 +121,14 @@ function migrate(db: Database.Database) {
       read INTEGER NOT NULL DEFAULT 0,
       created_at INTEGER NOT NULL DEFAULT (unixepoch())
     );
+
+    CREATE TABLE IF NOT EXISTS briefing_sources (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      homepage TEXT NOT NULL,
+      rss TEXT,
+      enabled INTEGER NOT NULL DEFAULT 1,
+      created_at INTEGER NOT NULL DEFAULT (unixepoch())
+    );
   `);
 }

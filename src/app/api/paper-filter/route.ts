@@ -1,5 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { fetchAllFeeds, buildFeedContext, type FeedResult } from '@/lib/briefing/fetch';
+import { getDb } from '@/lib/db';
+import { type FeedSource } from '@/lib/briefing/feeds';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -46,9 +48,14 @@ GUIDELINES
 export async function GET() {
   const started = Date.now();
 
+  // Merge default feeds with any custom sources from DB
+  const db = getDb();
+  const customSources = db.prepare('SELECT * FROM briefing_sources WHERE enabled = 1').all() as Array<{name: string; homepage: string; rss: string | null}>;
+  const extraFeeds: FeedSource[] = customSources.map(s => ({ name: s.name, homepage: s.homepage, rss: s.rss ?? undefined }));
+
   let feeds: FeedResult[] = [];
   try {
-    feeds = await fetchAllFeeds();
+    feeds = await fetchAllFeeds(extraFeeds);
   } catch (err) {
     return Response.json({ error: 'Failed to fetch feeds' }, { status: 500 });
   }
