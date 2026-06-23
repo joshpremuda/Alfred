@@ -8,6 +8,7 @@ import clsx from 'clsx';
 
 const NAV = [
   { href: '/chat', label: 'Alfred', icon: '◆' },
+  { href: '/paper-filter', label: 'Paper Filter', icon: '☕' },
   { href: '/knowledge', label: 'Knowledge', icon: '◈' },
   { href: '/projects', label: 'Projects', icon: '◉' },
   { href: '/ideas', label: 'Ideas', icon: '◇' },
