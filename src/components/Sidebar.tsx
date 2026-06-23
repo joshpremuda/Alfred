@@ -12,6 +12,7 @@ const NAV = [
   { href: '/projects', label: 'Projects', icon: '◉' },
   { href: '/ideas', label: 'Ideas', icon: '◇' },
   { href: '/collections', label: 'Collections', icon: '◫' },
+  { href: '/sync', label: 'Sync', icon: '⟳' },
 ];
 
 export default function Sidebar() {
