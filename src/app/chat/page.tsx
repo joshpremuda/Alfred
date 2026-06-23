@@ -19,7 +19,6 @@ export default function ChatPage() {
   const [briefing, setBriefing] = useState<string | null>(null);
   const [briefLoading, setBriefLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -46,10 +45,9 @@ export default function ChatPage() {
     if (!text) setInput('');
 
     const userMsg: Message = { role: 'user', content: msg, id: Date.now().toString() };
-    setMessages(prev => [...prev, userMsg]);
+    const thinkingId = (Date.now() + 1).toString();
 
-    const assistantId = (Date.now() + 1).toString();
-    setMessages(prev => [...prev, { role: 'assistant', content: '', id: assistantId }]);
+    setMessages(prev => [...prev, userMsg, { role: 'assistant', content: '', id: thinkingId }]);
     setLoading(true);
 
     try {
@@ -59,47 +57,26 @@ export default function ChatPage() {
         body: JSON.stringify({ message: msg, conversationId }),
       });
 
-      if (!res.body) throw new Error('No response body');
+      const data = await res.json();
 
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = '';
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n');
-        buffer = lines.pop() || '';
-
-        for (const line of lines) {
-          if (!line.startsWith('data: ')) continue;
-          try {
-            const data = JSON.parse(line.slice(6));
-            if (data.conversationId && !conversationId) {
-              setConversationId(data.conversationId);
-            }
-            if (data.text) {
-              setMessages(prev =>
-                prev.map(m =>
-                  m.id === assistantId
-                    ? { ...m, content: m.content + data.text }
-                    : m
-                )
-              );
-            }
-          } catch {}
-        }
+      if (data.error) {
+        setMessages(prev => prev.map(m =>
+          m.id === thinkingId ? { ...m, content: `Error: ${data.error}` } : m
+        ));
+        return;
       }
+
+      if (data.conversationId) setConversationId(data.conversationId);
+
+      setMessages(prev => prev.map(m =>
+        m.id === thinkingId ? { ...m, content: data.reply } : m
+      ));
     } catch (err) {
-      setMessages(prev =>
-        prev.map(m =>
-          m.id === assistantId
-            ? { ...m, content: 'Something went wrong. Check that your API key is configured.' }
-            : m
-        )
-      );
+      setMessages(prev => prev.map(m =>
+        m.id === thinkingId
+          ? { ...m, content: 'Could not reach Alfred. Make sure the server is running.' }
+          : m
+      ));
     } finally {
       setLoading(false);
     }
@@ -134,10 +111,7 @@ export default function ChatPage() {
           onClick={handleBrief}
           disabled={briefLoading}
           className="px-4 py-1.5 rounded-lg text-sm font-medium transition-colors"
-          style={{
-            backgroundColor: 'var(--border)',
-            color: 'var(--text)',
-          }}
+          style={{ backgroundColor: 'var(--border)', color: 'var(--text)' }}
         >
           {briefLoading ? 'Briefing…' : 'Brief Me'}
         </button>
@@ -153,11 +127,7 @@ export default function ChatPage() {
             <span className="text-xs font-semibold tracking-wider uppercase" style={{ color: 'var(--accent)' }}>
               Today's Briefing
             </span>
-            <button
-              onClick={() => setBriefing(null)}
-              className="text-xs"
-              style={{ color: 'var(--text-secondary)' }}
-            >
+            <button onClick={() => setBriefing(null)} className="text-xs" style={{ color: 'var(--text-secondary)' }}>
               Dismiss
             </button>
           </div>
@@ -183,11 +153,7 @@ export default function ChatPage() {
                   key={s}
                   onClick={() => sendMessage(s)}
                   className="text-left px-3 py-2.5 rounded-xl text-sm border transition-colors hover:opacity-80"
-                  style={{
-                    borderColor: 'var(--border)',
-                    backgroundColor: 'var(--surface)',
-                    color: 'var(--text)',
-                  }}
+                  style={{ borderColor: 'var(--border)', backgroundColor: 'var(--surface)', color: 'var(--text)' }}
                 >
                   {s}
                 </button>
@@ -197,28 +163,18 @@ export default function ChatPage() {
         )}
 
         {messages.map(msg => (
-          <div
-            key={msg.id}
-            className={clsx('flex', msg.role === 'user' ? 'justify-end' : 'justify-start')}
-          >
+          <div key={msg.id} className={clsx('flex', msg.role === 'user' ? 'justify-end' : 'justify-start')}>
             {msg.role === 'assistant' && (
-              <div className="w-5 h-5 rounded-full flex-shrink-0 mt-0.5 mr-3 flex items-center justify-center text-xs"
-                style={{ backgroundColor: 'var(--border)', color: 'var(--text-secondary)' }}>
+              <div
+                className="w-5 h-5 rounded-full flex-shrink-0 mt-0.5 mr-3 flex items-center justify-center text-xs"
+                style={{ backgroundColor: 'var(--border)', color: 'var(--text-secondary)' }}
+              >
                 ◆
               </div>
             )}
             <div
-              className={clsx(
-                'max-w-2xl text-sm',
-                msg.role === 'user'
-                  ? 'px-4 py-2.5 rounded-2xl rounded-tr-sm'
-                  : 'prose-alfred'
-              )}
-              style={
-                msg.role === 'user'
-                  ? { backgroundColor: 'var(--accent)', color: '#fff' }
-                  : { color: 'var(--text)' }
-              }
+              className={clsx('max-w-2xl text-sm', msg.role === 'user' ? 'px-4 py-2.5 rounded-2xl rounded-tr-sm' : 'prose-alfred')}
+              style={msg.role === 'user' ? { backgroundColor: 'var(--accent)', color: '#fff' } : { color: 'var(--text)' }}
             >
               {msg.role === 'user' ? (
                 <span>{msg.content}</span>
@@ -236,27 +192,19 @@ export default function ChatPage() {
       </div>
 
       {/* Input */}
-      <div
-        className="px-6 pb-6 pt-3 flex-shrink-0"
-        style={{ backgroundColor: 'var(--bg)' }}
-      >
+      <div className="px-6 pb-6 pt-3 flex-shrink-0" style={{ backgroundColor: 'var(--bg)' }}>
         <div
           className="flex items-end gap-3 rounded-2xl border px-4 py-3"
           style={{ borderColor: 'var(--border)', backgroundColor: 'var(--surface)' }}
         >
           <textarea
-            ref={textareaRef}
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Ask Alfred anything…"
             rows={1}
             className="flex-1 resize-none bg-transparent text-sm outline-none leading-relaxed"
-            style={{
-              color: 'var(--text)',
-              maxHeight: '120px',
-              minHeight: '24px',
-            }}
+            style={{ color: 'var(--text)', maxHeight: '120px', minHeight: '24px' }}
             onInput={e => {
               const el = e.currentTarget;
               el.style.height = 'auto';
