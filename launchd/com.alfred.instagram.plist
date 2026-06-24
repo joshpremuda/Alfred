@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.alfred.instagram</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/usr/bin/python3</string>
+        <string>ALFRED_PATH/tools/instagram/poster.py</string>
+    </array>
+
+    <!-- Run at the top of every hour -->
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Minute</key>
+        <integer>0</integer>
+    </dict>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>IMGBB_API_KEY</key>
+        <string>REPLACE_WITH_IMGBB_KEY</string>
+    </dict>
+
+    <key>StandardOutPath</key>
+    <string>ALFRED_PATH/logs/instagram.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>ALFRED_PATH/logs/instagram.error.log</string>
+
+    <key>RunAtLoad</key>
+    <false/>
+</dict>
+</plist>

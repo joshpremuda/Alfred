@@ -4,6 +4,10 @@
 # Runtime
 .pids/
 .logs/
+logs/
+
+# Instagram
+tools/instagram/__pycache__/
 
 # Node
 node_modules/

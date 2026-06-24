@@ -1,0 +1,38 @@
+{
+  "account": {
+    "instagram_username": "clubsmanship",
+    "photos_album": "Alfred Post Queue",
+    "posts_per_day": 1,
+    "max_posts_per_day": 2
+  },
+  "api": {
+    "access_token": "",
+    "instagram_user_id": "",
+    "token_expiry": null
+  },
+  "scheduling": {
+    "mode": "learned",
+    "seed_windows": [
+      {"day": "*", "hour": 8,  "weight": 0.6},
+      {"day": "*", "hour": 12, "weight": 0.7},
+      {"day": "*", "hour": 17, "weight": 0.8},
+      {"day": "*", "hour": 19, "weight": 1.0},
+      {"day": "*", "hour": 20, "weight": 0.9},
+      {"day": "sat", "hour": 10, "weight": 0.85},
+      {"day": "sun", "hour": 11, "weight": 0.85}
+    ],
+    "min_hours_between_posts": 6
+  },
+  "learning": {
+    "engagement_weights": {
+      "likes": 1.0,
+      "comments": 3.0,
+      "saves": 5.0,
+      "shares": 4.0,
+      "reach": 0.05
+    },
+    "min_posts_before_learning": 10,
+    "heatmap": {}
+  },
+  "history": []
+}

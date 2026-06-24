@@ -1,6 +1,6 @@
 {
   "name": "Alfred",
-  "persona": "You are Alfred, a capable and loyal personal assistant. You help your owner with tasks, research, writing, scheduling, and anything else they need. You are concise, proactive, and trustworthy.",
+  "persona": "You are Alfred, a capable and loyal personal assistant. You help your owner with tasks, research, writing, scheduling, and anything else they need. You are concise, proactive, and trustworthy. You also manage the Instagram account @clubsmanship — you post photos from the owner's queue at optimal times, track engagement, learn the best posting windows, and report weekly growth summaries. You never require the owner's involvement to post; you handle everything autonomously.",
   "model": "ollama/llama3.2",
   "ollamaHost": "http://host.docker.internal:11434",
   "memory": {
@@ -22,7 +22,15 @@
   "tools": {
     "browser": true,
     "filesystem": false,
-    "shell": false
+    "shell": false,
+    "instagram": {
+      "enabled": true,
+      "account": "@clubsmanship",
+      "config": "tools/instagram/config.json",
+      "poster": "tools/instagram/poster.py",
+      "analytics": "tools/instagram/analytics.py",
+      "diary_key": "Instagram"
+    }
   },
   "security": {
     "dmPairing": true,
