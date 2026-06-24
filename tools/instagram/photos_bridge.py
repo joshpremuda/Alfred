@@ -57,9 +57,8 @@ def export_next_photo(export_dir: str) -> Optional[dict]:
     if not photos:
         return None
 
-    # Oldest first
-    photos.sort(key=lambda p: p.get("added_date", ""))
-    photo = photos[0]
+    import random
+    photo = random.choice(photos)
     uuid = photo["uuid"]
 
     _run_osxphotos(
