@@ -151,7 +151,7 @@ def run(force: bool = False, dry_run: bool = False):
         report = growth_report(config)
         _append_diary(
             f"Posted photo `{photo['original_filename']}` to @clubsmanship.\n"
-            f"Queue remaining: {get_queue_count()}.\n{report}"
+            f"Remaining in Inspo: {get_queue_count()}.\n{report}"
         )
         print(f"[poster] Done. {report}")
 

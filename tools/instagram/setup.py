@@ -65,9 +65,10 @@ def main():
     print("  https://api.imgbb.com/\n")
     imgbb_key = input("  Paste your imgbb API key: ").strip()
 
-    print("\nStep 3: Creating Apple Photos album…")
+    print("\nStep 3: Verifying Apple Photos album…")
     album_name = config["account"]["photos_album"]
-    create_photos_album(album_name)
+    print(f"  Using existing album: '{album_name}'")
+    print("  (Album must already exist in Photos.app)")
 
     # Write to .env
     env_content = ""
