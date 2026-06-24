@@ -85,12 +85,11 @@ def export_next_photo(export_dir: str) -> Optional[dict]:
 
 
 def remove_from_album(uuid: str) -> bool:
-    """Remove a photo from the Post Queue album (does not delete from library)."""
+    """Delete a photo from the entire Photos library."""
     script = f'''
 tell application "Photos"
-    set theAlbum to album "{ALBUM_NAME}"
     set thePhoto to media item id "{uuid}"
-    remove thePhoto from theAlbum
+    delete thePhoto
 end tell
 '''
     result = subprocess.run(
