@@ -1,0 +1,405 @@
+{% comment %}
+  Smalley Coffee — Crowded Cafe Footer
+  Drop into sections/ and add {% section 'footer-crowded-cafe' %} to theme.liquid
+{% endcomment %}
+
+<footer class="cafe-footer" id="cafe-footer">
+  <div class="cafe-footer__content">
+
+    <!-- Brand -->
+    <div class="cafe-footer__brand">
+      {% if section.settings.logo != blank %}
+        <a href="{{ routes.root_url }}" class="cafe-footer__logo-link">
+          <img
+            src="{{ section.settings.logo | image_url: width: 240 }}"
+            alt="{{ shop.name }}"
+            width="120"
+            height="auto"
+            loading="lazy"
+          >
+        </a>
+      {% else %}
+        <a href="{{ routes.root_url }}" class="cafe-footer__wordmark">
+          {{ section.settings.brand_name | default: shop.name }}
+        </a>
+      {% endif %}
+
+      {% if section.settings.tagline != blank %}
+        <p class="cafe-footer__tagline">{{ section.settings.tagline }}</p>
+      {% endif %}
+    </div>
+
+    <!-- Social icons -->
+    <nav class="cafe-footer__social" aria-label="Social media">
+      {% if section.settings.instagram_url != blank %}
+        <a href="{{ section.settings.instagram_url }}" target="_blank" rel="noopener" aria-label="Instagram">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4.5"/><circle cx="17.5" cy="6.5" r="0.5" fill="currentColor" stroke="none"/></svg>
+        </a>
+      {% endif %}
+      {% if section.settings.tiktok_url != blank %}
+        <a href="{{ section.settings.tiktok_url }}" target="_blank" rel="noopener" aria-label="TikTok">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.34 6.34 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V9a8.16 8.16 0 0 0 4.77 1.52V7.07a4.85 4.85 0 0 1-1-.38z"/></svg>
+        </a>
+      {% endif %}
+      {% if section.settings.facebook_url != blank %}
+        <a href="{{ section.settings.facebook_url }}" target="_blank" rel="noopener" aria-label="Facebook">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+        </a>
+      {% endif %}
+      {% if section.settings.x_url != blank %}
+        <a href="{{ section.settings.x_url }}" target="_blank" rel="noopener" aria-label="X (Twitter)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+        </a>
+      {% endif %}
+    </nav>
+
+    <!-- Navigation columns -->
+    <nav class="cafe-footer__nav" aria-label="Footer navigation">
+      {% for block in section.blocks %}
+        {% if block.type == 'nav_column' %}
+          <div class="cafe-footer__nav-col" {{ block.shopify_attributes }}>
+            {% if block.settings.heading != blank %}
+              <p class="cafe-footer__nav-heading">{{ block.settings.heading }}</p>
+            {% endif %}
+            {% if block.settings.menu != blank %}
+              {% assign nav_menu = linklists[block.settings.menu] %}
+              <ul>
+                {% for link in nav_menu.links %}
+                  <li><a href="{{ link.url }}">{{ link.title }}</a></li>
+                {% endfor %}
+              </ul>
+            {% endif %}
+          </div>
+        {% endif %}
+      {% endfor %}
+    </nav>
+
+    <!-- Legal / copyright -->
+    <div class="cafe-footer__legal">
+      <p>© {{ 'now' | date: '%Y' }} {{ shop.name }}. All rights reserved.</p>
+      {% if section.settings.legal_links != blank %}
+        <p>{{ section.settings.legal_links }}</p>
+      {% endif %}
+    </div>
+
+  </div><!-- /.cafe-footer__content -->
+
+  <!-- Cafe scene image -->
+  <div class="cafe-footer__scene" aria-hidden="true">
+    {% if section.settings.cafe_image != blank %}
+      <img
+        src="{{ section.settings.cafe_image | image_url: width: 2400 }}"
+        srcset="
+          {{ section.settings.cafe_image | image_url: width: 800 }} 800w,
+          {{ section.settings.cafe_image | image_url: width: 1400 }} 1400w,
+          {{ section.settings.cafe_image | image_url: width: 2400 }} 2400w
+        "
+        sizes="100vw"
+        alt=""
+        loading="lazy"
+        draggable="false"
+      >
+    {% else %}
+      {%- comment -%}
+        Placeholder: upload a crowded cafe painting/photo in the theme editor.
+        Suggested public-domain works: Manet "Au Café" (1878), Degas café scenes,
+        or a modern editorial photo of a packed espresso bar.
+      {%- endcomment -%}
+      <div class="cafe-footer__scene-placeholder">
+        <span>Upload a cafe scene image in the theme editor</span>
+      </div>
+    {% endif %}
+    <!-- fade-to-white gradient so the image bleeds into the footer content above -->
+    <div class="cafe-footer__scene-fade"></div>
+  </div>
+
+</footer>
+
+<style>
+  :root {
+    --cafe-footer-bg: #faf8f4;
+    --cafe-footer-text: #1a1410;
+    --cafe-footer-muted: #7a6e64;
+    --cafe-footer-accent: #8b5e3c;
+    --cafe-footer-scene-height: 42vw;
+    --cafe-footer-scene-min: 280px;
+    --cafe-footer-scene-max: 600px;
+  }
+
+  .cafe-footer {
+    background: var(--cafe-footer-bg);
+    color: var(--cafe-footer-text);
+    font-family: inherit;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* ── Content area ── */
+  .cafe-footer__content {
+    position: relative;
+    z-index: 2;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 64px 40px 40px;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+
+  @media (min-width: 768px) {
+    .cafe-footer__content {
+      grid-template-columns: 1fr auto 1fr;
+      grid-template-rows: auto auto;
+      align-items: start;
+    }
+    .cafe-footer__brand   { grid-column: 1; grid-row: 1; }
+    .cafe-footer__social  { grid-column: 2; grid-row: 1; justify-self: center; }
+    .cafe-footer__nav     { grid-column: 3; grid-row: 1; justify-self: end; }
+    .cafe-footer__legal   { grid-column: 1 / -1; grid-row: 2; }
+  }
+
+  /* ── Brand ── */
+  .cafe-footer__logo-link { display: inline-block; }
+  .cafe-footer__logo-link img { display: block; max-height: 48px; width: auto; }
+
+  .cafe-footer__wordmark {
+    display: inline-block;
+    font-size: clamp(1.4rem, 2.5vw, 2rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--cafe-footer-text);
+    text-decoration: none;
+  }
+  .cafe-footer__wordmark:hover { color: var(--cafe-footer-accent); }
+
+  .cafe-footer__tagline {
+    margin-top: 8px;
+    font-size: 0.85rem;
+    color: var(--cafe-footer-muted);
+    max-width: 260px;
+    line-height: 1.5;
+  }
+
+  /* ── Social ── */
+  .cafe-footer__social {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  .cafe-footer__social a {
+    color: var(--cafe-footer-text);
+    text-decoration: none;
+    transition: color 0.2s, transform 0.2s;
+    display: flex;
+    align-items: center;
+  }
+  .cafe-footer__social a:hover {
+    color: var(--cafe-footer-accent);
+    transform: translateY(-2px);
+  }
+
+  /* ── Nav ── */
+  .cafe-footer__nav {
+    display: flex;
+    gap: 48px;
+  }
+  .cafe-footer__nav-col ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .cafe-footer__nav-heading {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--cafe-footer-muted);
+    margin: 0 0 12px;
+  }
+  .cafe-footer__nav-col a {
+    font-size: 0.9rem;
+    color: var(--cafe-footer-text);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .cafe-footer__nav-col a:hover { color: var(--cafe-footer-accent); }
+
+  /* ── Legal ── */
+  .cafe-footer__legal {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    justify-content: space-between;
+    padding-top: 24px;
+    border-top: 1px solid rgba(0,0,0,0.08);
+    font-size: 0.78rem;
+    color: var(--cafe-footer-muted);
+  }
+  .cafe-footer__legal p { margin: 0; }
+
+  /* ── Cafe scene ── */
+  .cafe-footer__scene {
+    position: relative;
+    width: 100%;
+    height: clamp(var(--cafe-footer-scene-min), var(--cafe-footer-scene-height), var(--cafe-footer-scene-max));
+    overflow: hidden;
+  }
+  .cafe-footer__scene img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+    display: block;
+  }
+
+  /* Gradient fades the top of the image into the footer background */
+  .cafe-footer__scene-fade {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to bottom,
+      var(--cafe-footer-bg) 0%,
+      transparent 28%,
+      transparent 100%
+    );
+    pointer-events: none;
+  }
+
+  .cafe-footer__scene-placeholder {
+    width: 100%;
+    height: 100%;
+    background: #e8ddd4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .cafe-footer__scene-placeholder span {
+    font-size: 0.85rem;
+    color: var(--cafe-footer-muted);
+  }
+
+  /* ── Mobile tweaks ── */
+  @media (max-width: 767px) {
+    .cafe-footer__content { padding: 48px 24px 32px; }
+    .cafe-footer__social  { justify-content: flex-start; }
+    .cafe-footer__nav     { flex-wrap: wrap; gap: 32px; }
+    .cafe-footer__legal   { flex-direction: column; gap: 8px; }
+  }
+</style>
+
+{% schema %}
+{
+  "name": "Crowded Cafe Footer",
+  "tag": "section",
+  "class": "section-cafe-footer",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Brand"
+    },
+    {
+      "type": "text",
+      "id": "brand_name",
+      "label": "Brand name (if no logo)",
+      "default": "Smalley Coffee"
+    },
+    {
+      "type": "image_picker",
+      "id": "logo",
+      "label": "Logo image"
+    },
+    {
+      "type": "text",
+      "id": "tagline",
+      "label": "Tagline",
+      "default": "Specialty coffee roasted in small batches."
+    },
+    {
+      "type": "header",
+      "content": "Social links"
+    },
+    {
+      "type": "url",
+      "id": "instagram_url",
+      "label": "Instagram URL"
+    },
+    {
+      "type": "url",
+      "id": "tiktok_url",
+      "label": "TikTok URL"
+    },
+    {
+      "type": "url",
+      "id": "facebook_url",
+      "label": "Facebook URL"
+    },
+    {
+      "type": "url",
+      "id": "x_url",
+      "label": "X (Twitter) URL"
+    },
+    {
+      "type": "header",
+      "content": "Cafe scene image"
+    },
+    {
+      "type": "image_picker",
+      "id": "cafe_image",
+      "label": "Cafe scene image",
+      "info": "Works best with a wide, crowded cafe painting or editorial photo. Recommended: 2400 × 900px or wider."
+    },
+    {
+      "type": "header",
+      "content": "Legal"
+    },
+    {
+      "type": "richtext",
+      "id": "legal_links",
+      "label": "Privacy / terms links"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "nav_column",
+      "name": "Navigation column",
+      "limit": 4,
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Column heading"
+        },
+        {
+          "type": "link_list",
+          "id": "menu",
+          "label": "Menu"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Crowded Cafe Footer",
+      "blocks": [
+        {
+          "type": "nav_column",
+          "settings": {
+            "heading": "Shop",
+            "menu": "main-menu"
+          }
+        },
+        {
+          "type": "nav_column",
+          "settings": {
+            "heading": "Company",
+            "menu": "footer"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
