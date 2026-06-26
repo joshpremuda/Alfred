@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Coffee Recipes — Smalley Coffee</title>
+  <style>
+    :root {
+      --bg: #1a1410;
+      --surface: #241e18;
+      --border: #3a2f24;
+      --accent: #c8973a;
+      --accent-muted: #8a6425;
+      --text: #e8ddd0;
+      --muted: #9a8878;
+      --tag-bg: #2e241b;
+      --radius: 6px;
+      --font-serif: Georgia, 'Times New Roman', serif;
+      --font-sans: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 15px;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      border-bottom: 1px solid var(--border);
+      padding: 48px 32px 40px;
+      text-align: center;
+    }
+
+    header .wordmark {
+      font-family: var(--font-serif);
+      font-size: 13px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 18px;
+    }
+
+    header h1 {
+      font-family: var(--font-serif);
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: normal;
+      color: var(--text);
+      line-height: 1.2;
+      margin-bottom: 14px;
+    }
+
+    header p {
+      color: var(--muted);
+      font-size: 14px;
+      max-width: 520px;
+      margin: 0 auto;
+      letter-spacing: 0.02em;
+    }
+
+    /* ── Filter bar ── */
+    .filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      padding: 28px 32px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .filter-btn {
+      background: var(--tag-bg);
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 12px;
+      font-family: var(--font-sans);
+      letter-spacing: 0.08em;
+      padding: 6px 16px;
+      text-transform: uppercase;
+      transition: all 0.15s;
+    }
+
+    .filter-btn:hover,
+    .filter-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #1a1410;
+    }
+
+    /* ── Main grid ── */
+    main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 24px 80px;
+    }
+
+    .section-heading {
+      font-family: var(--font-serif);
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent-muted);
+      margin: 48px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 16px;
+    }
+
+    /* ── Recipe card ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      transition: border-color 0.15s;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .card:hover { border-color: var(--accent-muted); }
+
+    .card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .card h2 {
+      font-family: var(--font-serif);
+      font-size: 1.1rem;
+      font-weight: normal;
+      color: var(--text);
+      line-height: 1.3;
+    }
+
+    .badge {
+      flex-shrink: 0;
+      background: var(--tag-bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--accent);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      padding: 3px 8px;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .card .ingredients {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .card .ingredients li {
+      color: var(--muted);
+      font-size: 13px;
+      padding-left: 14px;
+      position: relative;
+    }
+
+    .card .ingredients li::before {
+      content: '—';
+      position: absolute;
+      left: 0;
+      color: var(--border);
+    }
+
+    .card .method {
+      color: var(--text);
+      font-size: 13.5px;
+      line-height: 1.65;
+      border-top: 1px solid var(--border);
+      padding-top: 12px;
+    }
+
+    .card .note {
+      font-size: 12px;
+      color: var(--accent);
+      font-style: italic;
+      border-top: 1px solid var(--border);
+      padding-top: 10px;
+    }
+
+    /* component cards (syrups) */
+    .card.component {
+      border-style: dashed;
+    }
+
+    /* ── Footer ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 32px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: 0.05em;
+    }
+
+    footer a { color: var(--accent); text-decoration: none; }
+
+    /* ── Hidden state for filtering ── */
+    .card[data-hidden] { display: none; }
+
+    @media (max-width: 600px) {
+      header { padding: 32px 20px 28px; }
+      .filter-bar { padding: 20px 16px; }
+      main { padding: 24px 16px 60px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="wordmark">Smalley Coffee Co.</div>
+  <h1>Recipe Guide</h1>
+  <p>Ideas for your menu — built for wholesale partners. Every recipe is a starting point; adjust ratios and featured coffee to fit your program.</p>
+</header>
+
+<div class="filter-bar">
+  <button class="filter-btn active" data-filter="all">All</button>
+  <button class="filter-btn" data-filter="sparkling">Sparkling</button>
+  <button class="filter-btn" data-filter="shaken">Shaken</button>
+  <button class="filter-btn" data-filter="coldbrew">Cold Brew</button>
+  <button class="filter-btn" data-filter="espresso">Espresso</button>
+  <button class="filter-btn" data-filter="spirit">Spirit-Forward</button>
+  <button class="filter-btn" data-filter="syrup">House Syrups</button>
+  <button class="filter-btn" data-filter="method">Method</button>
+</div>
+
+<main>
+
+  <!-- ── SPARKLING ── -->
+  <h3 class="section-heading">Sparkling &amp; Tonic</h3>
+  <div class="grid">
+
+    <div class="card" data-category="sparkling">
+      <div class="card-header">
+        <h2>Grapefruit Espresso Tonic</h2>
+        <span class="badge">Sparkling</span>
+      </div>
+      <ul class="ingredients">
+        <li>Double espresso</li>
+        <li>Tonic water</li>
+        <li>Fresh grapefruit juice or zest</li>
+        <li>Ice</li>
+      </ul>
+      <p class="method">Pull espresso over ice. Top with tonic. Finish with a squeeze of grapefruit and an expressed peel.</p>
+    </div>
+
+    <div class="card" data-category="sparkling">
+      <div class="card-header">
+        <h2>Orange Marmalade Espresso Tonic</h2>
+        <span class="badge">Sparkling</span>
+      </div>
+      <ul class="ingredients">
+        <li>Double espresso</li>
+        <li>1 tsp orange marmalade</li>
+        <li>Tonic water</li>
+        <li>Ice</li>
+      </ul>
+      <p class="method">Stir marmalade into the bottom of the glass. Add ice. Pull espresso directly over, then top with tonic. The marmalade melts as you stir.</p>
+    </div>
+
+    <div class="card" data-category="sparkling">
+      <div class="card-header">
+        <h2>AeroPress Tonic</h2>
+        <span class="badge">Sparkling</span>
+      </div>
+      <ul class="ingredients">
+        <li>30g coffee / 85g water (AeroPress concentrate)</li>
+        <li>Tonic water</li>
+        <li>Orange or clementine peel</li>
+        <li>Ice</li>
+      </ul>
+      <p class="method">Brew a super-concentrated AeroPress shot. Pour over ice, top with tonic, garnish with citrus peel. Clean, bright, and approachable.</p>
+      <p class="note">Add a splash of gin if it's been one of those days.</p>
+    </div>
+
+    <div class="card" data-category="sparkling">
+      <div class="card-header">
+        <h2>Pink Grapefruit Cold Brew Soda</h2>
+        <span class="badge">Sparkling</span>
+      </div>
+      <ul class="ingredients">
+        <li>Cold brew concentrate (Ethiopian blend preferred)</li>
+        <li>House grapefruit syrup</li>
+        <li>Topo Chico or sparkling water</li>
+        <li>Ice</li>
+      </ul>
+      <p class="method">Combine cold brew concentrate with grapefruit syrup over ice. Top with Topo Chico. Ratio to taste — start 1:1:2.</p>
+      <p class="note">Works beautifully with a Pink Lady or bright Ethiopian natural.</p>
+    </div>
+
+    <div class="card" data-category="sparkling">
+      <div class="card-header">
+        <h2>Cold Brew Spritz</h2>
+        <span class="badge">Sparkling</span>
+      </div>
+      <ul class="ingredients">
+        <li>Cold brew reduced as a syrup</li>
+        <li>Sparkling water</li>
+        <li>Fresh citrus (lemon, orange, or grapefruit)</li>
+        <li>Ice</li>
+      </ul>
+      <p class="method">Reduce cold brew to a thick syrup concentrate. Use it as you would simple syrup — build over ice with sparkling water and citrus. A clever way to showcase cold brew as an ingredient.</p>
+    </div>
+
+    <div class="card" data-category="sparkling spirit">
+      <div class="card-header">
+        <h2>Dark 'n Stormy</h2>
+        <span class="badge">Sparkling</span>
+      </div>
+      <ul class="ingredients">
+        <li>Iced coffee or cold brew</li>
+        <li>Ginger beer</li>
+        <li>Fresh lime juice</li>
+        <li>Ice</li>
+      </ul>
+      <p class="method">Fill glass with ice. Add coffee, squeeze of lime, and float ginger beer on top. Stir gently. Coffee plays the role of dark rum.</p>
+    </div>
+
+    <div class="card" data-category="sparkling">
+      <div class="card-header">
+        <h2>Lemon-Ginger Cold Brew</h2>
+        <span class="badge">Sparkling</span>
+      </div>
+      <ul class="ingredients">
+        <li>Cold brew concentrate</li>
+        <li>Fresh lemon juice</li>
+        <li>Ginger syrup or fresh ginger</li>
+        <li>Sparkling or still water</li>
+        <li>Ice</li>
+      </ul>
+      <p class="method">Combine cold brew with lemon and ginger over ice. Dilute with water to taste. Bright, clean, and refreshing.</p>
+    </div>
+
+  </div>
+
+  <!-- ── SHAKEN ── -->
+  <h3 class="section-heading">Shaken</h3>
+  <div class="grid">
+
+    <div class="card" data-category="shaken">
+      <div class="card-header">
+        <h2>Shakerato</h2>
+        <span class="badge">Shaken</span>
+      </div>
+      <ul class="ingredients">
+        <li>Double espresso</li>
+        <li>Simple syrup (to taste)</li>
+        <li>Ice (for shaking)</li>
+      </ul>
+      <p class="method">Pull espresso directly into a shaker tin packed with ice. Add syrup, seal, and shake hard for 10–15 seconds. Strain into a chilled coupe or rocks glass. The result is a silky, foam-topped iced espresso.</p>
+    </div>
+
+    <div class="card" data-category="shaken">
+      <div class="card-header">
+        <h2>Blueberry Brown Sugar Shakerato</h2>
+        <span class="badge">Shaken</span>
+      </div>
+      <ul class="ingredients">
+        <li>Double espresso</li>
+        <li>Blueberry syrup</li>
+        <li>Brown sugar simple syrup</li>
+        <li>Ice (for shaking)</li>
+      </ul>
+      <p class="method">Shake espresso over ice with both syrups until frothy. Strain into a glass. The brown sugar rounds out the tartness of the blueberry against the espresso.</p>
+    </div>
+
+    <div class="card" data-category="shaken">
+      <div class="card-header">
+        <h2>Espresso Coquet</h2>
+        <span class="badge">Shaken</span>
+      </div>
+      <ul class="ingredients">
+        <li>Double espresso</li>
+        <li>Coconut syrup or cream of coconut</li>
+        <li>Vanilla syrup</li>
+        <li>Fresh citrus juice</li>
+        <li>Pinch of cinnamon</li>
+        <li>Ice</li>
+      </ul>
+      <p class="method">Combine all ingredients in a shaker with ice. Shake until cold and frothy. Strain over fresh ice. Dust cinnamon on top.</p>
+    </div>
+
+  </div>
+
+  <!-- ── COLD BREW ── -->
+  <h3 class="section-heading">Cold Brew</h3>
+  <div class="grid">
+
+    <div class="card" data-category="coldbrew">
+      <div class="card-header">
+        <h2>Cold Brew, Neat</h2>
+        <span class="badge">Cold Brew</span>
+      </div>
+      <ul class="ingredients">
+        <li>Cold brew concentrate</li>
+        <li>Still or sparkling water</li>
+        <li>Ice</li>
+      </ul>
+      <p class="method">Serve cold brew over ice, diluted 1:1 with water. Let the coffee speak. Best with a single-origin or blend worth showing off on its own.</p>
+    </div>
+
+    <div class="card" data-category="coldbrew">
+      <div class="card-header">
+        <h2>Cold Brew + Coconut Water</h2>
+        <span class="badge">Cold Brew</span>
+      </div>
+      <ul class="ingredients">
+        <li>Cold brew concentrate</li>
+        <li>Coconut water</li>
+        <li>Ice</li>
+      </ul>
+      <p class="method">Sub coconut water for still water as the diluent. Naturally sweet and hydrating — great for a lighter, lower-caffeine pour.</p>
+    </div>
+
+  </div>
+
+  <!-- ── ESPRESSO ── -->
+  <h3 class="section-heading">Espresso</h3>
+  <div class="grid">
+
+    <div class="card" data-category="espresso">
+      <div class="card-header">
+        <h2>Black Honey Americano</h2>
+        <span class="badge">Espresso</span>
+      </div>
+      <ul class="ingredients">
+        <li>Double espresso</li>
+        <li>Hot water</li>
+        <li>Black honey (or dark raw honey)</li>
+      </ul>
+      <p class="method">Dissolve honey in hot water before pulling espresso over. The bitterness of the espresso balances the dark floral sweetness of black honey.</p>
+    </div>
+
+    <div class="card" data-category="espresso">
+      <div class="card-header">
+        <h2>Old Fashioned Espresso</h2>
+        <span class="badge">Espresso</span>
+      </div>
+      <ul class="ingredients">
+        <li>Double espresso</li>
+        <li>Orange bitters</li>
+        <li>Walnut bitters</li>
+        <li>Simple syrup</li>
+        <li>Large ice cube</li>
+      </ul>
+      <p class="method">Stir espresso with both bitters and simple syrup over ice. Serve over a large cube with an expressed orange peel. Coffee as a cocktail — zero alcohol required.</p>
+    </div>
+
+    <div class="card" data-category="espresso">
+      <div class="card-header">
+        <h2>Salted Maple Latte</h2>
+        <span class="badge">Espresso</span>
+      </div>
+      <ul class="ingredients">
+        <li>Double espresso</li>
+        <li>Maple syrup</li>
+        <li>Flaky sea salt</li>
+        <li>Steamed milk</li>
+      </ul>
+      <p class="method">Add maple syrup to the cup, pull espresso, steam milk and pour. Finish with a pinch of flaky salt. The salt cuts the sweetness and lifts the espresso.</p>
+    </div>
+
+    <div class="card" data-category="espresso">
+      <div class="card-header">
+        <h2>Hot Honey Latte</h2>
+        <span class="badge">Espresso</span>
+      </div>
+      <ul class="ingredients">
+        <li>Double espresso</li>
+        <li>Hot honey</li>
+        <li>Steamed milk</li>
+      </ul>
+      <p class="method">Stir hot honey into espresso, then add steamed milk. The heat from the milk blooms the chili notes in the honey against the coffee.</p>
+    </div>
+
+    <div class="card" data-category="espresso">
+      <div class="card-header">
+        <h2>Maple Chai Latte</h2>
+        <span class="badge">Espresso</span>
+      </div>
+      <ul class="ingredients">
+        <li>Double espresso</li>
+        <li>Chai concentrate</li>
+        <li>Maple syrup</li>
+        <li>Steamed milk</li>
+      </ul>
+      <p class="method">Combine espresso and chai concentrate in equal parts, sweeten with maple, and add steamed milk. Warming, spiced, and a natural menu addition for fall and winter.</p>
+    </div>
+
+    <div class="card" data-category="espresso">
+      <div class="card-header">
+        <h2>Orange Zest Espresso</h2>
+        <span class="badge">Espresso</span>
+      </div>
+      <ul class="ingredients">
+        <li>Double espresso</li>
+        <li>Milk + splash of cream</li>
+        <li>Vanilla syrup</li>
+        <li>Fresh orange zest</li>
+        <li>Ground cinnamon</li>
+        <li>Ice</li>
+      </ul>
+      <p class="method">Build over ice: espresso, vanilla, milk and cream. Microplane orange zest over the top and finish with a dusting of cinnamon.</p>
+    </div>
+
+    <div class="card" data-category="espresso">
+      <div class="card-header">
+        <h2>Chocolate Cherry Cortado</h2>
+        <span class="badge">Espresso</span>
+      </div>
+      <ul class="ingredients">
+        <li>Double espresso</li>
+        <li>Equal parts steamed milk</li>
+        <li>Luxardo cherry</li>
+        <li>Chocolate bitters</li>
+      </ul>
+      <p class="method">Pull espresso, add a dash of chocolate bitters, pour cortado-style with steamed milk. Drop a Luxardo cherry in the cup. Dessert in a small glass.</p>
+    </div>
+
+    <div class="card" data-category="espresso">
+      <div class="card-header">
+        <h2>Mocha with Chocolate Bar</h2>
+        <span class="badge">Espresso</span>
+      </div>
+      <ul class="ingredients">
+        <li>Double espresso</li>
+        <li>Good quality chocolate bar (melted or grated)</li>
+        <li>Steamed milk</li>
+      </ul>
+      <p class="method">Melt or grate real chocolate directly into the cup rather than using sauce. Espresso pulls over the melted chocolate, then add steamed milk. The quality of the chocolate matters — use something you'd eat on its own.</p>
+    </div>
+
+  </div>
+
+  <!-- ── SPIRIT-FORWARD ── -->
+  <h3 class="section-heading">Spirit-Forward</h3>
+  <div class="grid">
+
+    <div class="card" data-category="spirit espresso">
+      <div class="card-header">
+        <h2>Mexican Coke Espresso</h2>
+        <span class="badge">Spirit-Forward</span>
+      </div>
+      <ul class="ingredients">
+        <li>Double espresso</li>
+        <li>Mexican Coke (cane sugar)</li>
+        <li>Peychaud's bitters</li>
+        <li>Ice</li>
+      </ul>
+      <p class="method">Pull espresso over ice. Add a few dashes of Peychaud's, then pour Mexican Coke slowly over the back of a spoon to layer. The bitters bridge the coffee and cola.</p>
+    </div>
+
+    <div class="card" data-category="spirit">
+      <div class="card-header">
+        <h2>Mint Julep Iced Coffee</h2>
+        <span class="badge">Spirit-Forward</span>
+      </div>
+      <ul class="ingredients">
+        <li>Strong iced coffee or cold brew</li>
+        <li>Vanilla mint syrup</li>
+        <li>Cream</li>
+        <li>Crushed ice</li>
+      </ul>
+      <p class="method">Build over crushed ice with cold coffee, vanilla mint syrup, and a pour of cream. Serve julep-style with a mint sprig.</p>
+      <p class="note">The Depraved: same drink, sweetened with Maker's Mark instead of syrup.</p>
+    </div>
+
+  </div>
+
+  <!-- ── HOUSE SYRUPS ── -->
+  <h3 class="section-heading">House Syrups &amp; Components</h3>
+  <div class="grid">
+
+    <div class="card component" data-category="syrup">
+      <div class="card-header">
+        <h2>Root Beer Simple Syrup</h2>
+        <span class="badge">Syrup</span>
+      </div>
+      <ul class="ingredients">
+        <li>Sassafras or sarsaparilla bark</li>
+        <li>Warm spices (clove, allspice, star anise)</li>
+        <li>Sugar</li>
+        <li>Water</li>
+      </ul>
+      <p class="method">Simmer spices in water 15 min. Strain, add equal weight sugar, stir to dissolve. Excellent in iced coffee drinks or as a mixer with sparkling water and cold brew.</p>
+    </div>
+
+    <div class="card component" data-category="syrup">
+      <div class="card-header">
+        <h2>Toasted Pecan Simple Syrup</h2>
+        <span class="badge">Syrup</span>
+      </div>
+      <ul class="ingredients">
+        <li>Raw pecans, toasted</li>
+        <li>Sugar</li>
+        <li>Water</li>
+        <li>Pinch of salt</li>
+      </ul>
+      <p class="method">Toast pecans until fragrant. Steep in hot simple syrup 30 min, then strain. Nutty, rich — pairs with espresso drinks, cold brew, or fall lattes.</p>
+    </div>
+
+    <div class="card component" data-category="syrup">
+      <div class="card-header">
+        <h2>Pine Simple Syrup</h2>
+        <span class="badge">Syrup</span>
+      </div>
+      <ul class="ingredients">
+        <li>Fresh pine needles (young tips preferred)</li>
+        <li>Sugar</li>
+        <li>Water</li>
+      </ul>
+      <p class="method">Rinse needles well. Steep in hot 1:1 simple syrup off heat for 20 min. Strain. Resinous and herbal — use sparingly. A few drops transforms a cold brew or americano.</p>
+      <p class="note">Use only pesticide-free pine. Young spring tips have the mildest flavor.</p>
+    </div>
+
+    <div class="card component" data-category="syrup">
+      <div class="card-header">
+        <h2>Grapefruit Syrup</h2>
+        <span class="badge">Syrup</span>
+      </div>
+      <ul class="ingredients">
+        <li>Fresh grapefruit juice and zest</li>
+        <li>Sugar</li>
+        <li>Water</li>
+      </ul>
+      <p class="method">Combine juice, zest, and equal-weight sugar. Warm gently until sugar dissolves — do not boil. Strain. Bright and tart; the base for the Pink Grapefruit Cold Brew Soda.</p>
+    </div>
+
+  </div>
+
+  <!-- ── METHOD ── -->
+  <h3 class="section-heading">Method Notes</h3>
+  <div class="grid">
+
+    <div class="card" data-category="method">
+      <div class="card-header">
+        <h2>Mini AeroPress Jams</h2>
+        <span class="badge">Method</span>
+      </div>
+      <ul class="ingredients">
+        <li>10g coffee</li>
+        <li>160g water (off boil)</li>
+      </ul>
+      <p class="method">A small, quick AeroPress brew — 10g coffee to 160g water. Makes a gentle, full-flavored cup without the intensity of an espresso. A great "booster" format for sampling single origins at events or on bar.</p>
+    </div>
+
+    <div class="card" data-category="method">
+      <div class="card-header">
+        <h2>AeroPress Concentrate (Tonic Base)</h2>
+        <span class="badge">Method</span>
+      </div>
+      <ul class="ingredients">
+        <li>30g coffee</li>
+        <li>85g water (off boil)</li>
+      </ul>
+      <p class="method">Brew a high-ratio AeroPress concentrate. Use as a stand-in for espresso in iced drinks — especially tonic builds. Lower acidity and different extraction character than espresso makes it distinctly its own thing.</p>
+    </div>
+
+    <div class="card" data-category="method">
+      <div class="card-header">
+        <h2>Coffee Soft Serve</h2>
+        <span class="badge">Method</span>
+      </div>
+      <ul class="ingredients">
+        <li>Cold brew concentrate</li>
+        <li>Whole milk or cream</li>
+        <li>Sugar</li>
+      </ul>
+      <p class="method">Blend cold brew concentrate into a custard base and churn or freeze-stir into soft serve. Serve in cups or cones. A high-impact menu item for cafes with the equipment — simple ingredients, memorable execution.</p>
+    </div>
+
+  </div>
+
+</main>
+
+<footer>
+  <p>Smalley Coffee Co. &nbsp;·&nbsp; Wholesale Recipe Guide &nbsp;·&nbsp; <a href="https://smalleycoffee.com">smalleycoffee.com</a></p>
+</footer>
+
+<script>
+  const btns = document.querySelectorAll('.filter-btn');
+  const cards = document.querySelectorAll('.card');
+
+  btns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      btns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const filter = btn.dataset.filter;
+      cards.forEach(card => {
+        if (filter === 'all') {
+          delete card.dataset.hidden;
+        } else {
+          const cats = card.dataset.category || '';
+          if (cats.split(' ').includes(filter)) {
+            delete card.dataset.hidden;
+          } else {
+            card.dataset.hidden = '';
+          }
+        }
+      });
+    });
+  });
+</script>
+
+</body>
+</html>
