@@ -1,39 +1,11 @@
 {{ 'recipes.css' | asset_url | stylesheet_tag }}
 
-{% comment %}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  HOW TO ADD A NEW RECIPE
-  Copy the block below, paste it inside any .recipes-grid,
-  and fill in the fields. That's it.
-
-  CATEGORIES (put one or more in data-category, space-separated):
-    sparkling · shaken · coldbrew · espresso · spirit · syrup · method
-
-  <div class="recipes-card" data-category="CATEGORY">
-    <div class="recipes-card-header">
-      <h2>Recipe Name</h2>
-      <span class="recipes-badge">Badge Label</span>
-    </div>
-    <ul class="recipes-ingredients">
-      <li>2oz ingredient one</li>
-      <li>1oz ingredient two</li>
-      <li>Ice</li>
-    </ul>
-    <p class="recipes-method">Instructions go here.</p>
-    <p class="recipes-note">Optional tip or note — delete this line if not needed.</p>
-  </div>
-
-  For a SYRUP card, add the modifier class:
-    <div class="recipes-card recipes-card--component" data-category="syrup">
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-{% endcomment %}
-
 <div class="recipes-page">
 
   <header class="recipes-header">
     <div class="recipes-wordmark">Smalley Coffee Co.</div>
-    <h1 class="recipes-title">Recipe Guide</h1>
-    <p class="recipes-subtitle">Ideas for your menu — built for wholesale partners. Every recipe is a starting point; adjust ratios and featured coffee to fit your program.</p>
+    <h1 class="recipes-title">{{ section.settings.title }}</h1>
+    <p class="recipes-subtitle">{{ section.settings.subtitle }}</p>
   </header>
 
   <div class="recipes-filter-bar">
@@ -48,454 +20,41 @@
   </div>
 
   <div class="recipes-main">
-
-    <h3 class="recipes-section-heading">Sparkling &amp; Tonic</h3>
     <div class="recipes-grid">
-
-      <div class="recipes-card" data-category="sparkling">
-        <div class="recipes-card-header">
-          <h2>Grapefruit Espresso Tonic</h2>
-          <span class="recipes-badge">Sparkling</span>
+      {% for block in section.blocks %}
+        {% assign is_syrup = false %}
+        {% if block.settings.category == 'syrup' %}
+          {% assign is_syrup = true %}
+        {% endif %}
+        <div class="recipes-card{% if is_syrup %} recipes-card--component{% endif %}"
+             data-category="{{ block.settings.category }}"
+             {{ block.shopify_attributes }}>
+          <div class="recipes-card-header">
+            <h2>{{ block.settings.name }}</h2>
+            <span class="recipes-badge">{{ block.settings.badge }}</span>
+          </div>
+          {% if block.settings.ingredients != blank %}
+            <ul class="recipes-ingredients">
+              {% assign lines = block.settings.ingredients | newline_to_br | split: '<br />' %}
+              {% for line in lines %}
+                {% assign trimmed = line | strip %}
+                {% if trimmed != blank %}
+                  <li>{{ trimmed }}</li>
+                {% endif %}
+              {% endfor %}
+            </ul>
+          {% endif %}
+          {% if block.settings.method != blank %}
+            <p class="recipes-method">{{ block.settings.method }}</p>
+          {% endif %}
+          {% if block.settings.note != blank %}
+            <p class="recipes-note">{{ block.settings.note }}</p>
+          {% endif %}
         </div>
-        <ul class="recipes-ingredients">
-          <li>2oz espresso (double shot)</li>
-          <li>4–5oz tonic water</li>
-          <li>½oz fresh grapefruit juice</li>
-          <li>Grapefruit peel, for garnish</li>
-          <li>Ice</li>
-        </ul>
-        <p class="recipes-method">Pull espresso over ice. Top with tonic. Finish with a squeeze of grapefruit and an expressed peel.</p>
-      </div>
-
-      <div class="recipes-card" data-category="sparkling">
-        <div class="recipes-card-header">
-          <h2>Orange Marmalade Espresso Tonic</h2>
-          <span class="recipes-badge">Sparkling</span>
-        </div>
-        <ul class="recipes-ingredients">
-          <li>2oz espresso (double shot)</li>
-          <li>1 tsp orange marmalade</li>
-          <li>4–5oz tonic water</li>
-          <li>Ice</li>
-        </ul>
-        <p class="recipes-method">Stir marmalade into the bottom of the glass. Add ice. Pull espresso directly over, then top with tonic. The marmalade melts as you stir.</p>
-      </div>
-
-      <div class="recipes-card" data-category="sparkling">
-        <div class="recipes-card-header">
-          <h2>AeroPress Tonic</h2>
-          <span class="recipes-badge">Sparkling</span>
-        </div>
-        <ul class="recipes-ingredients">
-          <li>30g coffee / 85g water (AeroPress concentrate)</li>
-          <li>4–5oz tonic water</li>
-          <li>Orange or clementine peel, for garnish</li>
-          <li>Ice</li>
-        </ul>
-        <p class="recipes-method">Brew a super-concentrated AeroPress shot. Pour over ice, top with tonic, garnish with citrus peel. Clean, bright, and approachable.</p>
-        <p class="recipes-note">Add a splash of gin if it's been one of those days.</p>
-      </div>
-
-      <div class="recipes-card" data-category="sparkling">
-        <div class="recipes-card-header">
-          <h2>Pink Grapefruit Cold Brew Soda</h2>
-          <span class="recipes-badge">Sparkling</span>
-        </div>
-        <ul class="recipes-ingredients">
-          <li>2oz cold brew concentrate (Ethiopian blend preferred)</li>
-          <li>1oz house grapefruit syrup</li>
-          <li>4oz Topo Chico or sparkling water</li>
-          <li>Ice</li>
-        </ul>
-        <p class="recipes-method">Combine cold brew concentrate with grapefruit syrup over ice. Top with Topo Chico and stir gently.</p>
-        <p class="recipes-note">Works beautifully with a Pink Lady or bright Ethiopian natural.</p>
-      </div>
-
-      <div class="recipes-card" data-category="sparkling">
-        <div class="recipes-card-header">
-          <h2>Cold Brew Spritz</h2>
-          <span class="recipes-badge">Sparkling</span>
-        </div>
-        <ul class="recipes-ingredients">
-          <li>1oz cold brew reduced to syrup</li>
-          <li>5oz sparkling water</li>
-          <li>½oz fresh citrus (lemon, orange, or grapefruit)</li>
-          <li>Ice</li>
-        </ul>
-        <p class="recipes-method">Reduce cold brew to a thick syrup concentrate. Use it as you would simple syrup — build over ice with sparkling water and citrus. A clever way to showcase cold brew as an ingredient.</p>
-      </div>
-
-      <div class="recipes-card" data-category="sparkling spirit">
-        <div class="recipes-card-header">
-          <h2>Dark 'n Stormy</h2>
-          <span class="recipes-badge">Sparkling</span>
-        </div>
-        <ul class="recipes-ingredients">
-          <li>4oz cold brew or strong iced coffee</li>
-          <li>3oz ginger beer</li>
-          <li>½oz fresh lime juice</li>
-          <li>Ice</li>
-        </ul>
-        <p class="recipes-method">Fill glass with ice. Add cold brew and lime, then float ginger beer on top by pouring over the back of a spoon. Stir gently before drinking. Coffee plays the role of dark rum.</p>
-      </div>
-
-      <div class="recipes-card" data-category="sparkling">
-        <div class="recipes-card-header">
-          <h2>Lemon-Ginger Cold Brew</h2>
-          <span class="recipes-badge">Sparkling</span>
-        </div>
-        <ul class="recipes-ingredients">
-          <li>3oz cold brew concentrate</li>
-          <li>¾oz fresh lemon juice</li>
-          <li>½oz ginger syrup</li>
-          <li>3oz sparkling or still water</li>
-          <li>Ice</li>
-        </ul>
-        <p class="recipes-method">Combine cold brew, lemon, and ginger syrup over ice. Top with water. Taste and adjust — more lemon for brightness, more ginger for heat.</p>
-      </div>
-
+      {% endfor %}
     </div>
-
-    <h3 class="recipes-section-heading">Shaken</h3>
-    <div class="recipes-grid">
-
-      <div class="recipes-card" data-category="shaken">
-        <div class="recipes-card-header">
-          <h2>Shakerato</h2>
-          <span class="recipes-badge">Shaken</span>
-        </div>
-        <ul class="recipes-ingredients">
-          <li>2oz espresso (double shot)</li>
-          <li>½oz simple syrup</li>
-          <li>Ice (for shaking)</li>
-        </ul>
-        <p class="recipes-method">Pull espresso directly into a shaker tin packed with ice. Add syrup, seal, and shake hard for 12–15 seconds. Strain into a chilled coupe or rocks glass. Silky, foam-topped, and cold.</p>
-      </div>
-
-      <div class="recipes-card" data-category="shaken">
-        <div class="recipes-card-header">
-          <h2>Blueberry Brown Sugar Shakerato</h2>
-          <span class="recipes-badge">Shaken</span>
-        </div>
-        <ul class="recipes-ingredients">
-          <li>2oz espresso (double shot)</li>
-          <li>½oz blueberry syrup</li>
-          <li>½oz brown sugar simple syrup</li>
-          <li>Ice (for shaking)</li>
-        </ul>
-        <p class="recipes-method">Shake espresso over ice with both syrups until frothy, about 12 seconds. Strain into a glass. Brown sugar rounds out the tartness of blueberry against the espresso.</p>
-      </div>
-
-      <div class="recipes-card" data-category="shaken">
-        <div class="recipes-card-header">
-          <h2>Espresso Coquet</h2>
-          <span class="recipes-badge">Shaken</span>
-        </div>
-        <ul class="recipes-ingredients">
-          <li>2oz espresso (double shot)</li>
-          <li>½oz coconut syrup or cream of coconut</li>
-          <li>¼oz vanilla syrup</li>
-          <li>½oz fresh citrus juice</li>
-          <li>Pinch of cinnamon</li>
-          <li>Ice</li>
-        </ul>
-        <p class="recipes-method">Combine all ingredients in a shaker with ice. Shake until cold and frothy. Strain over fresh ice. Dust cinnamon on top.</p>
-      </div>
-
-    </div>
-
-    <h3 class="recipes-section-heading">Cold Brew</h3>
-    <div class="recipes-grid">
-
-      <div class="recipes-card" data-category="coldbrew">
-        <div class="recipes-card-header">
-          <h2>Cold Brew, Neat</h2>
-          <span class="recipes-badge">Cold Brew</span>
-        </div>
-        <ul class="recipes-ingredients">
-          <li>3oz cold brew concentrate</li>
-          <li>3oz still or sparkling water</li>
-          <li>Ice</li>
-        </ul>
-        <p class="recipes-method">Serve cold brew over ice, diluted 1:1 with water. Let the coffee speak. Best with a single-origin or blend worth showing off on its own.</p>
-      </div>
-
-      <div class="recipes-card" data-category="coldbrew">
-        <div class="recipes-card-header">
-          <h2>Cold Brew + Coconut Water</h2>
-          <span class="recipes-badge">Cold Brew</span>
-        </div>
-        <ul class="recipes-ingredients">
-          <li>3oz cold brew concentrate</li>
-          <li>3oz coconut water</li>
-          <li>Ice</li>
-        </ul>
-        <p class="recipes-method">Sub coconut water for still water as the diluent. Naturally sweet and hydrating — great for a lighter pour. The coconut softens the cold brew without covering it.</p>
-      </div>
-
-    </div>
-
-    <h3 class="recipes-section-heading">Espresso</h3>
-    <div class="recipes-grid">
-
-      <div class="recipes-card" data-category="espresso">
-        <div class="recipes-card-header">
-          <h2>Black Honey Americano</h2>
-          <span class="recipes-badge">Espresso</span>
-        </div>
-        <ul class="recipes-ingredients">
-          <li>2oz espresso (double shot)</li>
-          <li>6oz hot water</li>
-          <li>1 tsp black honey (or dark raw honey)</li>
-        </ul>
-        <p class="recipes-method">Dissolve honey in hot water, then pull espresso over. The bitterness of the espresso balances the dark floral sweetness of black honey.</p>
-      </div>
-
-      <div class="recipes-card" data-category="espresso">
-        <div class="recipes-card-header">
-          <h2>Old Fashioned Espresso</h2>
-          <span class="recipes-badge">Espresso</span>
-        </div>
-        <ul class="recipes-ingredients">
-          <li>2oz espresso (double shot)</li>
-          <li>2 dashes orange bitters</li>
-          <li>1 dash walnut bitters</li>
-          <li>¼oz simple syrup</li>
-          <li>Large ice cube</li>
-          <li>Orange peel, for garnish</li>
-        </ul>
-        <p class="recipes-method">Stir espresso with both bitters and simple syrup over ice until cold. Strain over a large cube. Express an orange peel over the top and drop it in. Coffee as a cocktail — zero alcohol required.</p>
-      </div>
-
-      <div class="recipes-card" data-category="espresso">
-        <div class="recipes-card-header">
-          <h2>Salted Maple Latte</h2>
-          <span class="recipes-badge">Espresso</span>
-        </div>
-        <ul class="recipes-ingredients">
-          <li>2oz espresso (double shot)</li>
-          <li>¾oz maple syrup</li>
-          <li>6oz steamed milk</li>
-          <li>Pinch of flaky sea salt</li>
-        </ul>
-        <p class="recipes-method">Add maple syrup to the cup, pull espresso over, then add steamed milk. Finish with a pinch of flaky salt. The salt cuts the sweetness and lifts the espresso.</p>
-      </div>
-
-      <div class="recipes-card" data-category="espresso">
-        <div class="recipes-card-header">
-          <h2>Hot Honey Latte</h2>
-          <span class="recipes-badge">Espresso</span>
-        </div>
-        <ul class="recipes-ingredients">
-          <li>2oz espresso (double shot)</li>
-          <li>1–2 tsp hot honey</li>
-          <li>6oz steamed milk</li>
-        </ul>
-        <p class="recipes-method">Stir hot honey into espresso, then add steamed milk. The heat from the milk blooms the chili notes in the honey against the coffee. Adjust honey to taste — it varies in heat by brand.</p>
-      </div>
-
-      <div class="recipes-card" data-category="espresso">
-        <div class="recipes-card-header">
-          <h2>Maple Chai Latte</h2>
-          <span class="recipes-badge">Espresso</span>
-        </div>
-        <ul class="recipes-ingredients">
-          <li>1oz espresso (single shot)</li>
-          <li>2oz chai concentrate</li>
-          <li>½oz maple syrup</li>
-          <li>5oz steamed milk</li>
-        </ul>
-        <p class="recipes-method">Combine espresso and chai concentrate, sweeten with maple, and add steamed milk. Warming, spiced, and a natural menu addition for fall and winter.</p>
-      </div>
-
-      <div class="recipes-card" data-category="espresso">
-        <div class="recipes-card-header">
-          <h2>Orange Zest Espresso</h2>
-          <span class="recipes-badge">Espresso</span>
-        </div>
-        <ul class="recipes-ingredients">
-          <li>2oz espresso (double shot)</li>
-          <li>4oz whole milk</li>
-          <li>1oz heavy cream</li>
-          <li>½oz vanilla syrup</li>
-          <li>Zest of ¼ orange</li>
-          <li>Pinch of ground cinnamon</li>
-          <li>Ice</li>
-        </ul>
-        <p class="recipes-method">Build over ice: espresso, vanilla syrup, milk, and cream. Microplane orange zest over the top and finish with a dusting of cinnamon.</p>
-      </div>
-
-      <div class="recipes-card" data-category="espresso">
-        <div class="recipes-card-header">
-          <h2>Chocolate Cherry Cortado</h2>
-          <span class="recipes-badge">Espresso</span>
-        </div>
-        <ul class="recipes-ingredients">
-          <li>2oz espresso (double shot)</li>
-          <li>2oz steamed whole milk</li>
-          <li>2 dashes chocolate bitters</li>
-          <li>1 Luxardo cherry</li>
-        </ul>
-        <p class="recipes-method">Pull espresso and add chocolate bitters. Pour steamed milk cortado-style at a 1:1 ratio. Drop a Luxardo cherry into the cup. Dessert in a small glass.</p>
-      </div>
-
-      <div class="recipes-card" data-category="espresso">
-        <div class="recipes-card-header">
-          <h2>Mocha with Chocolate Bar</h2>
-          <span class="recipes-badge">Espresso</span>
-        </div>
-        <ul class="recipes-ingredients">
-          <li>2oz espresso (double shot)</li>
-          <li>15–20g good quality dark chocolate (melted or finely grated)</li>
-          <li>6oz steamed milk</li>
-        </ul>
-        <p class="recipes-method">Melt or grate chocolate directly into the warm cup. Pull espresso over, stir to combine, then add steamed milk. The quality of the chocolate matters — use something you'd eat on its own.</p>
-      </div>
-
-    </div>
-
-    <h3 class="recipes-section-heading">Spirit-Forward</h3>
-    <div class="recipes-grid">
-
-      <div class="recipes-card" data-category="spirit espresso">
-        <div class="recipes-card-header">
-          <h2>Mexican Coke Espresso</h2>
-          <span class="recipes-badge">Spirit-Forward</span>
-        </div>
-        <ul class="recipes-ingredients">
-          <li>2oz espresso (double shot)</li>
-          <li>3 dashes Peychaud's bitters</li>
-          <li>6oz Mexican Coke (cane sugar)</li>
-          <li>Ice</li>
-        </ul>
-        <p class="recipes-method">Pull espresso over ice. Add Peychaud's, then pour Mexican Coke slowly over the back of a spoon to layer. Stir gently before serving. The bitters bridge the coffee and cola.</p>
-      </div>
-
-      <div class="recipes-card" data-category="spirit">
-        <div class="recipes-card-header">
-          <h2>Mint Julep Iced Coffee</h2>
-          <span class="recipes-badge">Spirit-Forward</span>
-        </div>
-        <ul class="recipes-ingredients">
-          <li>4oz strong cold brew or iced coffee</li>
-          <li>¾oz vanilla mint syrup</li>
-          <li>1oz heavy cream</li>
-          <li>Crushed ice</li>
-          <li>Fresh mint sprig, for garnish</li>
-        </ul>
-        <p class="recipes-method">Build over crushed ice with cold coffee, vanilla mint syrup, and a pour of cream. Serve julep-style with a mint sprig.</p>
-        <p class="recipes-note">The Depraved: replace the syrup with ¾oz Maker's Mark.</p>
-      </div>
-
-    </div>
-
-    <h3 class="recipes-section-heading">House Syrups &amp; Components</h3>
-    <div class="recipes-grid">
-
-      <div class="recipes-card recipes-card--component" data-category="syrup">
-        <div class="recipes-card-header">
-          <h2>Root Beer Simple Syrup</h2>
-          <span class="recipes-badge">Syrup</span>
-        </div>
-        <ul class="recipes-ingredients">
-          <li>2 cups water</li>
-          <li>2 tbsp sassafras or sarsaparilla bark</li>
-          <li>3 cloves, 3 allspice berries, 1 star anise</li>
-          <li>2 cups granulated sugar</li>
-        </ul>
-        <p class="recipes-method">Simmer bark and spices in water for 15 min. Strain, return liquid to heat, add sugar and stir until dissolved. Cool before using. Makes about 2 cups syrup. Excellent in iced coffee or mixed with cold brew and sparkling water.</p>
-      </div>
-
-      <div class="recipes-card recipes-card--component" data-category="syrup">
-        <div class="recipes-card-header">
-          <h2>Toasted Pecan Simple Syrup</h2>
-          <span class="recipes-badge">Syrup</span>
-        </div>
-        <ul class="recipes-ingredients">
-          <li>1 cup raw pecan halves</li>
-          <li>1 cup water</li>
-          <li>1 cup granulated sugar</li>
-          <li>Pinch of flaky salt</li>
-        </ul>
-        <p class="recipes-method">Toast pecans at 350°F for 8–10 min until fragrant. Make a 1:1 simple syrup, add pecans off heat, and steep 30 min. Strain and cool. Nutty and rich — pairs well with espresso drinks, cold brew, or fall lattes.</p>
-      </div>
-
-      <div class="recipes-card recipes-card--component" data-category="syrup">
-        <div class="recipes-card-header">
-          <h2>Pine Simple Syrup</h2>
-          <span class="recipes-badge">Syrup</span>
-        </div>
-        <ul class="recipes-ingredients">
-          <li>1 cup water</li>
-          <li>1 cup granulated sugar</li>
-          <li>¼ cup fresh young pine tips (rinsed)</li>
-        </ul>
-        <p class="recipes-method">Make a 1:1 simple syrup. Remove from heat, add pine tips, and steep 20 min — taste as you go, it gets more resinous the longer it steeps. Strain and cool. Use sparingly; a few drops transforms a cold brew or americano.</p>
-        <p class="recipes-note">Use only pesticide-free pine. Young spring tips have the mildest flavor.</p>
-      </div>
-
-      <div class="recipes-card recipes-card--component" data-category="syrup">
-        <div class="recipes-card-header">
-          <h2>Grapefruit Syrup</h2>
-          <span class="recipes-badge">Syrup</span>
-        </div>
-        <ul class="recipes-ingredients">
-          <li>1 cup fresh grapefruit juice (about 2 grapefruits)</li>
-          <li>Zest of 1 grapefruit</li>
-          <li>1 cup granulated sugar</li>
-        </ul>
-        <p class="recipes-method">Combine juice, zest, and sugar in a saucepan. Warm gently over low heat, stirring until sugar fully dissolves — do not boil. Strain, cool, and refrigerate. Bright and tart; the base for the Pink Grapefruit Cold Brew Soda.</p>
-      </div>
-
-    </div>
-
-    <h3 class="recipes-section-heading">Method Notes</h3>
-    <div class="recipes-grid">
-
-      <div class="recipes-card" data-category="method">
-        <div class="recipes-card-header">
-          <h2>Mini AeroPress Jams</h2>
-          <span class="recipes-badge">Method</span>
-        </div>
-        <ul class="recipes-ingredients">
-          <li>10g coffee (medium-fine grind)</li>
-          <li>160g water at 200°F</li>
-          <li>Brew time: ~1:30</li>
-        </ul>
-        <p class="recipes-method">A small, quick AeroPress brew yielding about 5oz of clean, full-flavored coffee without the intensity of espresso. A great "booster" format for sampling single origins at events or on bar — approachable for anyone.</p>
-      </div>
-
-      <div class="recipes-card" data-category="method">
-        <div class="recipes-card-header">
-          <h2>AeroPress Concentrate (Tonic Base)</h2>
-          <span class="recipes-badge">Method</span>
-        </div>
-        <ul class="recipes-ingredients">
-          <li>30g coffee (medium-fine grind)</li>
-          <li>85g water at 200°F</li>
-          <li>Brew time: ~2:00, press slow</li>
-        </ul>
-        <p class="recipes-method">A high-ratio concentrate yielding about 2.5oz. Use as a stand-in for espresso in iced drinks — especially tonic builds. Lower acidity and a different extraction character than espresso makes it distinctly its own thing.</p>
-      </div>
-
-      <div class="recipes-card" data-category="method">
-        <div class="recipes-card-header">
-          <h2>Coffee Soft Serve</h2>
-          <span class="recipes-badge">Method</span>
-        </div>
-        <ul class="recipes-ingredients">
-          <li>1 cup cold brew concentrate</li>
-          <li>2 cups heavy cream</li>
-          <li>½ cup whole milk</li>
-          <li>½ cup granulated sugar</li>
-          <li>Pinch of salt</li>
-        </ul>
-        <p class="recipes-method">Whisk all ingredients until sugar dissolves. Churn in an ice cream maker per manufacturer instructions, or freeze-stir every 30 min for 3 hours for a softer texture. Serve in cups or cones. Simple ingredients, memorable execution.</p>
-      </div>
-
-    </div>
-
   </div>
+
 </div>
 
 <script>
@@ -523,7 +82,71 @@
 {% schema %}
 {
   "name": "Recipe Guide",
-  "settings": [],
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Page Title",
+      "default": "Recipe Guide"
+    },
+    {
+      "type": "textarea",
+      "id": "subtitle",
+      "label": "Subtitle",
+      "default": "Ideas for your menu — built for wholesale partners. Every recipe is a starting point; adjust ratios and featured coffee to fit your program."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "recipe",
+      "name": "Recipe",
+      "settings": [
+        {
+          "type": "text",
+          "id": "name",
+          "label": "Recipe Name"
+        },
+        {
+          "type": "select",
+          "id": "category",
+          "label": "Category",
+          "options": [
+            { "value": "sparkling", "label": "Sparkling" },
+            { "value": "shaken",    "label": "Shaken" },
+            { "value": "coldbrew",  "label": "Cold Brew" },
+            { "value": "espresso",  "label": "Espresso" },
+            { "value": "spirit",    "label": "Spirit-Forward" },
+            { "value": "syrup",     "label": "House Syrup" },
+            { "value": "method",    "label": "Method" }
+          ],
+          "default": "espresso"
+        },
+        {
+          "type": "text",
+          "id": "badge",
+          "label": "Badge Label",
+          "info": "Short label shown on the card (e.g. Sparkling, Espresso, Syrup)"
+        },
+        {
+          "type": "textarea",
+          "id": "ingredients",
+          "label": "Ingredients",
+          "info": "One ingredient per line"
+        },
+        {
+          "type": "textarea",
+          "id": "method",
+          "label": "Method"
+        },
+        {
+          "type": "text",
+          "id": "note",
+          "label": "Note (optional)",
+          "info": "Tip, variation, or extra detail — leave blank to hide"
+        }
+      ]
+    }
+  ],
   "presets": [
     {
       "name": "Recipe Guide"
