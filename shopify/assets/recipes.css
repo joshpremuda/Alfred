@@ -124,7 +124,6 @@
 }
 
 .recipes-card--component {
-  background: var(--rc-bg);
   border-style: dashed;
 }
 
