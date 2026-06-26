@@ -1,0 +1,9 @@
+{
+  "sections": {
+    "main": {
+      "type": "recipes",
+      "settings": {}
+    }
+  },
+  "order": ["main"]
+}
