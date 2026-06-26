@@ -1,0 +1,200 @@
+/* ── Smalley Coffee — Recipe Guide ─────────────────────────────── */
+
+.recipes-page {
+  --rc-bg: #1a1410;
+  --rc-surface: #241e18;
+  --rc-border: #3a2f24;
+  --rc-accent: #c8973a;
+  --rc-accent-muted: #8a6425;
+  --rc-text: #e8ddd0;
+  --rc-muted: #9a8878;
+  --rc-tag-bg: #2e241b;
+  --rc-radius: 6px;
+  background: var(--rc-bg);
+  color: var(--rc-text);
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+/* ── Header ── */
+.recipes-header {
+  border-bottom: 1px solid var(--rc-border);
+  padding: 48px 32px 40px;
+  text-align: center;
+}
+
+.recipes-wordmark {
+  font-size: 12px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--rc-accent);
+  margin-bottom: 16px;
+}
+
+.recipes-title {
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: normal;
+  color: var(--rc-text);
+  line-height: 1.2;
+  margin-bottom: 12px;
+}
+
+.recipes-subtitle {
+  color: var(--rc-muted);
+  font-size: 14px;
+  max-width: 520px;
+  margin: 0 auto;
+  letter-spacing: 0.02em;
+}
+
+/* ── Filter bar ── */
+.recipes-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  padding: 28px 32px;
+  border-bottom: 1px solid var(--rc-border);
+}
+
+.recipes-filter-btn {
+  background: var(--rc-tag-bg);
+  border: 1px solid var(--rc-border);
+  border-radius: 99px;
+  color: var(--rc-muted);
+  cursor: pointer;
+  font-size: 12px;
+  font-family: inherit;
+  letter-spacing: 0.08em;
+  padding: 6px 16px;
+  text-transform: uppercase;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.recipes-filter-btn:hover,
+.recipes-filter-btn.active {
+  background: var(--rc-accent);
+  border-color: var(--rc-accent);
+  color: #1a1410;
+}
+
+/* ── Main ── */
+.recipes-main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 24px 80px;
+}
+
+.recipes-section-heading {
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--rc-accent-muted);
+  margin: 48px 0 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--rc-border);
+  font-weight: normal;
+}
+
+.recipes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+/* ── Card ── */
+.recipes-card {
+  background: var(--rc-surface);
+  border: 1px solid var(--rc-border);
+  border-radius: var(--rc-radius);
+  padding: 24px;
+  transition: border-color 0.15s;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.recipes-card:hover {
+  border-color: var(--rc-accent-muted);
+}
+
+.recipes-card--component {
+  border-style: dashed;
+}
+
+.recipes-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.recipes-card h2 {
+  font-size: 1.05rem;
+  font-weight: normal;
+  color: var(--rc-text);
+  line-height: 1.3;
+  margin: 0;
+}
+
+.recipes-badge {
+  flex-shrink: 0;
+  background: var(--rc-tag-bg);
+  border: 1px solid var(--rc-border);
+  border-radius: 4px;
+  color: var(--rc-accent);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  padding: 3px 8px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.recipes-ingredients {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.recipes-ingredients li {
+  color: var(--rc-muted);
+  font-size: 13px;
+  padding-left: 14px;
+  position: relative;
+}
+
+.recipes-ingredients li::before {
+  content: '—';
+  position: absolute;
+  left: 0;
+  color: var(--rc-border);
+}
+
+.recipes-method {
+  color: var(--rc-text);
+  font-size: 13.5px;
+  line-height: 1.65;
+  border-top: 1px solid var(--rc-border);
+  padding-top: 12px;
+  margin: 0;
+}
+
+.recipes-note {
+  font-size: 12px;
+  color: var(--rc-accent);
+  font-style: italic;
+  border-top: 1px solid var(--rc-border);
+  padding-top: 10px;
+  margin: 0;
+}
+
+@media (max-width: 600px) {
+  .recipes-header { padding: 32px 20px 28px; }
+  .recipes-filter-bar { padding: 20px 16px; }
+  .recipes-main { padding: 24px 16px 60px; }
+}
