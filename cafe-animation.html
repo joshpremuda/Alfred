@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grounds for Living — Cafe</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #f5f0e8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    font-family: 'Georgia', serif;
+  }
+
+  .scene {
+    position: relative;
+    width: 600px;
+    height: 520px;
+    background: #fff;
+    border: 3px solid #111;
+    overflow: hidden;
+    box-shadow: 8px 8px 0 #111;
+  }
+
+  /* ── BACKGROUND ELEMENTS ── */
+  .wall { position: absolute; inset: 0; background: #fff; }
+
+  .menu-board {
+    position: absolute;
+    top: 10px; right: 20px;
+    width: 90px; height: 130px;
+    background: #111;
+    border-radius: 4px;
+    border: 3px solid #111;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px 6px;
+    gap: 4px;
+  }
+  .menu-title {
+    color: #fff;
+    font-size: 11px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    border-bottom: 1px solid #fff;
+    width: 100%;
+    text-align: center;
+    padding-bottom: 4px;
+  }
+  .menu-line {
+    width: 70%;
+    height: 2px;
+    background: #fff;
+    opacity: 0.5;
+    border-radius: 1px;
+  }
+
+  /* ── COUNTER / BAR ── */
+  .counter {
+    position: absolute;
+    bottom: 90px; left: 0;
+    width: 260px; height: 140px;
+    background: #e8e0d0;
+    border-top: 4px solid #111;
+    border-right: 4px solid #111;
+  }
+  .counter-front {
+    position: absolute;
+    bottom: 0; left: 0;
+    width: 260px; height: 90px;
+    background: #d4c8b0;
+    border-top: 4px solid #111;
+    border-right: 4px solid #111;
+  }
+  .display-case {
+    position: absolute;
+    bottom: 90px; left: 100px;
+    width: 160px; height: 80px;
+    background: #f0ece0;
+    border: 3px solid #111;
+    border-radius: 4px 4px 0 0;
+  }
+  .display-glass {
+    position: absolute;
+    top: 5px; left: 5px; right: 5px; bottom: 5px;
+    border: 1px solid #aaa;
+    border-radius: 2px;
+    background: rgba(200,220,255,0.15);
+  }
+  /* croissant drawings inside case */
+  .croissant {
+    position: absolute;
+    width: 28px; height: 14px;
+    border: 2px solid #111;
+    border-radius: 50% 50% 0 0;
+    bottom: 12px;
+  }
+  .croissant:nth-child(1) { left: 10px; }
+  .croissant:nth-child(2) { left: 44px; }
+  .croissant:nth-child(3) { left: 78px; }
+
+  /* ── ESPRESSO MACHINE ── */
+  .machine-body {
+    position: absolute;
+    bottom: 215px; left: 20px;
+    width: 90px; height: 80px;
+    background: #e8e0d0;
+    border: 3px solid #111;
+    border-radius: 6px;
+  }
+  .machine-top {
+    position: absolute;
+    bottom: 295px; left: 25px;
+    width: 80px; height: 20px;
+    background: #111;
+    border-radius: 4px 4px 0 0;
+  }
+  .machine-detail {
+    position: absolute;
+    top: 10px; left: 10px;
+    width: 30px; height: 30px;
+    border: 2px solid #111;
+    border-radius: 50%;
+  }
+  .portafilter {
+    position: absolute;
+    bottom: 195px; left: 45px;
+    width: 20px; height: 25px;
+    background: #111;
+    border-radius: 0 0 4px 4px;
+  }
+
+  /* ── STEAM from machine ── */
+  .steam-container {
+    position: absolute;
+    bottom: 315px; left: 30px;
+    width: 60px; height: 60px;
+    pointer-events: none;
+  }
+  .steam-wisp {
+    position: absolute;
+    bottom: 0;
+    width: 3px;
+    background: linear-gradient(to top, rgba(0,0,0,0.3), transparent);
+    border-radius: 2px;
+    transform-origin: bottom center;
+    animation: steamRise 2.5s ease-in infinite;
+  }
+  .steam-wisp:nth-child(1) { left: 10px; height: 30px; animation-delay: 0s; }
+  .steam-wisp:nth-child(2) { left: 25px; height: 38px; animation-delay: 0.6s; }
+  .steam-wisp:nth-child(3) { left: 40px; height: 28px; animation-delay: 1.2s; }
+
+  @keyframes steamRise {
+    0%   { transform: scaleX(1) translateY(0); opacity: 0.7; }
+    40%  { transform: scaleX(1.4) translateY(-10px); opacity: 0.5; }
+    80%  { transform: scaleX(0.8) translateY(-22px); opacity: 0.2; }
+    100% { transform: scaleX(1.2) translateY(-30px); opacity: 0; }
+  }
+
+  /* ── GRINDER ── */
+  .grinder {
+    position: absolute;
+    bottom: 215px; left: -10px;
+    width: 50px; height: 90px;
+    background: #ddd;
+    border: 3px solid #111;
+    border-radius: 4px;
+    overflow: visible;
+  }
+  .grinder-top {
+    position: absolute;
+    top: -20px; left: 5px;
+    width: 30px; height: 24px;
+    background: #111;
+    border-radius: 4px 4px 0 0;
+  }
+
+  /* ── BARISTA ── */
+  .barista {
+    position: absolute;
+    bottom: 90px; left: 30px;
+  }
+  /* body */
+  .barista-torso {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 50px; height: 80px;
+    background: #fff;
+    border: 3px solid #111;
+    border-radius: 6px 6px 0 0;
+  }
+  .apron {
+    position: absolute;
+    bottom: 5px; left: 8px;
+    width: 34px; height: 65px;
+    background: #e8e0d0;
+    border: 2px solid #111;
+    border-radius: 4px;
+  }
+  /* head */
+  .barista-head {
+    position: absolute;
+    bottom: 77px; left: 5px;
+    width: 40px; height: 44px;
+    background: #fff;
+    border: 3px solid #111;
+    border-radius: 50% 50% 40% 40%;
+  }
+  .barista-hair {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 14px;
+    background: #111;
+    border-radius: 50% 50% 0 0;
+  }
+  .barista-eye-l, .barista-eye-r {
+    position: absolute;
+    top: 16px;
+    width: 5px; height: 5px;
+    background: #111;
+    border-radius: 50%;
+  }
+  .barista-eye-l { left: 10px; }
+  .barista-eye-r { right: 10px; }
+  .barista-smile {
+    position: absolute;
+    bottom: 8px; left: 10px; right: 10px;
+    height: 6px;
+    border-bottom: 2px solid #111;
+    border-radius: 0 0 10px 10px;
+  }
+  /* arm — animated pulling lever */
+  .barista-arm {
+    position: absolute;
+    bottom: 55px; left: 46px;
+    width: 40px; height: 12px;
+    background: #fff;
+    border: 3px solid #111;
+    border-radius: 6px;
+    transform-origin: left center;
+    animation: pullArm 2s ease-in-out infinite;
+  }
+  @keyframes pullArm {
+    0%, 100% { transform: rotate(-10deg); }
+    50%       { transform: rotate(15deg); }
+  }
+
+  /* ── TABLE + COUPLE ── */
+  .table {
+    position: absolute;
+    bottom: 90px; left: 280px;
+    width: 110px; height: 10px;
+    background: #fff;
+    border: 3px solid #111;
+    border-radius: 50%;
+  }
+  .table-leg {
+    position: absolute;
+    bottom: 0; left: 50px;
+    width: 10px; height: 90px;
+    background: #111;
+  }
+
+  /* seated customer (woman) */
+  .customer-f {
+    position: absolute;
+    bottom: 95px; left: 330px;
+  }
+  .cf-torso {
+    position: absolute;
+    bottom: 0; left: 0;
+    width: 44px; height: 65px;
+    background: #111;
+    border: 3px solid #111;
+    border-radius: 6px 6px 0 0;
+  }
+  .cf-head {
+    position: absolute;
+    bottom: 62px; left: 2px;
+    width: 38px; height: 42px;
+    background: #fff;
+    border: 3px solid #111;
+    border-radius: 50%;
+  }
+  .cf-hair {
+    position: absolute;
+    top: -2px; left: -4px; right: -4px;
+    height: 28px;
+    background: #111;
+    border-radius: 50% 50% 0 0;
+  }
+  .cf-eye-l, .cf-eye-r {
+    position: absolute;
+    top: 16px;
+    width: 4px; height: 4px;
+    background: #111;
+    border-radius: 50%;
+  }
+  .cf-eye-l { left: 8px; }
+  .cf-eye-r { right: 8px; }
+  /* cup */
+  .table-cup {
+    position: absolute;
+    bottom: 100px; left: 296px;
+    width: 18px; height: 16px;
+    background: #fff;
+    border: 2px solid #111;
+    border-radius: 0 0 4px 4px;
+  }
+  .table-saucer {
+    position: absolute;
+    bottom: 98px; left: 292px;
+    width: 26px; height: 5px;
+    background: #fff;
+    border: 2px solid #111;
+    border-radius: 50%;
+  }
+  /* steam from cup */
+  .cup-steam {
+    position: absolute;
+    bottom: 116px; left: 298px;
+    width: 2px; height: 14px;
+    background: linear-gradient(to top, rgba(0,0,0,0.3), transparent);
+    border-radius: 2px;
+    animation: steamRise 2s ease-in infinite;
+  }
+  .cup-steam-2 {
+    position: absolute;
+    bottom: 116px; left: 305px;
+    width: 2px; height: 10px;
+    background: linear-gradient(to top, rgba(0,0,0,0.3), transparent);
+    border-radius: 2px;
+    animation: steamRise 2s ease-in infinite 0.7s;
+  }
+
+  /* seated customer (man with cap) */
+  .customer-m {
+    position: absolute;
+    bottom: 60px; left: 240px;
+  }
+  .cm-torso {
+    position: absolute;
+    bottom: 0; left: 0;
+    width: 48px; height: 60px;
+    background: #fff;
+    border: 3px solid #111;
+    border-radius: 6px 6px 0 0;
+  }
+  .cm-head {
+    position: absolute;
+    bottom: 57px; left: 2px;
+    width: 42px; height: 42px;
+    background: #fff;
+    border: 3px solid #111;
+    border-radius: 50%;
+  }
+  .cm-cap-brim {
+    position: absolute;
+    top: -4px; left: -6px; right: -6px;
+    height: 16px;
+    background: #111;
+    border-radius: 4px 4px 0 0;
+  }
+  .cm-cap-bill {
+    position: absolute;
+    top: 10px; left: -12px;
+    width: 18px; height: 6px;
+    background: #111;
+    border-radius: 4px 0 0 4px;
+  }
+  .cm-eye-l, .cm-eye-r {
+    position: absolute;
+    top: 18px;
+    width: 5px; height: 5px;
+    background: #111;
+    border-radius: 50%;
+  }
+  .cm-eye-l { left: 9px; }
+  .cm-eye-r { right: 9px; }
+  .cm-smile {
+    position: absolute;
+    bottom: 9px; left: 9px; right: 9px;
+    height: 6px;
+    border-bottom: 2px solid #111;
+    border-radius: 0 0 8px 8px;
+  }
+  /* man's arm lifting cup */
+  .cm-arm {
+    position: absolute;
+    bottom: 90px; left: 255px;
+    width: 30px; height: 10px;
+    background: #fff;
+    border: 3px solid #111;
+    border-radius: 6px;
+    transform-origin: left bottom;
+    animation: sip 3s ease-in-out infinite;
+  }
+  @keyframes sip {
+    0%, 70%, 100% { transform: rotate(-20deg); }
+    40%            { transform: rotate(-50deg); }
+  }
+
+  /* ── BACKGROUND STAFF ── */
+  .staff-bg {
+    position: absolute;
+    bottom: 120px; right: 120px;
+  }
+  .sb-torso {
+    position: absolute;
+    bottom: 0; left: 0;
+    width: 40px; height: 70px;
+    background: #fff;
+    border: 2px solid #111;
+    border-radius: 5px 5px 0 0;
+    opacity: 0.7;
+  }
+  .sb-head {
+    position: absolute;
+    bottom: 67px; left: 4px;
+    width: 32px; height: 36px;
+    background: #fff;
+    border: 2px solid #111;
+    border-radius: 50%;
+    opacity: 0.7;
+  }
+  .sb-hair {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 12px;
+    background: #111;
+    border-radius: 50% 50% 0 0;
+    opacity: 0.7;
+  }
+  /* wave arm */
+  .sb-arm {
+    position: absolute;
+    bottom: 155px; right: 115px;
+    width: 28px; height: 8px;
+    background: #fff;
+    border: 2px solid #111;
+    border-radius: 4px;
+    transform-origin: right center;
+    animation: wave 2s ease-in-out infinite;
+    opacity: 0.7;
+  }
+  @keyframes wave {
+    0%, 100% { transform: rotate(-30deg); }
+    50%       { transform: rotate(10deg); }
+  }
+
+  /* ── BOTTLES on shelf ── */
+  .shelf {
+    position: absolute;
+    top: 80px; left: -10px;
+    width: 140px; height: 6px;
+    background: #111;
+    border-radius: 2px;
+  }
+  .bottle {
+    position: absolute;
+    bottom: 6px;
+    width: 14px;
+    background: #111;
+    border-radius: 3px 3px 0 0;
+  }
+  .bottle:nth-child(1) { left: 5px;  height: 55px; }
+  .bottle:nth-child(2) { left: 22px; height: 45px; }
+  .bottle:nth-child(3) { left: 39px; height: 60px; }
+  .bottle:nth-child(4) { left: 56px; height: 42px; }
+  .bottle:nth-child(5) { left: 73px; height: 52px; }
+
+  /* ── FLOOR ── */
+  .floor {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 90px;
+    background: #e8e0d0;
+    border-top: 3px solid #111;
+  }
+
+  /* ── TITLE ── */
+  .title-bar {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 50px;
+    background: #111;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .title-text {
+    color: #fff;
+    font-size: 18px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+
+  /* ── BLINK eyes ── */
+  .barista-eye-l, .barista-eye-r,
+  .cf-eye-l, .cf-eye-r,
+  .cm-eye-l, .cm-eye-r {
+    animation: blink 4s ease-in-out infinite;
+  }
+  .cf-eye-l, .cf-eye-r { animation-delay: 1.5s; }
+  .cm-eye-l, .cm-eye-r { animation-delay: 0.8s; }
+
+  @keyframes blink {
+    0%, 90%, 100% { transform: scaleY(1); }
+    95%            { transform: scaleY(0.1); }
+  }
+
+  /* ── AMBIENT BODY BOB ── */
+  .barista { animation: bobBarista 3s ease-in-out infinite; }
+  @keyframes bobBarista {
+    0%, 100% { transform: translateY(0); }
+    50%       { transform: translateY(-3px); }
+  }
+
+  .customer-f { animation: bobF 4s ease-in-out infinite 0.5s; }
+  @keyframes bobF {
+    0%, 100% { transform: translateY(0); }
+    50%       { transform: translateY(-2px); }
+  }
+</style>
+</head>
+<body>
+
+<div class="scene">
+
+  <!-- Title bar -->
+  <div class="title-bar">
+    <span class="title-text">Grounds for Living</span>
+  </div>
+
+  <!-- Shelf + bottles -->
+  <div class="shelf">
+    <div class="bottle"></div>
+    <div class="bottle"></div>
+    <div class="bottle"></div>
+    <div class="bottle"></div>
+    <div class="bottle"></div>
+  </div>
+
+  <!-- Menu board -->
+  <div class="menu-board">
+    <div class="menu-title">Menu</div>
+    <div class="menu-line"></div>
+    <div class="menu-line"></div>
+    <div class="menu-line"></div>
+    <div class="menu-line"></div>
+    <div class="menu-line"></div>
+    <div class="menu-line"></div>
+  </div>
+
+  <!-- Espresso machine steam -->
+  <div class="steam-container">
+    <div class="steam-wisp"></div>
+    <div class="steam-wisp"></div>
+    <div class="steam-wisp"></div>
+  </div>
+
+  <!-- Machine -->
+  <div class="machine-top"></div>
+  <div class="machine-body">
+    <div class="machine-detail"></div>
+  </div>
+  <div class="portafilter"></div>
+
+  <!-- Grinder -->
+  <div class="grinder">
+    <div class="grinder-top"></div>
+  </div>
+
+  <!-- Counter -->
+  <div class="counter"></div>
+  <div class="display-case">
+    <div class="display-glass">
+      <div class="croissant"></div>
+      <div class="croissant"></div>
+      <div class="croissant"></div>
+    </div>
+  </div>
+  <div class="counter-front"></div>
+
+  <!-- Floor -->
+  <div class="floor"></div>
+
+  <!-- Table -->
+  <div class="table-leg"></div>
+  <div class="table"></div>
+
+  <!-- Cup on table -->
+  <div class="cup-steam"></div>
+  <div class="cup-steam-2"></div>
+  <div class="table-cup"></div>
+  <div class="table-saucer"></div>
+
+  <!-- Background staff -->
+  <div class="staff-bg">
+    <div class="sb-torso"></div>
+    <div class="sb-head">
+      <div class="sb-hair"></div>
+    </div>
+  </div>
+  <div class="sb-arm"></div>
+
+  <!-- Seated woman -->
+  <div class="customer-f">
+    <div class="cf-torso"></div>
+    <div class="cf-head">
+      <div class="cf-hair"></div>
+      <div class="cf-eye-l"></div>
+      <div class="cf-eye-r"></div>
+    </div>
+  </div>
+
+  <!-- Seated man -->
+  <div class="customer-m">
+    <div class="cm-torso"></div>
+    <div class="cm-head">
+      <div class="cm-cap-brim"></div>
+      <div class="cm-cap-bill"></div>
+      <div class="cm-eye-l"></div>
+      <div class="cm-eye-r"></div>
+      <div class="cm-smile"></div>
+    </div>
+  </div>
+  <div class="cm-arm"></div>
+
+  <!-- Barista -->
+  <div class="barista">
+    <div class="apron"></div>
+    <div class="barista-torso"></div>
+    <div class="barista-head">
+      <div class="barista-hair"></div>
+      <div class="barista-eye-l"></div>
+      <div class="barista-eye-r"></div>
+      <div class="barista-smile"></div>
+    </div>
+  </div>
+  <div class="barista-arm"></div>
+
+</div>
+
+</body>
+</html>
