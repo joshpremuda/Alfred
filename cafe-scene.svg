@@ -1,0 +1,404 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600" style="background:#fff;font-family:Georgia,serif;">
+  <defs>
+    <style>
+      /* Steam wisps */
+      .steam { animation: steamRise 2.4s ease-in infinite; transform-origin: bottom center; }
+      .steam2 { animation: steamRise 2.4s ease-in infinite 0.7s; transform-origin: bottom center; }
+      .steam3 { animation: steamRise 2.4s ease-in infinite 1.4s; transform-origin: bottom center; }
+      .cup-steam  { animation: steamRise 2s ease-in infinite 0.3s; transform-origin: bottom center; }
+      .cup-steam2 { animation: steamRise 2s ease-in infinite 1s; transform-origin: bottom center; }
+
+      @keyframes steamRise {
+        0%   { transform: translateY(0) scaleX(1);   opacity: 0.8; }
+        40%  { transform: translateY(-14px) scaleX(1.5); opacity: 0.5; }
+        80%  { transform: translateY(-26px) scaleX(0.8); opacity: 0.2; }
+        100% { transform: translateY(-36px) scaleX(1.2); opacity: 0; }
+      }
+
+      /* Barista arm pulling lever */
+      .barista-arm {
+        transform-origin: 195px 295px;
+        animation: pullArm 2.2s ease-in-out infinite;
+      }
+      @keyframes pullArm {
+        0%, 100% { transform: rotate(-8deg); }
+        50%       { transform: rotate(18deg); }
+      }
+
+      /* Man sipping cup */
+      .man-arm {
+        transform-origin: 410px 390px;
+        animation: sipArm 3.5s ease-in-out infinite;
+      }
+      @keyframes sipArm {
+        0%, 60%, 100% { transform: rotate(0deg); }
+        35%            { transform: rotate(-28deg); }
+      }
+
+      /* Background staffer wave */
+      .staff-arm {
+        transform-origin: 618px 280px;
+        animation: wave 2s ease-in-out infinite;
+      }
+      @keyframes wave {
+        0%, 100% { transform: rotate(-25deg); }
+        50%       { transform: rotate(15deg); }
+      }
+
+      /* Subtle blink */
+      .eye { animation: blink 4s ease-in-out infinite; transform-origin: center; }
+      .eye2 { animation: blink 4s ease-in-out infinite 1.8s; transform-origin: center; }
+      .eye3 { animation: blink 4s ease-in-out infinite 0.9s; transform-origin: center; }
+
+      @keyframes blink {
+        0%, 88%, 100% { transform: scaleY(1); }
+        93%            { transform: scaleY(0.08); }
+      }
+
+      /* Grinder spin */
+      .grinder-wheel {
+        transform-origin: 108px 188px;
+        animation: grind 1.8s linear infinite;
+      }
+      @keyframes grind {
+        from { transform: rotate(0deg); }
+        to   { transform: rotate(360deg); }
+      }
+
+      /* Ambient bob — barista */
+      .barista-group {
+        animation: bob 3s ease-in-out infinite;
+      }
+      @keyframes bob {
+        0%, 100% { transform: translateY(0); }
+        50%       { transform: translateY(-4px); }
+      }
+
+      /* Woman gentle sway */
+      .woman-group {
+        transform-origin: 530px 520px;
+        animation: sway 5s ease-in-out infinite 1s;
+      }
+      @keyframes sway {
+        0%, 100% { transform: rotate(0deg); }
+        50%       { transform: rotate(1.5deg); }
+      }
+    </style>
+
+    <!-- Clip for scene border -->
+    <clipPath id="scene-clip">
+      <rect width="800" height="600" rx="6"/>
+    </clipPath>
+  </defs>
+
+  <g clip-path="url(#scene-clip)">
+
+  <!-- ═══════════════════════════════════════════
+       BACKGROUND
+  ════════════════════════════════════════════ -->
+  <rect width="800" height="600" fill="#fff"/>
+
+  <!-- Floor -->
+  <rect x="0" y="490" width="800" height="110" fill="#f0ece0"/>
+  <line x1="0" y1="490" x2="800" y2="490" stroke="#111" stroke-width="3"/>
+
+  <!-- Back wall line -->
+  <line x1="0" y1="320" x2="800" y2="320" stroke="#ddd" stroke-width="1.5"/>
+
+  <!-- ═══════════════════════════════════════════
+       SHELF + BOTTLES (top left)
+  ════════════════════════════════════════════ -->
+  <rect x="0" y="130" width="230" height="8" fill="#c8b89a" rx="2" stroke="#111" stroke-width="2.5"/>
+  <!-- bottle 1 tall -->
+  <rect x="10" y="70" width="22" height="60" rx="4" fill="#111"/>
+  <rect x="17" y="62" width="8" height="12" rx="2" fill="#111"/>
+  <!-- bottle 2 medium -->
+  <rect x="40" y="85" width="20" height="45" rx="4" fill="#555"/>
+  <rect x="46" y="78" width="8" height="10" rx="2" fill="#555"/>
+  <!-- bottle 3 tallest -->
+  <rect x="68" y="62" width="22" height="68" rx="4" fill="#111"/>
+  <rect x="75" y="54" width="8" height="12" rx="2" fill="#111"/>
+  <!-- bottle 4 short -->
+  <rect x="98" y="94" width="20" height="36" rx="3" fill="#888"/>
+  <rect x="104" y="88" width="8" height="9" rx="2" fill="#888"/>
+  <!-- bottle 5 -->
+  <rect x="126" y="78" width="20" height="52" rx="4" fill="#333"/>
+  <rect x="132" y="71" width="8" height="10" rx="2" fill="#333"/>
+  <!-- bottle 6 -->
+  <rect x="154" y="90" width="18" height="40" rx="3" fill="#666"/>
+  <rect x="159" y="84" width="8" height="9" rx="2" fill="#666"/>
+  <!-- bottle 7 -->
+  <rect x="178" y="75" width="22" height="55" rx="4" fill="#111"/>
+  <rect x="185" y="67" width="8" height="12" rx="2" fill="#111"/>
+
+  <!-- ═══════════════════════════════════════════
+       MENU BOARD (right wall)
+  ════════════════════════════════════════════ -->
+  <rect x="640" y="60" width="140" height="200" rx="6" fill="#1a1a1a" stroke="#111" stroke-width="3"/>
+  <rect x="650" y="70" width="120" height="180" rx="4" fill="#222"/>
+  <!-- chalk text lines -->
+  <text x="710" y="98" text-anchor="middle" fill="#fff" font-size="14" font-weight="bold" letter-spacing="1">MENU</text>
+  <line x1="658" y1="106" x2="762" y2="106" stroke="#fff" stroke-width="1" opacity="0.6"/>
+  <text x="667" y="124" fill="#fff" font-size="9" opacity="0.85">Espresso</text>
+  <text x="745" y="124" fill="#fff" font-size="9" opacity="0.85">$3</text>
+  <text x="667" y="140" fill="#fff" font-size="9" opacity="0.85">Cortado</text>
+  <text x="745" y="140" fill="#fff" font-size="9" opacity="0.85">$4</text>
+  <text x="667" y="156" fill="#fff" font-size="9" opacity="0.85">Cappuccino</text>
+  <text x="745" y="156" fill="#fff" font-size="9" opacity="0.85">$5</text>
+  <text x="667" y="172" fill="#fff" font-size="9" opacity="0.85">Latte</text>
+  <text x="745" y="172" fill="#fff" font-size="9" opacity="0.85">$5</text>
+  <text x="667" y="188" fill="#fff" font-size="9" opacity="0.85">Cold Brew</text>
+  <text x="745" y="188" fill="#fff" font-size="9" opacity="0.85">$5</text>
+  <line x1="658" y1="198" x2="762" y2="198" stroke="#fff" stroke-width="1" opacity="0.4"/>
+  <text x="667" y="214" fill="#fff" font-size="9" opacity="0.7" font-style="italic">Smalley Coffee</text>
+
+  <!-- ═══════════════════════════════════════════
+       COUNTER
+  ════════════════════════════════════════════ -->
+  <rect x="0" y="360" width="330" height="130" fill="#e8dfc8" stroke="#111" stroke-width="3"/>
+  <rect x="0" y="460" width="330" height="30" fill="#d4c8a8" stroke="#111" stroke-width="2"/>
+
+  <!-- Display case (pastry case) -->
+  <rect x="130" y="370" width="200" height="90" rx="6" fill="#f5f2ea" stroke="#111" stroke-width="2.5"/>
+  <rect x="136" y="376" width="188" height="78" rx="4" fill="rgba(180,210,240,0.12)" stroke="#bbb" stroke-width="1"/>
+  <!-- croissants -->
+  <ellipse cx="165" cy="435" rx="20" ry="10" fill="none" stroke="#111" stroke-width="2"/>
+  <path d="M148,435 Q165,418 182,435" fill="none" stroke="#111" stroke-width="2"/>
+  <ellipse cx="215" cy="435" rx="20" ry="10" fill="none" stroke="#111" stroke-width="2"/>
+  <path d="M198,435 Q215,418 232,435" fill="none" stroke="#111" stroke-width="2"/>
+  <ellipse cx="265" cy="435" rx="18" ry="9" fill="none" stroke="#111" stroke-width="2"/>
+  <path d="M250,435 Q265,420 280,435" fill="none" stroke="#111" stroke-width="2"/>
+  <!-- round pastries -->
+  <circle cx="165" cy="406" r="12" fill="none" stroke="#111" stroke-width="2"/>
+  <circle cx="165" cy="406" r="6" fill="none" stroke="#111" stroke-width="1.5"/>
+  <circle cx="195" cy="406" r="12" fill="none" stroke="#111" stroke-width="2"/>
+  <circle cx="195" cy="406" r="6" fill="none" stroke="#111" stroke-width="1.5"/>
+  <circle cx="225" cy="406" r="12" fill="none" stroke="#111" stroke-width="2"/>
+  <circle cx="255" cy="406" r="12" fill="none" stroke="#111" stroke-width="2"/>
+
+  <!-- ═══════════════════════════════════════════
+       ESPRESSO MACHINE
+  ════════════════════════════════════════════ -->
+  <!-- Machine body -->
+  <rect x="90" y="220" width="130" height="140" rx="8" fill="#e0d8c8" stroke="#111" stroke-width="3"/>
+  <!-- Top cap -->
+  <rect x="85" y="208" width="140" height="18" rx="4" fill="#111"/>
+  <!-- Brand plate -->
+  <rect x="104" y="228" width="100" height="16" rx="3" fill="#c8b89a" stroke="#111" stroke-width="1.5"/>
+  <text x="154" y="240" text-anchor="middle" font-size="8" fill="#111" font-style="italic">La Marzocco</text>
+  <!-- Pressure gauge -->
+  <circle cx="116" cy="270" r="18" fill="#fff" stroke="#111" stroke-width="2.5"/>
+  <circle cx="116" cy="270" r="13" fill="none" stroke="#ddd" stroke-width="1"/>
+  <line x1="116" y1="270" x2="124" y2="262" stroke="#111" stroke-width="2" stroke-linecap="round"/>
+  <!-- Group heads -->
+  <rect x="148" y="290" width="32" height="12" rx="3" fill="#bbb" stroke="#111" stroke-width="2"/>
+  <rect x="154" y="302" width="20" height="22" rx="0 0 4 4" fill="#999" stroke="#111" stroke-width="2"/>
+  <!-- Drip tray -->
+  <rect x="95" y="348" width="120" height="10" rx="3" fill="#bbb" stroke="#111" stroke-width="2"/>
+  <!-- Shot cups -->
+  <rect x="155" y="332" width="14" height="16" rx="2" fill="#fff" stroke="#111" stroke-width="1.5"/>
+  <rect x="172" y="332" width="14" height="16" rx="2" fill="#fff" stroke="#111" stroke-width="1.5"/>
+  <!-- Steam wand -->
+  <line x1="212" y1="240" x2="228" y2="290" stroke="#111" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="230" cy="296" r="6" fill="#bbb" stroke="#111" stroke-width="2"/>
+
+  <!-- Machine steam wisps -->
+  <g class="steam">
+    <path d="M130,206 Q124,196 130,186 Q136,176 130,166" fill="none" stroke="#111" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/>
+  </g>
+  <g class="steam2">
+    <path d="M148,206 Q142,194 148,182 Q154,170 148,158" fill="none" stroke="#111" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/>
+  </g>
+  <g class="steam3">
+    <path d="M165,206 Q171,194 165,182 Q159,170 165,160" fill="none" stroke="#111" stroke-width="2.5" stroke-linecap="round" opacity="0.5"/>
+  </g>
+
+  <!-- ═══════════════════════════════════════════
+       GRINDER
+  ════════════════════════════════════════════ -->
+  <rect x="0" y="230" width="88" height="130" rx="6" fill="#d8d0bc" stroke="#111" stroke-width="3"/>
+  <!-- hopper -->
+  <rect x="10" y="200" width="68" height="34" rx="4" fill="#bbb" stroke="#111" stroke-width="2.5"/>
+  <rect x="22" y="186" width="44" height="18" rx="3" fill="#aaa" stroke="#111" stroke-width="2"/>
+  <!-- grinder wheel -->
+  <g class="grinder-wheel">
+    <circle cx="108" cy="188" r="16" fill="none" stroke="#111" stroke-width="2"/>
+    <line x1="108" y1="172" x2="108" y2="204" stroke="#111" stroke-width="2"/>
+    <line x1="92" y1="188" x2="124" y2="188" stroke="#111" stroke-width="2"/>
+  </g>
+  <!-- bean hopper window -->
+  <ellipse cx="44" cy="236" rx="22" ry="12" fill="#222" stroke="#111" stroke-width="1.5"/>
+  <!-- output chute -->
+  <rect x="28" y="320" width="32" height="20" rx="2" fill="#bbb" stroke="#111" stroke-width="2"/>
+
+  <!-- ═══════════════════════════════════════════
+       BARISTA
+  ════════════════════════════════════════════ -->
+  <g class="barista-group">
+    <!-- legs -->
+    <rect x="166" y="450" width="22" height="50" rx="4" fill="#333" stroke="#111" stroke-width="2"/>
+    <rect x="194" y="450" width="22" height="50" rx="4" fill="#333" stroke="#111" stroke-width="2"/>
+    <!-- shoes -->
+    <ellipse cx="177" cy="498" rx="16" ry="7" fill="#111"/>
+    <ellipse cx="205" cy="498" rx="16" ry="7" fill="#111"/>
+    <!-- torso / shirt -->
+    <rect x="158" y="340" width="70" height="115" rx="8" fill="#fff" stroke="#111" stroke-width="2.5"/>
+    <!-- apron -->
+    <rect x="168" y="346" width="50" height="105" rx="5" fill="#e8dfc8" stroke="#111" stroke-width="2"/>
+    <rect x="180" y="346" width="26" height="16" rx="3" fill="#e8dfc8" stroke="#111" stroke-width="1.5"/>
+    <!-- head -->
+    <ellipse cx="193" cy="314" rx="32" ry="36" fill="#fff" stroke="#111" stroke-width="2.5"/>
+    <!-- hair -->
+    <path d="M162,302 Q165,272 193,268 Q221,272 224,302 Q218,286 193,284 Q168,286 162,302Z" fill="#111"/>
+    <!-- eyes -->
+    <g class="eye2">
+      <ellipse cx="183" cy="308" rx="4" ry="4.5" fill="#111"/>
+    </g>
+    <g class="eye2">
+      <ellipse cx="203" cy="308" rx="4" ry="4.5" fill="#111"/>
+    </g>
+    <!-- smile -->
+    <path d="M183,326 Q193,334 203,326" fill="none" stroke="#111" stroke-width="2" stroke-linecap="round"/>
+    <!-- ear -->
+    <ellipse cx="161" cy="316" rx="6" ry="8" fill="#fff" stroke="#111" stroke-width="2"/>
+    <ellipse cx="225" cy="316" rx="6" ry="8" fill="#fff" stroke="#111" stroke-width="2"/>
+  </g>
+
+  <!-- Barista arm (animated) -->
+  <g class="barista-arm">
+    <rect x="224" y="286" width="55" height="14" rx="7" fill="#fff" stroke="#111" stroke-width="2.5"/>
+    <!-- hand -->
+    <circle cx="278" cy="293" r="10" fill="#fff" stroke="#111" stroke-width="2.5"/>
+  </g>
+
+  <!-- ═══════════════════════════════════════════
+       ROUND TABLE
+  ════════════════════════════════════════════ -->
+  <!-- Table post -->
+  <rect x="455" y="420" width="16" height="80" rx="3" fill="#c8b89a" stroke="#111" stroke-width="2"/>
+  <!-- Table base -->
+  <ellipse cx="463" cy="500" rx="50" ry="12" fill="#c8b89a" stroke="#111" stroke-width="2"/>
+  <!-- Table top -->
+  <ellipse cx="463" cy="420" rx="110" ry="22" fill="#e8dfc8" stroke="#111" stroke-width="2.5"/>
+
+  <!-- Cup + saucer on table -->
+  <ellipse cx="463" cy="408" rx="26" ry="6" fill="#e8dfc8" stroke="#111" stroke-width="2"/>
+  <rect x="450" y="388" width="26" height="22" rx="3" fill="#fff" stroke="#111" stroke-width="2"/>
+  <!-- cup handle -->
+  <path d="M476,393 Q486,393 486,399 Q486,405 476,405" fill="none" stroke="#111" stroke-width="2"/>
+  <!-- coffee surface -->
+  <ellipse cx="463" cy="390" rx="11" ry="3" fill="#8B6347"/>
+  <!-- cup steam -->
+  <g class="cup-steam">
+    <path d="M458,386 Q454,376 458,366 Q462,356 458,346" fill="none" stroke="#111" stroke-width="2" stroke-linecap="round" opacity="0.55"/>
+  </g>
+  <g class="cup-steam2">
+    <path d="M469,386 Q473,374 469,364 Q465,354 469,344" fill="none" stroke="#111" stroke-width="2" stroke-linecap="round" opacity="0.55"/>
+  </g>
+
+  <!-- ═══════════════════════════════════════════
+       SEATED MAN (cap, foreground)
+  ════════════════════════════════════════════ -->
+  <!-- legs/lap -->
+  <rect x="385" y="440" width="35" height="60" rx="5" fill="#555" stroke="#111" stroke-width="2"/>
+  <rect x="420" y="440" width="35" height="60" rx="5" fill="#555" stroke="#111" stroke-width="2"/>
+  <!-- torso -->
+  <rect x="378" y="350" width="82" height="100" rx="8" fill="#fff" stroke="#111" stroke-width="2.5"/>
+  <!-- shirt details -->
+  <line x1="419" y1="355" x2="419" y2="445" stroke="#ddd" stroke-width="1.5"/>
+  <!-- head -->
+  <ellipse cx="419" cy="322" rx="34" ry="36" fill="#fff" stroke="#111" stroke-width="2.5"/>
+  <!-- cap brim -->
+  <path d="M386,310 Q386,290 419,286 Q452,290 452,310Z" fill="#555" stroke="#111" stroke-width="2"/>
+  <!-- cap bill -->
+  <path d="M386,310 Q376,312 372,316 Q376,320 386,318Z" fill="#555" stroke="#111" stroke-width="2"/>
+  <!-- eyes -->
+  <g class="eye">
+    <ellipse cx="408" cy="316" rx="4.5" ry="4.5" fill="#111"/>
+    <ellipse cx="430" cy="316" rx="4.5" ry="4.5" fill="#111"/>
+  </g>
+  <!-- smile -->
+  <path d="M406,333 Q419,344 432,333" fill="none" stroke="#111" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- ear -->
+  <ellipse cx="385" cy="322" rx="6" ry="9" fill="#fff" stroke="#111" stroke-width="2"/>
+  <ellipse cx="453" cy="322" rx="6" ry="9" fill="#fff" stroke="#111" stroke-width="2"/>
+
+  <!-- Man's arm lifting cup -->
+  <g class="man-arm">
+    <path d="M410,390 Q420,370 440,358 Q450,350 462,348" fill="none" stroke="#fff" stroke-width="14" stroke-linecap="round"/>
+    <path d="M410,390 Q420,370 440,358 Q450,350 462,348" fill="none" stroke="#111" stroke-width="3" stroke-linecap="round"/>
+  </g>
+
+  <!-- ═══════════════════════════════════════════
+       SEATED WOMAN (black dress)
+  ════════════════════════════════════════════ -->
+  <g class="woman-group">
+    <!-- dress/legs -->
+    <rect x="520" y="400" width="68" height="100" rx="6" fill="#111" stroke="#111" stroke-width="2"/>
+    <!-- torso -->
+    <rect x="516" y="320" width="76" height="90" rx="8" fill="#111" stroke="#111" stroke-width="2.5"/>
+    <!-- neckline -->
+    <path d="M528,322 Q554,338 580,322" fill="none" stroke="#333" stroke-width="1.5"/>
+    <!-- pearl necklace -->
+    <path d="M536,330 Q554,342 572,330" fill="none" stroke="#fff" stroke-width="2" stroke-dasharray="4,3"/>
+    <!-- head -->
+    <ellipse cx="554" cy="290" rx="32" ry="35" fill="#fff" stroke="#111" stroke-width="2.5"/>
+    <!-- bob haircut -->
+    <path d="M522,280 Q523,256 554,252 Q585,256 586,280 Q584,296 580,304 Q570,316 554,316 Q538,316 528,304 Q522,296 522,280Z" fill="none"/>
+    <path d="M522,272 Q524,250 554,246 Q584,250 586,272" fill="#111" stroke="#111" stroke-width="1"/>
+    <path d="M522,272 Q518,290 522,304 Q524,310 528,314" fill="#111" stroke="#111" stroke-width="1"/>
+    <path d="M586,272 Q590,290 586,304 Q584,310 580,314" fill="#111" stroke="#111" stroke-width="1"/>
+    <!-- eyes closed/serene -->
+    <g class="eye3">
+      <ellipse cx="544" cy="284" rx="4" ry="4.5" fill="#111"/>
+      <ellipse cx="564" cy="284" rx="4" ry="4.5" fill="#111"/>
+    </g>
+    <!-- smile -->
+    <path d="M544,302 Q554,310 564,302" fill="none" stroke="#111" stroke-width="2" stroke-linecap="round"/>
+    <!-- ear -->
+    <ellipse cx="522" cy="290" rx="6" ry="8" fill="#fff" stroke="#111" stroke-width="2"/>
+    <ellipse cx="586" cy="290" rx="6" ry="8" fill="#fff" stroke="#111" stroke-width="2"/>
+    <!-- arm holding cup up -->
+    <path d="M516,356 Q504,338 496,322 Q490,310 490,302" fill="none" stroke="#111" stroke-width="12" stroke-linecap="round"/>
+    <path d="M516,356 Q504,338 496,322 Q490,310 490,302" fill="none" stroke="#111" stroke-width="3"/>
+    <!-- small cup in hand -->
+    <rect x="482" y="292" width="18" height="16" rx="2" fill="#fff" stroke="#111" stroke-width="2"/>
+    <path d="M500,296 Q508,296 508,300 Q508,304 500,304" fill="none" stroke="#111" stroke-width="1.5"/>
+  </g>
+
+  <!-- ═══════════════════════════════════════════
+       BACKGROUND STAFF (waving)
+  ════════════════════════════════════════════ -->
+  <!-- legs -->
+  <rect x="600" y="430" width="20" height="60" rx="4" fill="#444" stroke="#111" stroke-width="1.5" opacity="0.7"/>
+  <rect x="626" y="430" width="20" height="60" rx="4" fill="#444" stroke="#111" stroke-width="1.5" opacity="0.7"/>
+  <!-- torso -->
+  <rect x="594" y="340" width="58" height="96" rx="6" fill="#fff" stroke="#111" stroke-width="2" opacity="0.8"/>
+  <!-- apron hint -->
+  <rect x="602" y="344" width="42" height="88" rx="4" fill="#e8dfc8" stroke="#111" stroke-width="1.5" opacity="0.7"/>
+  <!-- head -->
+  <ellipse cx="623" cy="314" rx="26" ry="28" fill="#fff" stroke="#111" stroke-width="2" opacity="0.85"/>
+  <!-- hair -->
+  <path d="M597,306 Q599,284 623,280 Q647,284 649,306 Q644,292 623,290 Q602,292 597,306Z" fill="#111" opacity="0.85"/>
+  <!-- eyes -->
+  <ellipse cx="614" cy="308" rx="3.5" ry="3.5" fill="#111" opacity="0.8"/>
+  <ellipse cx="632" cy="308" rx="3.5" ry="3.5" fill="#111" opacity="0.8"/>
+  <!-- wave arm -->
+  <g class="staff-arm">
+    <path d="M618,360 Q626,330 636,310 Q642,296 648,286" fill="none" stroke="#fff" stroke-width="12" stroke-linecap="round" opacity="0.8"/>
+    <path d="M618,360 Q626,330 636,310 Q642,296 648,286" fill="none" stroke="#111" stroke-width="2.5" stroke-linecap="round" opacity="0.8"/>
+    <!-- hand -->
+    <circle cx="650" cy="283" r="9" fill="#fff" stroke="#111" stroke-width="2" opacity="0.85"/>
+  </g>
+
+  <!-- ═══════════════════════════════════════════
+       TITLE BAR (top)
+  ════════════════════════════════════════════ -->
+  <rect x="0" y="0" width="800" height="52" fill="#111"/>
+  <text x="400" y="34" text-anchor="middle" fill="#fff" font-size="20" letter-spacing="5" font-family="Georgia,serif">GROUNDS FOR LIVING</text>
+
+  <!-- Scene border -->
+  <rect x="0" y="0" width="800" height="600" fill="none" stroke="#111" stroke-width="4"/>
+
+  </g>
+</svg>
