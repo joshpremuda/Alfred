@@ -9,5 +9,5 @@
 node_modules/
 webchat/node_modules/
 
-# OpenClaw data
-.openclaw/
+# Wiki raw sources (personal documents — don't commit)
+wiki/raw/

@@ -49,6 +49,10 @@ cmd_setup() {
   echo -e "${BOLD}Alfred Setup${RESET}"
   echo "─────────────────────────────"
   mkdir -p "$PIDS_DIR" "$LOG_DIR"
+  mkdir -p "$SCRIPT_DIR/wiki/raw" "$SCRIPT_DIR/wiki/sources" \
+           "$SCRIPT_DIR/wiki/entities" "$SCRIPT_DIR/wiki/concepts" \
+           "$SCRIPT_DIR/wiki/queries"
+  success "Wiki directory ready"
 
   [[ -f "$ENV_FILE" ]] || { cp "$ENV_FILE.example" "$ENV_FILE"; info "Created .env"; }
 
@@ -96,6 +100,7 @@ cmd_start() {
     ANTHROPIC_API_KEY="$ANTHROPIC_API_KEY" \
     ANTHROPIC_MODEL="${ANTHROPIC_MODEL:-claude-sonnet-4-6}" \
     ALFRED_AGENT_NAME="${ALFRED_AGENT_NAME:-Alfred}" \
+    ALFRED_WIKI_PATH="$SCRIPT_DIR/wiki" \
       node "$SCRIPT_DIR/webchat/server.js" >> "$LOG_DIR/webchat.log" 2>&1 &
     echo $! > "$PIDS_DIR/webchat.pid"
     success "Alfred started (PID $!)"
@@ -109,6 +114,7 @@ cmd_start() {
       TELEGRAM_OWNER_ID="${TELEGRAM_OWNER_ID:-}" \
       ANTHROPIC_API_KEY="$ANTHROPIC_API_KEY" \
       ANTHROPIC_MODEL="${ANTHROPIC_MODEL:-claude-sonnet-4-6}" \
+      ALFRED_WIKI_PATH="$SCRIPT_DIR/wiki" \
         node "$SCRIPT_DIR/telegram/bot.js" >> "$LOG_DIR/telegram.log" 2>&1 &
       echo $! > "$PIDS_DIR/telegram.pid"
       success "Telegram bot started"

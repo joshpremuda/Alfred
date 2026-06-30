@@ -59,6 +59,22 @@ sudo systemctl start alfred
 
 ---
 
+## Wiki — Second Brain
+
+Alfred maintains a personal knowledge base in `wiki/`. Drop source documents into `wiki/raw/` and tell Alfred to ingest them.
+
+| Command | What it does |
+|---------|-------------|
+| `ingest research-paper.pdf` | Read a source, extract key info, build linked pages |
+| `ingest all of these` | Ingest everything new in raw/ |
+| `what do you know about X?` | Query the wiki with citations |
+| `lint the wiki` | Find orphans, dead links, contradictions |
+
+The wiki is plain Markdown — open the `wiki/` folder in Obsidian for graph view and search.
+`wiki/raw/` is gitignored (your source documents stay local). Everything else in `wiki/` can be committed for version history.
+
+---
+
 ## Customising Alfred
 
 Edit `config/agent.json` to change the agent name, persona, and which tools/channels are active.
