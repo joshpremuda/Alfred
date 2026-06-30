@@ -62,7 +62,8 @@ cmd_setup() {
   success "Node $(node --version)"
 
   npm install --prefix "$SCRIPT_DIR/webchat" --quiet
-  success "Web chat dependencies installed"
+  npm install --prefix "$SCRIPT_DIR" --quiet
+  success "Dependencies installed"
 
   echo ""
   read -r -p "Anthropic API key (sk-ant-...): " key
@@ -159,25 +160,66 @@ cmd_chat() {
     || echo "Open http://localhost:3000"
 }
 
+cmd_interview() {
+  check_env
+  source "$ENV_FILE"
+  info "Starting profile interview…"
+  ANTHROPIC_API_KEY="$ANTHROPIC_API_KEY" \
+  ANTHROPIC_MODEL="${ANTHROPIC_MODEL:-claude-sonnet-4-6}" \
+  ALFRED_WIKI_PATH="$SCRIPT_DIR/wiki" \
+    node "$SCRIPT_DIR/interview/run.js"
+}
+
+cmd_schedule() {
+  check_env
+  source "$ENV_FILE"
+  local time="${2:-07:00}"
+  local hour="${time%%:*}"
+  local minute="${time##*:}"
+  local job="$minute $hour * * * ANTHROPIC_API_KEY=\"${ANTHROPIC_API_KEY}\" ANTHROPIC_MODEL=\"${ANTHROPIC_MODEL:-claude-sonnet-4-6}\" ALFRED_WIKI_PATH=\"$SCRIPT_DIR/wiki\" node \"$SCRIPT_DIR/schedule/daily.js\" >> \"$SCRIPT_DIR/.logs/daily.log\" 2>&1"
+  # Remove any existing Alfred daily entry then add the new one
+  ( crontab -l 2>/dev/null | grep -v "schedule/daily.js"; echo "$job" ) | crontab -
+  success "Daily run scheduled at ${time} — logs: ./alfred logs-daily"
+}
+
+cmd_unschedule() {
+  crontab -l 2>/dev/null | grep -v "schedule/daily.js" | crontab -
+  success "Daily schedule removed"
+}
+
+cmd_logs_daily() {
+  mkdir -p "$LOG_DIR"
+  touch "$LOG_DIR/daily.log"
+  tail -f "$LOG_DIR/daily.log"
+}
+
 case "${1:-help}" in
-  setup)   cmd_setup ;;
-  start)   cmd_start ;;
-  stop)    cmd_stop ;;
-  restart) cmd_restart ;;
-  status)  cmd_status ;;
-  logs)    cmd_logs ;;
-  chat)    cmd_chat ;;
+  setup)       cmd_setup ;;
+  start)       cmd_start ;;
+  stop)        cmd_stop ;;
+  restart)     cmd_restart ;;
+  status)      cmd_status ;;
+  logs)        cmd_logs ;;
+  logs-daily)  cmd_logs_daily ;;
+  chat)        cmd_chat ;;
+  interview)   cmd_interview ;;
+  schedule)    cmd_schedule "$@" ;;
+  unschedule)  cmd_unschedule ;;
   *)
     echo ""
     echo -e "${BOLD}Alfred — Personal AI Agent${RESET}"
     echo ""
-    echo "  ./alfred setup     First-time setup"
-    echo "  ./alfred start     Start Alfred"
-    echo "  ./alfred stop      Stop Alfred"
-    echo "  ./alfred restart   Restart"
-    echo "  ./alfred status    Show service status"
-    echo "  ./alfred logs      Tail live logs"
-    echo "  ./alfred chat      Open browser"
+    echo "  ./alfred setup              First-time setup"
+    echo "  ./alfred start              Start Alfred"
+    echo "  ./alfred stop               Stop Alfred"
+    echo "  ./alfred restart            Restart"
+    echo "  ./alfred status             Show service status"
+    echo "  ./alfred logs               Tail live logs"
+    echo "  ./alfred chat               Open browser"
+    echo "  ./alfred interview          Build your profile (wiki/profile.md)"
+    echo "  ./alfred schedule [HH:MM]   Schedule daily wiki run (default 07:00)"
+    echo "  ./alfred unschedule         Remove daily schedule"
+    echo "  ./alfred logs-daily         Tail daily run logs"
     echo ""
     ;;
 esac

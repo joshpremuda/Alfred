@@ -37,6 +37,10 @@ The wizard will ask for:
 | `./alfred status` | Show service status |
 | `./alfred logs` | Stream live logs |
 | `./alfred chat` | Open web chat in browser |
+| `./alfred interview` | Build your profile — Alfred asks ~10 questions, writes `wiki/profile.md` |
+| `./alfred schedule [HH:MM]` | Schedule daily wiki run via cron (default 07:00) |
+| `./alfred unschedule` | Remove daily schedule |
+| `./alfred logs-daily` | Tail the daily run log |
 
 ---
 

@@ -8,6 +8,7 @@
 # Node
 node_modules/
 webchat/node_modules/
+package-lock.json
 
 # Wiki raw sources (personal documents — don't commit)
 wiki/raw/
