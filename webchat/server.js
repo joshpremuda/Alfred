@@ -2,6 +2,7 @@ const express = require('express');
 const http = require('http');
 const WebSocket = require('ws');
 const path = require('path');
+const Anthropic = require('@anthropic-ai/sdk');
 
 const app = express();
 const server = http.createServer(app);
@@ -9,35 +10,22 @@ const wss = new WebSocket.Server({ server });
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-const OLLAMA_HOST = process.env.OLLAMA_HOST || 'http://localhost:11434';
-const OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'llama3.2';
 const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY || '';
 const ANTHROPIC_MODEL = process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-6';
 const AGENT_NAME = process.env.ALFRED_AGENT_NAME || 'Alfred';
 
-const SYSTEM_PROMPT = `You are ${AGENT_NAME}, a helpful personal AI assistant. Be concise and friendly.`;
-
-const BACKEND = ANTHROPIC_KEY ? 'anthropic' : 'ollama';
-console.log(`[Alfred] Backend: ${BACKEND === 'anthropic' ? `Anthropic (${ANTHROPIC_MODEL})` : `Ollama (${OLLAMA_MODEL} @ ${OLLAMA_HOST})`}`);
-
-async function chatOllama(history) {
-  const res = await fetch(`${OLLAMA_HOST}/api/chat`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: OLLAMA_MODEL,
-      messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...history],
-      stream: false,
-    }),
-  });
-  if (!res.ok) throw new Error(`Ollama ${res.status}: ${await res.text()}`);
-  const data = await res.json();
-  return data.message?.content || '(no response)';
+if (!ANTHROPIC_KEY) {
+  console.error('[Alfred] ANTHROPIC_API_KEY is not set — edit .env and restart');
+  process.exit(1);
 }
 
-async function chatAnthropic(history) {
-  const Anthropic = require('@anthropic-ai/sdk');
-  const client = new Anthropic.default({ apiKey: ANTHROPIC_KEY });
+const client = new Anthropic({ apiKey: ANTHROPIC_KEY });
+
+const SYSTEM_PROMPT = `You are ${AGENT_NAME}, a helpful personal AI assistant. Be concise and friendly.`;
+
+console.log(`[Alfred] Model: ${ANTHROPIC_MODEL}`);
+
+async function chat(history) {
   const msg = await client.messages.create({
     model: ANTHROPIC_MODEL,
     max_tokens: 1024,
@@ -49,11 +37,8 @@ async function chatAnthropic(history) {
 
 wss.on('connection', (ws) => {
   const history = [];
-  const backend = BACKEND === 'anthropic'
-    ? `Anthropic / ${ANTHROPIC_MODEL}`
-    : `Ollama / ${OLLAMA_MODEL}`;
 
-  ws.send(JSON.stringify({ role: 'system', text: `Connected to ${AGENT_NAME} (${backend})` }));
+  ws.send(JSON.stringify({ role: 'system', text: `Connected to ${AGENT_NAME}` }));
 
   ws.on('message', async (raw) => {
     let text;
@@ -63,10 +48,7 @@ wss.on('connection', (ws) => {
     history.push({ role: 'user', content: text });
 
     try {
-      const reply = BACKEND === 'anthropic'
-        ? await chatAnthropic(history)
-        : await chatOllama(history);
-
+      const reply = await chat(history);
       history.push({ role: 'assistant', content: reply });
 
       if (ws.readyState === WebSocket.OPEN) {
@@ -74,17 +56,14 @@ wss.on('connection', (ws) => {
       }
     } catch (err) {
       if (ws.readyState === WebSocket.OPEN) {
-        const hint = BACKEND === 'ollama'
-          ? `Could not reach Ollama at ${OLLAMA_HOST} — start it with: ollama serve`
-          : `Anthropic API error: ${err.message}`;
-        ws.send(JSON.stringify({ role: 'system', text: hint }));
+        ws.send(JSON.stringify({ role: 'system', text: `Error: ${err.message}` }));
       }
-      history.pop(); // don't keep failed user message in history
+      history.pop();
     }
   });
 });
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, '0.0.0.0', () => {
+server.listen(PORT, '127.0.0.1', () => {
   console.log(`[Alfred] Web chat at http://localhost:${PORT}`);
 });

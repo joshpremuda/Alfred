@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 # alfred — management script for your personal AI agent
-# Usage: ./alfred [setup|start|stop|restart|status|logs|chat|update]
 
 set -euo pipefail
 
@@ -27,13 +26,9 @@ check_env() {
     exit 1
   fi
   source "$ENV_FILE"
-  local host="${OLLAMA_HOST:-http://localhost:11434}"
-  if ! curl -sf --connect-timeout 2 --max-time 3 "${host}/api/tags" > /dev/null 2>&1; then
-    warn "Ollama not responding at ${host}"
-    warn "Start it with:  ollama serve  (or open the Ollama app)"
-    echo ""
-    read -r -p "Continue anyway? [y/N] " cont
-    [[ "$cont" =~ ^[Yy]$ ]] || exit 1
+  if [[ -z "${ANTHROPIC_API_KEY:-}" ]]; then
+    error "ANTHROPIC_API_KEY is not set in .env"
+    exit 1
   fi
 }
 
@@ -57,32 +52,26 @@ cmd_setup() {
 
   [[ -f "$ENV_FILE" ]] || { cp "$ENV_FILE.example" "$ENV_FILE"; info "Created .env"; }
 
-  # Node
   if ! command -v node &>/dev/null; then
     error "Node.js not installed — https://nodejs.org (v18+)"; exit 1
   fi
   success "Node $(node --version)"
 
-  # Web chat deps
   npm install --prefix "$SCRIPT_DIR/webchat" --quiet
   success "Web chat dependencies installed"
 
-  # Ollama
-  if ! command -v ollama &>/dev/null; then
-    error "Ollama not installed — https://ollama.com/download"; exit 1
+  echo ""
+  read -r -p "Anthropic API key (sk-ant-...): " key
+  if [[ -n "$key" ]]; then
+    sedi "s|ANTHROPIC_API_KEY=.*|ANTHROPIC_API_KEY=$key|" "$ENV_FILE"
   fi
-  success "Ollama found"
 
   echo ""
-  echo "  Recommended models: llama3.2 (4GB)  mistral (4GB)  phi3 (2GB)"
-  read -r -p "Which model? [llama3.2]: " model
-  model="${model:-llama3.2}"
-  sedi "s|OLLAMA_MODEL=.*|OLLAMA_MODEL=$model|" "$ENV_FILE"
-  info "Pulling $model…"
-  ollama pull "$model"
-  success "Model ready"
+  echo "  Models: claude-opus-4-8  claude-sonnet-4-6  claude-haiku-4-5-20251001"
+  read -r -p "Model [claude-sonnet-4-6]: " model
+  model="${model:-claude-sonnet-4-6}"
+  sedi "s|ANTHROPIC_MODEL=.*|ANTHROPIC_MODEL=$model|" "$ENV_FILE"
 
-  # Telegram (optional)
   echo ""
   echo "Telegram bot (optional — press Enter to skip)"
   read -r -p "Bot token from @BotFather: " token
@@ -104,23 +93,22 @@ cmd_start() {
   if is_running "webchat"; then
     warn "Web chat already running (PID $(cat "$PIDS_DIR/webchat.pid"))"
   else
-    OLLAMA_HOST="${OLLAMA_HOST:-http://localhost:11434}" \
-    OLLAMA_MODEL="${OLLAMA_MODEL:-llama3.2}" \
+    ANTHROPIC_API_KEY="$ANTHROPIC_API_KEY" \
+    ANTHROPIC_MODEL="${ANTHROPIC_MODEL:-claude-sonnet-4-6}" \
     ALFRED_AGENT_NAME="${ALFRED_AGENT_NAME:-Alfred}" \
       node "$SCRIPT_DIR/webchat/server.js" >> "$LOG_DIR/webchat.log" 2>&1 &
     echo $! > "$PIDS_DIR/webchat.pid"
     success "Alfred started (PID $!)"
   fi
 
-  # Telegram bot
-  if [[ -n "${TELEGRAM_BOT_TOKEN:-}" ]]; then
+  if [[ -n "${TELEGRAM_BOT_TOKEN:-}" ]] && [[ -f "$SCRIPT_DIR/telegram/bot.js" ]]; then
     if is_running "telegram"; then
       warn "Telegram bot already running"
-    elif [[ -f "$SCRIPT_DIR/telegram/bot.js" ]]; then
+    else
       TELEGRAM_BOT_TOKEN="$TELEGRAM_BOT_TOKEN" \
       TELEGRAM_OWNER_ID="${TELEGRAM_OWNER_ID:-}" \
-      OLLAMA_HOST="${OLLAMA_HOST:-http://localhost:11434}" \
-      OLLAMA_MODEL="${OLLAMA_MODEL:-llama3.2}" \
+      ANTHROPIC_API_KEY="$ANTHROPIC_API_KEY" \
+      ANTHROPIC_MODEL="${ANTHROPIC_MODEL:-claude-sonnet-4-6}" \
         node "$SCRIPT_DIR/telegram/bot.js" >> "$LOG_DIR/telegram.log" 2>&1 &
       echo $! > "$PIDS_DIR/telegram.pid"
       success "Telegram bot started"
@@ -129,9 +117,9 @@ cmd_start() {
 
   echo ""
   echo "  Chat: http://localhost:3000"
-  echo ""
   echo "  Logs: ./alfred logs"
   echo "  Stop: ./alfred stop"
+  echo ""
 }
 
 cmd_stop() {
