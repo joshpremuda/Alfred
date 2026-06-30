@@ -67,6 +67,21 @@ async function run() {
     'covered by only one source. Log any issues found to log.md.'
   );
 
+  // Contradiction check — only if there are concepts and sources
+  const conceptsDir = path.join(WIKI_PATH, 'concepts');
+  const sourcesDir = path.join(WIKI_PATH, 'sources');
+  const hasConceptPages = fs.existsSync(conceptsDir) &&
+    fs.readdirSync(conceptsDir).some(f => f.endsWith('.md') && !f.startsWith('.'));
+  if (hasConceptPages) {
+    const today = new Date().toISOString().slice(0, 10);
+    tasks.push(
+      `Run a contradiction check: read all files in concepts/, then read all source pages in sources/ modified in the last 30 days. ` +
+      `For each concept, check whether any recent source contradicts, complicates, or materially updates that position. ` +
+      `Do NOT look for agreement. If no conflict for a concept, write "Clear." ` +
+      `Write the full report to queries/contradictions-${today}.md and append a one-line entry to log.md.`
+    );
+  }
+
   tasks.push(
     `Update hot.md to reflect the last 7 days of activity from log.md plus today's run. ` +
     `Keep it under 400 words. Include today's date (${new Date().toISOString().slice(0, 10)}).`

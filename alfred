@@ -187,6 +187,16 @@ cmd_unschedule() {
   success "Daily schedule removed"
 }
 
+cmd_contradictions() {
+  check_env
+  source "$ENV_FILE"
+  info "Running contradiction check…"
+  ANTHROPIC_API_KEY="$ANTHROPIC_API_KEY" \
+  ANTHROPIC_MODEL="${ANTHROPIC_MODEL:-claude-sonnet-4-6}" \
+  ALFRED_WIKI_PATH="$SCRIPT_DIR/wiki" \
+    node "$SCRIPT_DIR/schedule/contradictions.js"
+}
+
 cmd_logs_daily() {
   mkdir -p "$LOG_DIR"
   touch "$LOG_DIR/daily.log"
@@ -204,7 +214,8 @@ case "${1:-help}" in
   chat)        cmd_chat ;;
   interview)   cmd_interview ;;
   schedule)    cmd_schedule "$@" ;;
-  unschedule)  cmd_unschedule ;;
+  unschedule)      cmd_unschedule ;;
+  contradictions)  cmd_contradictions ;;
   *)
     echo ""
     echo -e "${BOLD}Alfred — Personal AI Agent${RESET}"
@@ -220,6 +231,7 @@ case "${1:-help}" in
     echo "  ./alfred schedule [HH:MM]   Schedule daily wiki run (default 07:00)"
     echo "  ./alfred unschedule         Remove daily schedule"
     echo "  ./alfred logs-daily         Tail daily run logs"
+    echo "  ./alfred contradictions     Check concept pages against recent sources for conflicts"
     echo ""
     ;;
 esac
