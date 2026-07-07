@@ -1,80 +1,95 @@
-# Smalley Coffee — Packaging Workflow
+# Smalley Coffee — Packaging Workflow & Production Profile
 ### How Coffee Gets From Roasted to Shipped
 
-*This documents the packaging step as it works today. It matters because in any partnership, this task has to move somewhere — and both Proper and Humble Joe's will want to understand it.*
+*This documents packaging as it works today and the production volume behind it. It matters because in any partnership this task — currently done entirely by Josh — has to move somewhere, and both Proper and Humble Joe's need to understand the real workload.*
 
 ---
 
-## Current State: Josh Handles Packaging
+## The Headline: This Is a Wholesale Business
 
-Today, the roaster (Proper) roasts to Josh's spec, and **Josh handles packaging and the packaged-goods side** himself. This outline captures that process so it can be transferred, split, or absorbed depending on the deal.
-
----
-
-## 1. The Supplies
-
-What it takes to package a bag of coffee:
-
-- **Bags** — 10oz stand-up pouches for DTC/retail *(confirm: same size for wholesale, or bulk bags?)*
-- **One-way degassing valves** — lets CO2 escape without letting oxygen in *(confirm: pre-installed on the bags, or applied?)*
-- **Labels** — printed with the blend name, story, roast date, weight, and origin *(confirm: pre-printed bags, or blank bags + applied labels?)*
-- **Seal** — heat-sealed or tin-tie/zipper close *(confirm which)*
-
-*Whoever owns packaging owns ordering and stocking these supplies.*
+Roasting volume runs **~655 lbs/month** (April). When you break down where that coffee goes, the story is clear: **the overwhelming majority is 5lb wholesale bags.** DTC and retail are real but small by weight. Anyone taking over packaging is signing up mostly for bulk wholesale fulfillment, not a bag-by-bag retail operation.
 
 ---
 
-## 2. The Process, Step by Step
+## 1. The Bag Lineup
+
+Four fill sizes across three physical bag types:
+
+| Bag type | Size | Fill | Volume | Notes |
+|---|---|---|---|---|
+| Small pack (`*`) | Sample | 4oz | Minimal | Sample/marketing use |
+| Small pack (`*`) | Frac pack | 5.5oz | **30/week** (~45 lbs/mo) | Ground — single-serve/frac |
+| Retail pouch (`^`) | Retail | 8oz | **30–50/month** (~20 lbs/mo) | Whole bean retail |
+| Retail pouch (`^`) | DTC | 10oz | **30/month** (~19 lbs/mo) | Shopify direct-to-consumer |
+| Bulk (`-`) | Wholesale | 5lb | **Most of the work** (~570 lbs/mo) | The core of the business |
+
+*Same physical pouch (`^`) is filled to either 8oz or 10oz depending on channel. The `*` small pack covers both samples and the ground frac packs.*
+
+**Rough monthly packaging load:**
+- ~114 × 5lb wholesale bags (~570 lbs) — **~87% of volume**
+- ~120 × 5.5oz frac packs (ground)
+- ~40 × 8oz retail pouches
+- ~30 × 10oz DTC pouches
+- A handful of 4oz samples
+
+---
+
+## 2. Production Profile (April — 655 lbs)
+
+The coffee behind the packaging, by origin:
+
+| Origin | Lbs | Share |
+|---|---|---|
+| Colombia | 180 | 27% |
+| El Salvador | 180 | 27% |
+| Mexico | 80 | 12% |
+| Guatemala | 60 | 9% |
+| Brazil | 40 | 6% |
+| Ethiopia | 40 | 6% |
+| Organic Colombia | 40 | 6% |
+| Decaf | 35 | 5% |
+| **Total** | **655** | **100%** |
+
+Colombia and El Salvador together are more than half the volume — the workhorses. This is the green-buying and roast-scheduling picture a partner inherits.
+
+---
+
+## 3. The Process, Step by Step
 
 ```
-[1]  Coffee is roasted (by Proper) and rested/degassed
-[2]  Weigh and fill — coffee portioned into bags at target weight (10oz)
-[3]  Label — blend name, roast date, weight applied to each bag
-[4]  Seal — bag closed (heat seal / valve check for freshness)
-[5]  Sort — bags grouped by order (DTC single bags vs. wholesale multi-bag)
-[6]  Pack & ship — into mailers/boxes with packing slip, out the door
+[1]  Coffee roasted (by Proper) and rested/degassed
+[2]  Grind — only for the 5.5oz frac packs; everything else ships whole bean
+[3]  Weigh & fill — portioned to target (4oz / 5.5oz / 8oz / 10oz / 5lb)
+[4]  Label — blend name, roast date, weight
+[5]  Seal
+[6]  Sort by order — wholesale (5lb) vs. retail vs. DTC
+[7]  Pack & ship
 ```
 
----
-
-## 3. The Key Decisions (These Drive Everything)
-
-**A. Roast-to-order vs. pack-to-stock**
-- *Roast-to-order:* coffee is roasted and packaged per incoming order — freshest, no inventory, but slower fulfillment
-- *Pack-to-stock:* a par level of each blend is packaged and shelved, ready to ship — faster, but requires inventory management and risks staleness
-
-*Which model are you running now? This is the single biggest question for whoever takes over.*
-
-**B. Pre-printed bags vs. label-on-blank**
-- Pre-printed bags look better and are faster to pack, but require ordering inventory per blend and committing to design
-- Blank bags + applied labels are flexible and cheaper to start, but add a labeling step and look less finished
-
-**C. Where the roast date comes from**
-- Whoever packages has to date-stamp accurately, which means packaging has to happen close to roasting — this is why packaging usually wants to live *with* the roaster.
+The one wrinkle: **the frac packs are ground**, so they add a grinding step the others don't. Everything else is whole bean.
 
 ---
 
-## 4. What Happens to Packaging in Each Deal
+## 4. What This Means for the Deal
+
+**Packaging is mostly a wholesale bulk operation.** ~87% of the work by weight is filling and sealing 5lb bags for accounts. That's actually *good news* for a handoff — bulk bagging is far less fiddly per pound than retail. The retail/DTC bags are the finicky part but a small share of volume.
 
 **Humble Joe's (production partnership):**
-Packaging moves to Justin. He roasts, packages, and ships — you hand off the whole physical operation and keep the brand/customer side. This is the clean version: you stop touching coffee entirely. *You'd need to transfer your bag/label specs and supplier list to him.*
+Justin takes the whole thing — 655 lbs/month of roasting plus all packaging. He'd need to handle the grind step for frac packs and stock five fill sizes. The volume is real (this isn't a hobby operation), so his capacity to absorb ~650 lbs/month on top of his existing load is the #1 thing to confirm at the roastery Friday.
 
 **Proper (acquisition):**
-Packaging folds into Proper's fulfillment. Since Proper already roasts, having them package too closes the gap — roast date accuracy improves and you're out of the physical workflow. Part of the 60–90 day transition is handing Proper your packaging specs, supplier relationships, and label artwork (rebranded to Proper).
+Proper already roasts this 655 lbs — they know the origins and the volume intimately. Folding packaging in closes the last gap and gets you out of the physical work entirely. Their fulfillment absorbs the bagging; you keep the accounts and digital side.
 
-**The point in both cases:** packaging is currently *your* time and *your* hands. Every deal should explicitly move it off your plate — that's the whole reason to do this. Make sure the agreement names who owns packaging, who pays for supplies, and who's responsible for freshness/roast-date accuracy.
+**Either way, the contract should name:** who owns packaging labor, who buys bags/labels/valves, who runs the grind step, and who's accountable for roast-date accuracy on each of the five fill sizes.
 
 ---
 
-## 5. What I Need to Confirm to Finish This
+## 5. Still Open (Nice to Confirm, Not Blocking)
 
-To make this accurate rather than a template, fill in:
-1. **Bag sizes** — 10oz for DTC; what for wholesale accounts?
-2. **Pre-printed bags or blank + labels?**
-3. **Roast-to-order or pack-to-stock?**
-4. **Seal method** — heat sealer, zipper, tin-tie?
-5. **Who supplies bags/labels today** — you, or does Proper?
-6. **Rough volume** — bags per week/month, so a partner can size the workload
+1. **Pre-printed bags or blank + applied labels?** (drives supply ordering)
+2. **Roast-to-order or pack-to-stock** on the retail/DTC pouches?
+3. **Seal method** — heat sealer, zipper, tin-tie?
+4. **Who supplies bags/labels/valves today** — you or Proper?
 
 ---
 
