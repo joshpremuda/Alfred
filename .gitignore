@@ -9,5 +9,15 @@
 node_modules/
 webchat/node_modules/
 
-# OpenClaw data
+# OpenClaw data (legacy prototype)
 .openclaw/
+
+# Valet local data — never commit the DB, documents, or the vault
+data/
+*.db
+*.sqlite
+*.sqlite3
+
+# Next.js
+.next/
+out/
