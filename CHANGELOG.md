@@ -4,6 +4,14 @@ All notable changes to Valet. Newest first.
 
 ## [Unreleased]
 
+### Changed
+- **Dropped Ollama.** Local embeddings will run in-process via Transformers.js
+  (`@huggingface/transformers`, `Xenova/all-MiniLM-L6-v2`) instead — free, private,
+  and with no background daemon or separate install. Updated PRD, ARCHITECTURE,
+  README, `.env.example`, and the setup script accordingly.
+- `scripts/setup-macos.sh`: added an `uninstall-ollama` command (interactive,
+  confirms each removal) and removed Ollama from prerequisite/readiness checks.
+
 ### Added
 - **Phase 1 — Alfred MVP foundation.** Next.js (App Router, TypeScript) app at
   the repo root: streaming browser chat with the Alfred persona, three themes

@@ -11,8 +11,8 @@ without explicit `clean` + confirmation).
 
 - [x] `setup-macos.sh` — disk & clutter report
 - [x] `setup-macos.sh` — safe cache cleanup (interactive)
-- [x] `setup-macos.sh` — prerequisite check (Xcode CLT, Homebrew, Node 18+, Ollama)
-- [x] `setup-macos.sh` — pull `nomic-embed-text` embedding model
+- [x] `setup-macos.sh` — prerequisite check (Xcode CLT, Homebrew, Node 18+)
+- [x] `setup-macos.sh` — `uninstall-ollama` (Ollama dropped; embeddings run in-process)
 - [x] `setup-macos.sh` — Obsidian vault detection → `BRAIN_VAULT`
 - [x] `setup-macos.sh` — verify `ANTHROPIC_API_KEY` present in `.env`
 - [ ] Run it on the actual laptop and confirm a green "ready" report *(Josh)*
@@ -33,7 +33,7 @@ without explicit `clean` + confirmation).
 
 ## Phase 2 — Knowledge vault & retrieval  `[ ]`
 
-- [ ] `lib/embeddings.ts` — Ollama `nomic-embed-text` client
+- [ ] `lib/embeddings.ts` — Transformers.js (`Xenova/all-MiniLM-L6-v2`), in-process
 - [ ] `lib/ingest.ts` — extract → dedupe → summarize/classify → chunk → embed → write markdown
 - [ ] URL capture `/api/capture` (readability extraction)
 - [ ] File upload (PDF via `pdf-parse`, docs, notes)

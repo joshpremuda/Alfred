@@ -20,7 +20,7 @@ both the UI (React) and the backend (API routes / server actions). This is the
 │                                                                       │
 │   SQLite  (data/valet.db)         structured data + vectors           │
 │   Obsidian vault  (markdown)      the human-readable knowledge store   │
-│   Ollama  (nomic-embed-text)      local, free embeddings              │
+│   Transformers.js (in-process)    local, free embeddings — no daemon   │
 │                                                                       │
 └───────────────────────────────────────────────────────────────────────┘
          ▲                                   ▲
@@ -38,7 +38,7 @@ both the UI (React) and the backend (API routes / server actions). This is the
 | Vector search | **SQLite + `sqlite-vec`** | Keeps vectors next to the data. No separate vector DB. |
 | Knowledge store | **Markdown in the Obsidian vault** | Human-editable, portable, already Josh's habit. Alfred reads/writes here. |
 | Answers / reasoning | **Claude API** (`@anthropic-ai/sdk`) | Best quality; billed per-token (separate from Claude Pro limits). |
-| Embeddings | **Ollama `nomic-embed-text`** (local) | Free, private, unlimited — indexing never spends Claude tokens. |
+| Embeddings | **Transformers.js** (`@huggingface/transformers`), model `Xenova/all-MiniLM-L6-v2`, in-process | Free, private, unlimited — runs inside the Node app. **No Ollama, no daemon, nothing to install or keep running.** |
 | Remote access | **Tailscale** | The Mac joins the tailnet; iPad/phone reach it by MagicDNS. No ports opened to the internet. |
 | Autostart | **launchd** (macOS) | Keeps Valet running on the always-on Mac; restarts on crash/login. |
 | Notifications | Browser + email (future mobile) | Quiet notification center is the primary surface. |
@@ -48,8 +48,9 @@ both the UI (React) and the backend (API routes / server actions). This is the
 The PRD demands low, "clean" token usage. The split:
 
 - **Indexing / retrieval → local.** Every uploaded doc, URL, and note is chunked
-  and embedded with Ollama on-device. This is free and unlimited, so building and
-  re-building the index costs nothing.
+  and embedded in-process with Transformers.js (ONNX). This is free and unlimited,
+  runs with no background service, so building and re-building the index costs
+  nothing and adds no maintenance.
 - **Answering → Claude.** Only the top-k relevant chunks (retrieved locally) plus
   a compact profile are sent to Claude. Prompt caching covers the stable system
   prompt / profile. Net effect: Claude sees a small, high-signal context per
@@ -92,7 +93,7 @@ capture(url | file | note)
   → normalize + dedupe  (hash; skip if already ingested — keeps data clean)
   → summarize (Claude, cheap) + auto-classify into collections
   → chunk               (~500–800 tokens, overlap)
-  → embed (Ollama)      → store vectors
+  → embed (Transformers.js, in-process)  → store vectors
   → write markdown note into the Obsidian vault
 ```
 

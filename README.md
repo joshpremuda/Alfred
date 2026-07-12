@@ -10,18 +10,21 @@ and [`TASKS.md`](./TASKS.md) for the full plan.
 ## Stack
 
 Next.js (App Router) · SQLite (`better-sqlite3`) · Markdown / Obsidian vault ·
-Claude API for answers · local Ollama embeddings (free) for indexing.
+Claude API for answers · local in-process embeddings (Transformers.js, free) for
+indexing — no Ollama, no background daemon.
 
 ## Setup (macOS)
 
 **1. Prepare the laptop** — audit, clean, and check prerequisites:
 ```bash
-./scripts/setup-macos.sh          # read-only report + readiness
-./scripts/setup-macos.sh clean    # optional interactive cleanup
-./scripts/setup-macos.sh vault    # point Alfred at your Obsidian vault
-./scripts/setup-macos.sh doctor   # confirm "ready for Valet"
+./scripts/setup-macos.sh                  # read-only report + readiness
+./scripts/setup-macos.sh clean            # optional interactive cleanup
+./scripts/setup-macos.sh uninstall-ollama # remove Ollama if it's still installed
+./scripts/setup-macos.sh vault            # point Alfred at your Obsidian vault
+./scripts/setup-macos.sh doctor           # confirm "ready for Valet"
 ```
-This checks Node 18+, Ollama, pulls `nomic-embed-text`, and writes `BRAIN_VAULT`.
+This checks Node 18+ and writes `BRAIN_VAULT`. Embeddings run in-process (no
+Ollama); model weights download once on first use.
 
 **2. Configure secrets:**
 ```bash

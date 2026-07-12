@@ -2,19 +2,21 @@
 # setup-macos.sh — Phase 0 laptop prep for Valet.
 #
 # Prepares the always-on MacBook: audits disk clutter, (optionally) cleans safe
-# caches, verifies prerequisites, pulls the local embedding model, finds the
-# Obsidian vault, and checks the Anthropic key.
+# caches, verifies prerequisites, finds the Obsidian vault, and checks the
+# Anthropic key. Embeddings run in-process (Transformers.js) — no Ollama, no
+# background daemon, nothing to install separately.
 #
 # SAFETY: this touches your real machine. It is REPORT-ONLY by default and never
-# deletes anything unless you run `clean` AND confirm each step interactively.
+# deletes anything unless you run `clean`/`uninstall-ollama` AND confirm each step.
 #
 # Usage:
-#   ./scripts/setup-macos.sh            full read-only report (audit + prereqs)
-#   ./scripts/setup-macos.sh audit      disk & clutter report only
-#   ./scripts/setup-macos.sh clean      interactive safe cleanup (asks per step)
-#   ./scripts/setup-macos.sh prereqs    check/install Node, Ollama, embed model
-#   ./scripts/setup-macos.sh vault      detect Obsidian vaults → BRAIN_VAULT
-#   ./scripts/setup-macos.sh doctor     one-line readiness summary
+#   ./scripts/setup-macos.sh                  full read-only report (audit + prereqs)
+#   ./scripts/setup-macos.sh audit            disk & clutter report only
+#   ./scripts/setup-macos.sh clean            interactive safe cleanup (asks per step)
+#   ./scripts/setup-macos.sh prereqs          check Node + build tools
+#   ./scripts/setup-macos.sh vault            detect Obsidian vaults → BRAIN_VAULT
+#   ./scripts/setup-macos.sh uninstall-ollama remove Ollama + its models from this Mac
+#   ./scripts/setup-macos.sh doctor           one-line readiness summary
 
 set -euo pipefail
 
@@ -150,21 +152,9 @@ cmd_prereqs() {
     else no "Node $(node --version) too old — need v18+ (brew install node)"; fi
   else no "Node.js missing — brew install node (v18+)"; fi
 
-  if command -v ollama >/dev/null 2>&1; then
-    ok "Ollama installed"
-    if curl -sf --max-time 3 http://localhost:11434/api/tags >/dev/null 2>&1; then
-      ok "Ollama is running"
-      if ollama list 2>/dev/null | grep -q 'nomic-embed-text'; then
-        ok "Embedding model 'nomic-embed-text' present"
-      else
-        warn "Embedding model missing — pulling nomic-embed-text…"
-        ollama pull nomic-embed-text && ok "Pulled nomic-embed-text"
-      fi
-    else
-      warn "Ollama not running — start it: 'ollama serve' or open the Ollama app"
-    fi
-  else
-    no "Ollama missing — https://ollama.com/download (needed for local embeddings)"
+  info "Embeddings run in-process via Transformers.js — no Ollama needed."
+  if command -v ollama >/dev/null 2>&1 || [[ -d /Applications/Ollama.app ]]; then
+    warn "Ollama is still installed — remove it: ./scripts/setup-macos.sh uninstall-ollama"
   fi
 
   head "Secrets"
@@ -219,6 +209,68 @@ cmd_vault() {
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
+# UNINSTALL OLLAMA (interactive — asks before each removal)
+# ─────────────────────────────────────────────────────────────────────────────
+cmd_uninstall_ollama() {
+  head "Remove Ollama from this Mac"
+  warn "Valet does not use Ollama. Each step below asks before deleting."
+  local found=0
+
+  # Quit the app if it is running.
+  osascript -e 'quit app "Ollama"' >/dev/null 2>&1 || true
+
+  # Homebrew installs.
+  if command -v brew >/dev/null 2>&1; then
+    if brew list --cask 2>/dev/null | grep -qx ollama; then
+      found=1; confirm "Uninstall Ollama (Homebrew cask)?" && brew uninstall --cask ollama && ok "Removed Homebrew cask"
+    fi
+    if brew list --formula 2>/dev/null | grep -qx ollama; then
+      found=1; confirm "Uninstall Ollama (Homebrew formula)?" && brew uninstall ollama && ok "Removed Homebrew formula"
+    fi
+  fi
+
+  # App bundle.
+  if [[ -d "/Applications/Ollama.app" ]]; then
+    found=1
+    if confirm "Delete /Applications/Ollama.app?"; then
+      rm -rf "/Applications/Ollama.app" 2>/dev/null && ok "Removed Ollama.app" \
+        || { warn "Permission denied — run:"; info "sudo rm -rf /Applications/Ollama.app"; }
+    fi
+  fi
+
+  # CLI binaries / symlinks.
+  local p
+  for p in /usr/local/bin/ollama /opt/homebrew/bin/ollama; do
+    if [[ -e "$p" || -L "$p" ]]; then
+      found=1
+      confirm "Remove CLI at $p?" && { rm -f "$p" 2>/dev/null && ok "Removed $p" \
+        || { warn "Permission denied — run:"; info "sudo rm -f $p"; }; }
+    fi
+  done
+
+  # Models & data (can be several GB).
+  if [[ -d "$HOME/.ollama" ]]; then
+    found=1
+    if confirm "Delete ~/.ollama models & data ($(human_size "$HOME/.ollama"))?"; then
+      rm -rf "$HOME/.ollama" && ok "Removed ~/.ollama"
+    fi
+  fi
+
+  # Launch agents.
+  local la
+  for la in "$HOME"/Library/LaunchAgents/*ollama*; do
+    [[ -e "$la" ]] || continue
+    found=1
+    confirm "Remove launch agent $(basename "$la")?" && {
+      launchctl unload "$la" 2>/dev/null || true; rm -f "$la"; ok "Removed $(basename "$la")"; }
+  done
+
+  say ""
+  (( found == 0 )) && info "No Ollama installation detected — nothing to remove." \
+    || ok "Ollama removal pass complete."
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
 # DOCTOR
 # ─────────────────────────────────────────────────────────────────────────────
 cmd_doctor() {
@@ -226,8 +278,9 @@ cmd_doctor() {
   local ready=1
   command -v node >/dev/null 2>&1 && (( $(node -p 'process.versions.node.split(".")[0]') >= 18 )) \
     && ok "Node 18+" || { no "Node 18+"; ready=0; }
-  command -v ollama >/dev/null 2>&1 && ok "Ollama" || { no "Ollama"; ready=0; }
-  ollama list 2>/dev/null | grep -q nomic-embed-text && ok "Embedding model" || { warn "Embedding model not pulled"; ready=0; }
+  if command -v ollama >/dev/null 2>&1 || [[ -d /Applications/Ollama.app ]]; then
+    warn "Ollama still present (not needed) — run: uninstall-ollama"
+  fi
   [[ -f "$ENV_FILE" ]] && grep -qE '^ANTHROPIC_API_KEY=.+' "$ENV_FILE" && ! grep -qE 'REPLACE' "$ENV_FILE" \
     && ok "Anthropic key" || { no "Anthropic key in .env"; ready=0; }
   [[ -f "$ENV_FILE" ]] && grep -qE '^BRAIN_VAULT=.+' "$ENV_FILE" \
@@ -246,6 +299,7 @@ main() {
     clean)   cmd_clean ;;
     prereqs) cmd_prereqs ;;
     vault)   cmd_vault ;;
+    uninstall-ollama) cmd_uninstall_ollama ;;
     doctor)  cmd_doctor ;;
     *) sed -n '2,20p' "$0" | sed 's/^# \{0,1\}//' ;;
   esac

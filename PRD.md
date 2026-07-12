@@ -86,9 +86,10 @@ built so importers can be added later without schema changes.
 
 ## 7. Constraints & non-goals
 
-- **Cost discipline.** Answers use the Claude API; **embeddings run locally**
-  (Ollama, free) so indexing never spends tokens. Retrieval sends only the most
-  relevant chunks to Claude. This keeps token usage low and "clean."
+- **Cost discipline.** Answers use the Claude API; **embeddings run locally
+  in-process** (Transformers.js, free — no Ollama, no daemon) so indexing never
+  spends tokens. Retrieval sends only the most relevant chunks to Claude. This
+  keeps token usage low and "clean."
 - **Data hygiene.** The vault stays clean and de-duplicated so retrieval is high
   signal — "clean data to keep the token level clean."
 - **Quiet by default.** No notification spam.
