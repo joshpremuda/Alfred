@@ -31,15 +31,19 @@ without explicit `clean` + confirmation).
 - [x] Verified: `npm run build` passes, server boots, DB seeds, streaming + persistence work
 - [ ] Add rotated `ANTHROPIC_API_KEY` to `.env` and confirm live replies *(Josh, on the Mac)*
 
-## Phase 2 — Knowledge vault & retrieval  `[ ]`
+## Phase 2 — Knowledge vault & retrieval  `[x]`
 
-- [ ] `lib/embeddings.ts` — Transformers.js (`Xenova/all-MiniLM-L6-v2`), in-process
-- [ ] `lib/ingest.ts` — extract → dedupe → summarize/classify → chunk → embed → write markdown
-- [ ] URL capture `/api/capture` (readability extraction)
-- [ ] File upload (PDF via `pdf-parse`, docs, notes)
-- [ ] Obsidian vault read/write (frontmatter, `Valet/Inbox/`)
-- [ ] `lib/retrieval.ts` — query embed → vector search → context assembly
-- [ ] "Summarize everything I know about `<topic>`" using retrieval
+- [x] `lib/embeddings.ts` — Transformers.js (`Xenova/all-MiniLM-L6-v2`), in-process; Float32↔BLOB helpers
+- [x] `lib/ingest.ts` — dedupe (hash) → summarize/classify (Claude, optional) → chunk → embed → write markdown; embedding failures non-fatal
+- [x] `lib/chunk.ts`, `lib/extract.ts` (Readability + `pdf-parse` v2), `lib/vault.ts`
+- [x] URL capture `/api/capture` (Readability extraction)
+- [x] File upload `/api/upload` (PDF via `pdf-parse`, text/markdown); `/api/note`; `/api/items`
+- [x] Obsidian vault write (frontmatter, `<vault>/Valet/Inbox/`; falls back to `data/vault`)
+- [x] `lib/retrieval.ts` — query embed → cosine vector search → context assembly
+- [x] Retrieval wired into `/api/chat` so Alfred answers from the vault and cites `[n]`
+- [x] Capture bar + "N in vault" count in the UI
+- [x] Verified: build passes; capture→chunk→vault→dedupe→items over HTTP; cosine ranking on real schema
+- [ ] Live embedding + semantic answers — confirm on the Mac (needs the model download, blocked in CI) *(Josh)*
 
 ## Phase 3 — Structure  `[ ]`
 

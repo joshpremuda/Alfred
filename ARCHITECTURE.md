@@ -63,7 +63,8 @@ Tables (initial cut — see migrations in `db/`):
 - `items` — every captured thing (url | file | note). Columns: id, type, title,
   url, source, file_path, text_summary, created_at, ingested_at.
 - `chunks` — text chunks per item for retrieval: id, item_id, ord, content.
-- `chunk_vectors` — `sqlite-vec` virtual table: chunk_id ↔ embedding.
+- `chunk_vectors` — chunk_id ↔ Float32 embedding (BLOB), ranked with in-process
+  cosine similarity (no native vector extension).
 - `collections` — Projects, Ideas, Reading, Inspiration, Resources, Smalley Coffee.
 - `item_collections` — many-to-many (an item can be in several collections).
 - `projects` — id, name, status (active|stalled|done|someday), notes, next_action,

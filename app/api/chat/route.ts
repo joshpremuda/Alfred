@@ -1,6 +1,7 @@
 import type { NextRequest } from "next/server";
 import { addMessage, getHistory } from "@/lib/db";
 import { streamAlfred } from "@/lib/claude";
+import { search, assembleContext } from "@/lib/retrieval";
 
 // better-sqlite3 + the Anthropic SDK need the Node runtime.
 export const runtime = "nodejs";
@@ -18,15 +19,25 @@ export async function POST(req: NextRequest) {
   }
 
   addMessage("user", message.trim());
-  const history = getHistory();
 
+  // Ground the reply in the knowledge base when there's a relevant match.
+  // Retrieval failures (e.g. embedding model not yet available) are non-fatal.
+  let context: string | undefined;
+  try {
+    const hits = (await search(message.trim(), 5)).filter((h) => h.score > 0.25);
+    if (hits.length) context = assembleContext(hits);
+  } catch (err) {
+    console.warn("[chat] retrieval skipped:", (err as Error).message);
+  }
+
+  const history = getHistory();
   const encoder = new TextEncoder();
   let full = "";
 
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
       try {
-        for await (const chunk of streamAlfred(history)) {
+        for await (const chunk of streamAlfred(history, context)) {
           full += chunk;
           controller.enqueue(encoder.encode(chunk));
         }

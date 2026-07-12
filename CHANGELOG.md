@@ -4,6 +4,26 @@ All notable changes to Valet. Newest first.
 
 ## [Unreleased]
 
+### Added
+- **Phase 2 — Knowledge vault & retrieval (RAG).** Capture URLs, files, and
+  notes; everything is chunked, embedded locally, and made searchable so Alfred
+  answers from Josh's own knowledge.
+  - `lib/embeddings.ts` (Transformers.js, `Xenova/all-MiniLM-L6-v2`, in-process),
+    `lib/chunk.ts`, `lib/extract.ts` (Readability + `pdf-parse`), `lib/vault.ts`
+    (Markdown notes with frontmatter into `<vault>/Valet/Inbox/`),
+    `lib/ingest.ts` (hash-dedupe → optional Claude summary/classification →
+    chunk → embed → write note), `lib/retrieval.ts` (cosine vector search).
+  - API: `/api/capture` (URL), `/api/upload` (PDF/text), `/api/note`, `/api/items`.
+  - `/api/chat` now retrieves relevant chunks and grounds Alfred's answers with
+    `[n]` citations. Embeddings stored as Float32 BLOBs + in-process cosine
+    (no native vector extension). Embedding failures are non-fatal — capture is
+    never lost and can be re-embedded later.
+  - UI: a capture bar (paste a URL or type a note) and a live "N in vault" count.
+- Verified locally: `npm run build` passes; capture → chunk → vault-write →
+  dedupe → items works over HTTP; Float32↔BLOB round-trip and cosine ranking
+  validated against the real schema. (Live embedding runs on the Mac; the HF
+  model download is blocked in this CI sandbox.)
+
 ### Changed
 - **Dropped Ollama.** Local embeddings will run in-process via Transformers.js
   (`@huggingface/transformers`, `Xenova/all-MiniLM-L6-v2`) instead — free, private,

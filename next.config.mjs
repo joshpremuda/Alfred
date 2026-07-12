@@ -1,7 +1,14 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // better-sqlite3 is a native module — keep it out of the bundler.
-  serverExternalPackages: ["better-sqlite3"],
+  // Native / heavy CJS packages that must not be bundled by the server compiler.
+  serverExternalPackages: [
+    "better-sqlite3",
+    "@huggingface/transformers",
+    "onnxruntime-node",
+    "jsdom",
+    "pdf-parse",
+    "@mozilla/readability",
+  ],
 };
 
 export default nextConfig;

@@ -30,14 +30,25 @@ function getClient(): Anthropic {
   return client;
 }
 
-/** Stream Alfred's reply as text chunks. */
-export async function* streamAlfred(history: ChatMessage[]): AsyncGenerator<string> {
+/** Stream Alfred's reply as text chunks, optionally grounded in retrieved notes. */
+export async function* streamAlfred(
+  history: ChatMessage[],
+  context?: string,
+): AsyncGenerator<string> {
+  const system: Anthropic.TextBlockParam[] = [
+    { type: "text", text: ALFRED_SYSTEM, cache_control: { type: "ephemeral" } },
+  ];
+  if (context) {
+    system.push({
+      type: "text",
+      text: `Relevant notes from Josh's knowledge base are below. Draw on them when they help, and cite the sources you use as [1], [2], etc. If they are not relevant, ignore them.\n\n${context}`,
+    });
+  }
+
   const stream = getClient().messages.stream({
     model: MODEL,
     max_tokens: 1024,
-    system: [
-      { type: "text", text: ALFRED_SYSTEM, cache_control: { type: "ephemeral" } },
-    ],
+    system,
     messages: history.map((m) => ({ role: m.role, content: m.content })),
   });
 
@@ -48,5 +59,61 @@ export async function* streamAlfred(history: ChatMessage[]): AsyncGenerator<stri
     ) {
       yield event.delta.text;
     }
+  }
+}
+
+export const COLLECTIONS = [
+  "Projects",
+  "Ideas",
+  "Reading",
+  "Inspiration",
+  "Resources",
+  "Smalley Coffee",
+] as const;
+
+export interface Enrichment {
+  title: string;
+  summary: string;
+  collections: string[];
+}
+
+/**
+ * Summarize + auto-classify captured content. Returns null (gracefully) when no
+ * API key is configured, so capture still works offline — items just aren't
+ * enriched until a key is present.
+ */
+export async function summarizeClassify(
+  text: string,
+  hintTitle?: string,
+): Promise<Enrichment | null> {
+  let anthropic: Anthropic;
+  try {
+    anthropic = getClient();
+  } catch {
+    return null;
+  }
+
+  const prompt = `Summarize the content below in 2-3 sentences, and classify it into zero or more of these collections: ${COLLECTIONS.join(
+    ", ",
+  )}.\nRespond with ONLY JSON: {"title": string, "summary": string, "collections": string[]}.\n\nContent:\n${text.slice(0, 6000)}`;
+
+  try {
+    const msg = await anthropic.messages.create({
+      model: MODEL,
+      max_tokens: 400,
+      messages: [{ role: "user", content: prompt }],
+    });
+    const raw = msg.content[0]?.type === "text" ? msg.content[0].text : "";
+    const json = JSON.parse(raw.slice(raw.indexOf("{"), raw.lastIndexOf("}") + 1));
+    const collections = Array.isArray(json.collections)
+      ? json.collections.filter((c: string) => (COLLECTIONS as readonly string[]).includes(c))
+      : [];
+    return {
+      title: typeof json.title === "string" ? json.title : hintTitle ?? "",
+      summary: typeof json.summary === "string" ? json.summary : "",
+      collections,
+    };
+  } catch {
+    return null;
   }
 }

@@ -15,9 +15,19 @@ export default function Home() {
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [theme, setTheme] = useState<Theme>("light");
+  const [capture, setCapture] = useState("");
+  const [capturing, setCapturing] = useState(false);
+  const [itemCount, setItemCount] = useState<number | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Load persisted history + saved theme.
+  function refreshCount() {
+    fetch("/api/items")
+      .then((r) => r.json())
+      .then((d) => setItemCount(d.count ?? 0))
+      .catch(() => {});
+  }
+
+  // Load persisted history + saved theme + item count.
   useEffect(() => {
     const saved = (localStorage.getItem("valet-theme") as Theme) || "light";
     setTheme(saved);
@@ -26,7 +36,38 @@ export default function Home() {
       .then((r) => r.json())
       .then((d) => setMessages(d.messages ?? []))
       .catch(() => {});
+    refreshCount();
   }, []);
+
+  async function saveCapture() {
+    const value = capture.trim();
+    if (!value || capturing) return;
+    setCapturing(true);
+    const isUrl = /^https?:\/\/\S+$/i.test(value);
+    try {
+      const res = await fetch(isUrl ? "/api/capture" : "/api/note", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(isUrl ? { url: value } : { text: value }),
+      });
+      const data = await res.json();
+      const note = res.ok
+        ? `Captured "${data.title}"${data.collections?.length ? ` → ${data.collections.join(", ")}` : ""}${data.status === "duplicate" ? " (already saved)" : ""}.`
+        : `Couldn't capture: ${data.error}`;
+      setMessages((m) => [...m, { role: "assistant", content: note }]);
+      if (res.ok) {
+        setCapture("");
+        refreshCount();
+      }
+    } catch (err) {
+      setMessages((m) => [
+        ...m,
+        { role: "assistant", content: `Capture failed: ${err instanceof Error ? err.message : String(err)}` },
+      ]);
+    } finally {
+      setCapturing(false);
+    }
+  }
 
   useEffect(() => {
     scrollRef.current?.scrollTo(0, scrollRef.current.scrollHeight);
@@ -91,7 +132,11 @@ export default function Home() {
     <div className="app">
       <header className="topbar">
         <div className="brand">
-          Alfred<small>Valet · Chief of Staff</small>
+          Alfred
+          <small>
+            Valet · Chief of Staff
+            {itemCount !== null ? ` · ${itemCount} in vault` : ""}
+          </small>
         </div>
         <div className="themes">
           {THEMES.map((t) => (
@@ -105,6 +150,20 @@ export default function Home() {
           ))}
         </div>
       </header>
+
+      <div className="capture">
+        <input
+          value={capture}
+          placeholder="Capture — paste a URL, or type a note…"
+          onChange={(e) => setCapture(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") saveCapture();
+          }}
+        />
+        <button onClick={saveCapture} disabled={capturing || !capture.trim()}>
+          {capturing ? "Saving…" : "Capture"}
+        </button>
+      </div>
 
       <div className="messages" ref={scrollRef}>
         {messages.length === 0 ? (

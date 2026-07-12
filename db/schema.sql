@@ -1,6 +1,6 @@
 -- Valet schema (SQLite). Idempotent: safe to run on every boot.
--- Vector search (chunk_vectors via sqlite-vec) is added in Phase 2, where the
--- extension is loaded at runtime — it is intentionally NOT declared here.
+-- Embeddings are stored as plain Float32 BLOBs in chunk_vectors and ranked with
+-- in-process cosine similarity (no native vector extension required).
 
 PRAGMA foreign_keys = ON;
 
@@ -26,6 +26,13 @@ CREATE TABLE IF NOT EXISTS chunks (
   content  TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_chunks_item ON chunks(item_id);
+
+-- One embedding per chunk (Float32 BLOB). Ranked with in-process cosine.
+CREATE TABLE IF NOT EXISTS chunk_vectors (
+  chunk_id  INTEGER PRIMARY KEY REFERENCES chunks(id) ON DELETE CASCADE,
+  dim       INTEGER NOT NULL,
+  vec       BLOB NOT NULL
+);
 
 -- Collections: Projects, Ideas, Reading, Inspiration, Resources, Smalley Coffee.
 CREATE TABLE IF NOT EXISTS collections (
