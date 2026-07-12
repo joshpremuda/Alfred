@@ -5,7 +5,22 @@ All notable changes to Valet. Newest first.
 ## [Unreleased]
 
 ### Added
+- **Phase 1 — Alfred MVP foundation.** Next.js (App Router, TypeScript) app at
+  the repo root: streaming browser chat with the Alfred persona, three themes
+  (Light / Dark / Sunny), and a Node API (`/api/chat`, `/api/history`).
+- SQLite layer (`lib/db.ts`, `db/schema.sql`) via `better-sqlite3`: items,
+  chunks, collections, projects, ideas, idea_links, notifications, messages,
+  meta — with the collections and idea reservoir seeded. **Chat history now
+  persists across restarts** (the prototype kept it only in RAM).
+- `lib/claude.ts`: Anthropic streaming client with a cached system prompt.
+- README rewritten as the Valet setup/run guide.
+- Verified locally: `npm run build` passes, server boots, schema seeds, chat
+  streams, messages persist, and the app degrades gracefully with no API key.
 - Project governance docs: `PRD.md`, `ARCHITECTURE.md`, `TASKS.md`, `CHANGELOG.md`.
+
+### Removed
+- Superseded prototype: the Express/Ollama `webchat/` app, the `alfred` bash
+  manager, and `config/agent.json` — replaced by the Next.js app.
 - `scripts/setup-macos.sh` — Phase 0 laptop prep: report-only disk/clutter audit,
   interactive safe cache cleanup, prerequisite checks (Xcode CLT, Homebrew,
   Node 18+, Ollama), pulls the local `nomic-embed-text` embedding model, detects

@@ -1,97 +1,63 @@
-# Alfred — Personal AI Agent
+# Valet
 
-Alfred is a secured, Docker-isolated instance of [OpenClaw](https://openclaw.ai) running on your laptop as your personal agent.
+A **local-first AI operating system** that runs on Josh's always-on MacBook —
+his Chief of Staff, second brain, and command center. Not a chatbot.
 
-## Quick Start
+**Phase 1 (this repo) builds one agent: Alfred** — a browser-based, persistent,
+editorial assistant. See [`PRD.md`](./PRD.md), [`ARCHITECTURE.md`](./ARCHITECTURE.md),
+and [`TASKS.md`](./TASKS.md) for the full plan.
 
-### 1. First-time setup (one time only)
+## Stack
+
+Next.js (App Router) · SQLite (`better-sqlite3`) · Markdown / Obsidian vault ·
+Claude API for answers · local Ollama embeddings (free) for indexing.
+
+## Setup (macOS)
+
+**1. Prepare the laptop** — audit, clean, and check prerequisites:
 ```bash
-./alfred setup
+./scripts/setup-macos.sh          # read-only report + readiness
+./scripts/setup-macos.sh clean    # optional interactive cleanup
+./scripts/setup-macos.sh vault    # point Alfred at your Obsidian vault
+./scripts/setup-macos.sh doctor   # confirm "ready for Valet"
 ```
-The wizard will ask for:
-- Your **Anthropic API key** (required) — get one at https://console.anthropic.com/keys
-- Your **Telegram bot token** (optional but recommended for mobile access)
+This checks Node 18+, Ollama, pulls `nomic-embed-text`, and writes `BRAIN_VAULT`.
 
-### 2. Start Alfred
+**2. Configure secrets:**
 ```bash
-./alfred start
+cp .env.example .env
+# then edit .env and add your (rotated) ANTHROPIC_API_KEY
 ```
+> ⚠️ Never paste your API key into a chat. It lives only in `.env` (gitignored).
 
-### 3. Talk to Alfred
-| Interface | How |
-|-----------|-----|
-| **Web browser** | Open http://localhost:3000 |
-| **Telegram** | Message your bot directly |
-
----
-
-## All Commands
-
-| Command | What it does |
-|---------|-------------|
-| `./alfred setup` | First-time setup wizard |
-| `./alfred start` | Start Alfred |
-| `./alfred stop` | Stop Alfred |
-| `./alfred restart` | Restart Alfred |
-| `./alfred status` | Show container status |
-| `./alfred logs` | Stream live logs |
-| `./alfred chat` | Open web chat in browser |
-| `./alfred update` | Pull latest OpenClaw version |
-| `./alfred onboard` | Re-run OpenClaw onboarding |
-
----
-
-## Auto-start on Login (optional)
-
-### systemd (Linux)
+**3. Install and run:**
 ```bash
-sudo cp alfred.service /etc/systemd/system/
-sudo systemctl enable alfred
-sudo systemctl start alfred
+npm install
+npm run dev        # http://localhost:3210   (use `npm run build && npm run start` for production)
 ```
 
----
+## Remote access (iPad / phone)
 
-## Security Model
+Install [Tailscale](https://tailscale.com) on the Mac and your devices, then open
+`http://<mac-magicdns-name>:3210` from anywhere on your tailnet. Valet is never
+exposed to the public internet.
 
-- **Docker-isolated** — Alfred runs inside a container with `no-new-privileges` and all capabilities dropped
-- **Localhost-only** — ports are bound to `127.0.0.1`, not exposed to your network
-- **Owner-only access** — DM pairing requires an explicit pairing code; Telegram restricted to your user ID
-- **No host filesystem access** — the container cannot read your files unless you explicitly grant it
-- **Secrets in `.env`** — your API key is never committed to git (`.gitignore` blocks it)
+## Project layout
 
----
-
-## Customising Alfred
-
-Edit `config/agent.json` to change:
-- Agent name and persona
-- Which tools are enabled (browser, filesystem, shell)
-- Which channels are active
-
-Then restart: `./alfred restart`
-
----
-
-## Updating OpenClaw
-
-```bash
-./alfred update
+```
+app/        Next.js UI + API routes (/api/chat, /api/history)
+lib/        db.ts (SQLite), claude.ts (Anthropic client)
+db/         schema.sql
+scripts/    setup-macos.sh (Phase 0 laptop prep)
+PRD.md ARCHITECTURE.md TASKS.md CHANGELOG.md
 ```
 
----
+## What works today (Phase 1)
 
-## Troubleshooting
+- Browser chat with Alfred, streaming replies, three themes (Light / Dark / Sunny)
+- **Persistent** history in SQLite (survives restarts)
+- Seeded collections and the idea reservoir
+- Local-only data; graceful behavior when the API key isn't set
 
-**Alfred won't start**
-- Run `./alfred logs` to see errors
-- Make sure `.env` has a valid `ANTHROPIC_API_KEY`
-- Make sure Docker is running: `docker info`
-
-**Web chat shows "Connecting…"**
-- Wait ~30 seconds for the container to install OpenClaw on first boot
-- Check logs: `./alfred logs`
-
-**Telegram not working**
-- Confirm `TELEGRAM_BOT_TOKEN` is set in `.env`
-- Re-run onboarding: `./alfred onboard`
+Next up: knowledge vault + retrieval (Phase 2), collections/projects/notifications
+(Phase 3), and the "Brief me" command (Phase 4). See [`TASKS.md`](./TASKS.md).

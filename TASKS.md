@@ -18,16 +18,18 @@ without explicit `clean` + confirmation).
 - [ ] Run it on the actual laptop and confirm a green "ready" report *(Josh)*
 - [ ] **Rotate the leaked API key** and store the new one in `.env` *(Josh)*
 
-## Phase 1 — Foundations  `[ ]`
+## Phase 1 — Foundations  `[x]`
 
-- [ ] Scaffold Next.js (App Router, TypeScript) as the app root
-- [ ] `better-sqlite3` setup + `db/schema.sql` (items, chunks, collections,
-      projects, ideas, notifications, messages, meta)
-- [ ] `sqlite-vec` wiring for `chunk_vectors`
-- [ ] `.env` loader; `lib/claude.ts` (Anthropic client, prompt caching)
-- [ ] Base chat route `/api/chat` + persisted `messages`
-- [ ] Chat UI with Alfred persona; Light/Dark/Sunny themes
-- [ ] Retire `webchat/` prototype once chat parity is reached
+- [x] Scaffold Next.js (App Router, TypeScript) as the app root
+- [x] `better-sqlite3` setup + `db/schema.sql` (items, chunks, collections,
+      projects, ideas, notifications, messages, meta) — seeds collections + ideas
+- [~] `sqlite-vec` wiring for `chunk_vectors` — deferred to Phase 2 (loaded at runtime)
+- [x] `lib/claude.ts` (Anthropic streaming client, cached system prompt)
+- [x] Base chat route `/api/chat` + persisted `messages` (+ `/api/history`)
+- [x] Chat UI with Alfred persona; Light/Dark/Sunny themes
+- [x] Retire `webchat/` prototype (removed; also removed legacy `alfred` + `config/`)
+- [x] Verified: `npm run build` passes, server boots, DB seeds, streaming + persistence work
+- [ ] Add rotated `ANTHROPIC_API_KEY` to `.env` and confirm live replies *(Josh, on the Mac)*
 
 ## Phase 2 — Knowledge vault & retrieval  `[ ]`
 
