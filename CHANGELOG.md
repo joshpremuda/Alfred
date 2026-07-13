@@ -5,6 +5,20 @@ All notable changes to Valet. Newest first.
 ## [Unreleased]
 
 ### Added
+- **Hardening & polish (post-MVP).**
+  - **Hybrid retrieval:** keyword search via SQLite **FTS5** (`chunks_fts` +
+    triggers) merged with vector search, so the vault is searchable *immediately*
+    — even before embeddings download or if a chunk failed to embed.
+  - **`/api/reindex`** + a Vault "Reindex" button: rebuild the keyword index and
+    backfill embeddings after the first-run model download.
+  - **`/api/search`** + a Vault search box (hybrid, item-level results).
+  - **Markdown rendering** for chat replies and briefings (safe, node-based).
+  - Seeded Josh's active projects (Smalley Coffee, Crema, Paper Filter, Digital
+    Caddie Book, Clubsmanship).
+  - Extracted pure vector math into `lib/vector.ts` and added a **Vitest suite**
+    (`npm test`, 22 tests) covering cosine, BLOB round-trip, chunking, FTS query
+    building, ICS parsing, and slugify.
+  - Documented that **JARVIS and Valet are the same system**.
 - **Phase 6 — Remote, autostart, polish.**
   - `scripts/install-launchd.sh`: runs Valet as a macOS login service (builds,
     starts at login, relaunches on crash; install/uninstall/status/logs).

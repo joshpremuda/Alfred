@@ -1,6 +1,6 @@
 import { getDb } from "@/lib/db";
-import { embed, blobToVec } from "@/lib/embeddings";
-import { cosine } from "@/lib/retrieval";
+import { embed } from "@/lib/embeddings";
+import { blobToVec, cosine } from "@/lib/vector";
 import { createNotification } from "@/lib/notifications";
 
 export interface Idea {

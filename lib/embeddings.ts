@@ -21,14 +21,6 @@ export async function embed(text: string): Promise<Float32Array> {
   return Float32Array.from(output.data as Float32Array);
 }
 
-// ── Serialization to/from SQLite BLOBs ──────────────────────────────────────
-export function vecToBlob(v: Float32Array): Buffer {
-  return Buffer.from(v.buffer, v.byteOffset, v.byteLength);
-}
-
-export function blobToVec(b: Buffer): Float32Array {
-  // Copy into a fresh, aligned buffer (better-sqlite3 Buffers may be offset).
-  const copy = new Uint8Array(b.byteLength);
-  copy.set(b);
-  return new Float32Array(copy.buffer);
-}
+// Serialization helpers live in lib/vector.ts (pure, model-free). Re-export for
+// existing import sites.
+export { vecToBlob, blobToVec } from "@/lib/vector";

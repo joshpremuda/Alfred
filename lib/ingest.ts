@@ -111,6 +111,37 @@ export async function ingestItem(input: IngestInput): Promise<IngestResult> {
   };
 }
 
+/**
+ * Rebuild the keyword index and backfill embeddings for any chunks that don't
+ * yet have a vector (e.g. captured before the model finished downloading).
+ * Safe to run anytime; stops embedding early if the model is unavailable.
+ */
+export async function reindex(): Promise<{ ftsRebuilt: boolean; embedded: number; missing: number }> {
+  const db = getDb();
+  db.exec("INSERT INTO chunks_fts(chunks_fts) VALUES('rebuild')");
+
+  const missing = db
+    .prepare(
+      `SELECT ch.id, ch.content FROM chunks ch
+         LEFT JOIN chunk_vectors v ON v.chunk_id = ch.id
+        WHERE v.chunk_id IS NULL`,
+    )
+    .all() as { id: number; content: string }[];
+
+  const insertVec = db.prepare("INSERT INTO chunk_vectors (chunk_id, dim, vec) VALUES (?, ?, ?)");
+  let embedded = 0;
+  for (const c of missing) {
+    try {
+      const v = await embed(c.content);
+      insertVec.run(c.id, v.length, vecToBlob(v));
+      embedded++;
+    } catch {
+      break; // model unavailable — leave the rest for next time
+    }
+  }
+  return { ftsRebuilt: true, embedded, missing: missing.length };
+}
+
 function linkCollections(itemId: number, names: string[]): void {
   const db = getDb();
   const findCol = db.prepare("SELECT id FROM collections WHERE name = ?");

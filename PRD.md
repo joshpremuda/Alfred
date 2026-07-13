@@ -8,6 +8,10 @@ Valet is a **local-first AI operating system** that runs on Josh's always-on
 MacBook. It is not a chatbot. It is a personal **Chief of Staff, second brain,
 and command center**.
 
+> **Naming:** *JARVIS* and *Valet* refer to the same system — JARVIS = "Josh's
+> Artificial Valet Intelligence System"; **Valet** is the project/product name
+> used throughout this repo.
+
 Valet understands Josh's projects, schedule, ideas, reading, priorities, and
 businesses, and surfaces the *right* information at the right time rather than
 dumping everything.

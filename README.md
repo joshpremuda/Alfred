@@ -3,6 +3,9 @@
 A **local-first AI operating system** that runs on Josh's always-on MacBook —
 his Chief of Staff, second brain, and command center. Not a chatbot.
 
+> *JARVIS* and *Valet* are the same system (JARVIS = "Josh's Artificial Valet
+> Intelligence System"; Valet is the project name).
+
 **Phase 1 (this repo) builds one agent: Alfred** — a browser-based, persistent,
 editorial assistant. See [`PRD.md`](./PRD.md), [`ARCHITECTURE.md`](./ARCHITECTURE.md),
 and [`TASKS.md`](./TASKS.md) for the full plan.
@@ -24,6 +27,7 @@ git clone https://github.com/joshpremuda/Alfred.git valet && cd valet
 ./scripts/setup-macos.sh vault            # point Alfred at your Obsidian vault
 cp .env.example .env                      # then add your ANTHROPIC_API_KEY
 npm install && npm run dev                # → http://localhost:3210
+npm test                                  # run the unit suite (optional)
 ```
 > ⚠️ Never paste your API key into a chat. It lives only in `.env` (gitignored).
 

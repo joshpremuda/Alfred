@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import Markdown from "./Markdown";
 
 export default function BriefView() {
   const [text, setText] = useState("");
@@ -43,7 +44,7 @@ export default function BriefView() {
         </button>
       </header>
       <div className="brief">
-        {text ? <pre className="briefbody">{text}</pre> : <p className="empty">Preparing your briefing…</p>}
+        {text ? <Markdown text={text} /> : <p className="empty">Preparing your briefing…</p>}
       </div>
     </div>
   );

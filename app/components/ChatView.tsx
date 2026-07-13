@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Capture from "./Capture";
+import Markdown from "./Markdown";
 
 interface Msg {
   role: "user" | "assistant";
@@ -103,11 +104,17 @@ export default function ChatView() {
             today?&rdquo;, &ldquo;what&rsquo;s stalled?&rdquo;, or capture something above.
           </p>
         ) : (
-          messages.map((m, i) => (
-            <div key={i} className={`msg ${m.role}`}>
-              {m.content || (busy && i === messages.length - 1 ? "…" : "")}
-            </div>
-          ))
+          messages.map((m, i) =>
+            m.role === "assistant" ? (
+              <div key={i} className="msg assistant">
+                {m.content ? <Markdown text={m.content} /> : busy && i === messages.length - 1 ? "…" : ""}
+              </div>
+            ) : (
+              <div key={i} className="msg user">
+                {m.content}
+              </div>
+            ),
+          )
         )}
       </div>
 

@@ -75,6 +75,16 @@ without explicit `clean` + confirmation).
 - [x] Setup guide + local installation instructions (`docs/SETUP.md`)
 - [x] Browser notifications from the notification center
 
+## Hardening & polish (post-MVP)  `[x]`
+
+- [x] Hybrid retrieval: FTS5 keyword search merged with vector search (searchable with no model)
+- [x] `/api/reindex` (+ Vault button): rebuild FTS + backfill embeddings after model download
+- [x] `/api/search` (+ Vault search box): hybrid, item-level results
+- [x] Markdown rendering for chat + briefings (`Markdown.tsx`, safe/node-based)
+- [x] Seed active projects (Smalley Coffee, Crema, Paper Filter, Digital Caddie Book, Clubsmanship)
+- [x] `lib/vector.ts` extraction + Vitest suite (`npm test`, 22 tests)
+- [x] Note that JARVIS ≡ Valet
+
 ## Future — additional agents (documented, not built)  `[>]`
 
 - [>] Wayne (Smalley COO) · Q (systems) · Creative (writing/design) · Buffett (finance) · 007 (intel)

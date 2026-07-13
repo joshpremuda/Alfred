@@ -34,6 +34,22 @@ CREATE TABLE IF NOT EXISTS chunk_vectors (
   vec       BLOB NOT NULL
 );
 
+-- Full-text index over chunks for keyword search (works with no embeddings —
+-- the vault is searchable immediately). Kept in sync via triggers below.
+CREATE VIRTUAL TABLE IF NOT EXISTS chunks_fts
+  USING fts5(content, content='chunks', content_rowid='id');
+
+CREATE TRIGGER IF NOT EXISTS chunks_ai AFTER INSERT ON chunks BEGIN
+  INSERT INTO chunks_fts(rowid, content) VALUES (new.id, new.content);
+END;
+CREATE TRIGGER IF NOT EXISTS chunks_ad AFTER DELETE ON chunks BEGIN
+  INSERT INTO chunks_fts(chunks_fts, rowid, content) VALUES ('delete', old.id, old.content);
+END;
+CREATE TRIGGER IF NOT EXISTS chunks_au AFTER UPDATE ON chunks BEGIN
+  INSERT INTO chunks_fts(chunks_fts, rowid, content) VALUES ('delete', old.id, old.content);
+  INSERT INTO chunks_fts(rowid, content) VALUES (new.id, new.content);
+END;
+
 -- Collections: Projects, Ideas, Reading, Inspiration, Resources, Smalley Coffee.
 CREATE TABLE IF NOT EXISTS collections (
   id    INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -109,6 +125,10 @@ CREATE TABLE IF NOT EXISTS meta (
 INSERT OR IGNORE INTO collections (name, kind) VALUES
   ('Projects','system'), ('Ideas','system'), ('Reading','system'),
   ('Inspiration','system'), ('Resources','system'), ('Smalley Coffee','system');
+
+INSERT OR IGNORE INTO projects (name, status) VALUES
+  ('Smalley Coffee','active'), ('Crema','active'), ('The Paper Filter','active'),
+  ('Digital Caddie Book','active'), ('Clubsmanship','active');
 
 INSERT OR IGNORE INTO ideas (name) VALUES
   ('Digital Caddie Book'), ('Clubsmanship'), ('Crema'), ('The Paper Filter'),

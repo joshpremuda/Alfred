@@ -13,8 +13,19 @@ interface Item {
   created_at: string;
 }
 
+interface SearchResult {
+  itemId: number;
+  title: string;
+  url: string | null;
+  snippet: string;
+  score: number;
+}
+
 export default function VaultView() {
   const [items, setItems] = useState<Item[]>([]);
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<SearchResult[] | null>(null);
+  const [note, setNote] = useState("");
 
   const load = useCallback(() => {
     fetch("/api/items")
@@ -25,15 +36,83 @@ export default function VaultView() {
 
   useEffect(() => load(), [load]);
 
+  async function runSearch(q: string) {
+    if (!q.trim()) {
+      setResults(null);
+      return;
+    }
+    try {
+      const d = await (await fetch(`/api/search?q=${encodeURIComponent(q)}`)).json();
+      setResults(d.results ?? []);
+    } catch {
+      setResults([]);
+    }
+  }
+
+  async function reindex() {
+    setNote("Reindexing…");
+    try {
+      const d = await (await fetch("/api/reindex", { method: "POST" })).json();
+      setNote(
+        d.error
+          ? `Reindex error: ${d.error}`
+          : `Reindexed — ${d.embedded} embedded${d.missing > d.embedded ? `, ${d.missing - d.embedded} pending (model not ready)` : ""}.`,
+      );
+    } catch (err) {
+      setNote(`Reindex failed: ${err instanceof Error ? err.message : String(err)}`);
+    }
+  }
+
   return (
     <div className="view">
       <header className="viewhead">
         <h1>Vault</h1>
-        <span>{items.length} items</span>
+        <button className="linkbtn" onClick={reindex}>
+          Reindex
+        </button>
       </header>
-      <Capture onSaved={load} />
+
+      <Capture onSaved={load} onMessage={setNote} />
+
+      <div className="addrow">
+        <input
+          value={query}
+          placeholder="Search your vault…"
+          onChange={(e) => {
+            setQuery(e.target.value);
+            runSearch(e.target.value);
+          }}
+        />
+        {results !== null && (
+          <button className="linkbtn" onClick={() => { setQuery(""); setResults(null); }}>
+            clear
+          </button>
+        )}
+      </div>
+
+      {note && <p className="notice">{note}</p>}
+
       <div className="list">
-        {items.length === 0 ? (
+        {results !== null ? (
+          results.length === 0 ? (
+            <p className="empty">No matches.</p>
+          ) : (
+            results.map((r) => (
+              <div key={r.itemId} className="card">
+                <div className="cardhead">
+                  <strong>{r.title}</strong>
+                  <span className="tag">{r.score}</span>
+                </div>
+                <p>{r.snippet}…</p>
+                {r.url && (
+                  <a href={r.url} target="_blank" rel="noreferrer">
+                    source ↗
+                  </a>
+                )}
+              </div>
+            ))
+          )
+        ) : items.length === 0 ? (
           <p className="empty">Nothing captured yet. Paste a URL or type a note above.</p>
         ) : (
           items.map((it) => (
