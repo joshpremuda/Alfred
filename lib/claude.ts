@@ -30,18 +30,28 @@ function getClient(): Anthropic {
   return client;
 }
 
-/** Stream Alfred's reply as text chunks, optionally grounded in retrieved notes. */
+export interface Grounding {
+  /** Relevant retrieved notes (cited as [n]). */
+  notes?: string;
+  /** Compact snapshot of projects/calendar/notifications. */
+  state?: string;
+}
+
+/** Stream Alfred's reply as text chunks, optionally grounded in notes + state. */
 export async function* streamAlfred(
   history: ChatMessage[],
-  context?: string,
+  grounding: Grounding = {},
 ): AsyncGenerator<string> {
   const system: Anthropic.TextBlockParam[] = [
     { type: "text", text: ALFRED_SYSTEM, cache_control: { type: "ephemeral" } },
   ];
-  if (context) {
+  if (grounding.state) {
+    system.push({ type: "text", text: grounding.state });
+  }
+  if (grounding.notes) {
     system.push({
       type: "text",
-      text: `Relevant notes from Josh's knowledge base are below. Draw on them when they help, and cite the sources you use as [1], [2], etc. If they are not relevant, ignore them.\n\n${context}`,
+      text: `Relevant notes from Josh's knowledge base are below. Draw on them when they help, and cite the sources you use as [1], [2], etc. If they are not relevant, ignore them.\n\n${grounding.notes}`,
     });
   }
 
@@ -57,6 +67,24 @@ export async function* streamAlfred(
       event.type === "content_block_delta" &&
       event.delta.type === "text_delta"
     ) {
+      yield event.delta.text;
+    }
+  }
+}
+
+/** Stream an on-demand briefing built from Josh's current state. */
+export async function* streamBriefing(stateContext: string): AsyncGenerator<string> {
+  const anthropic = getClient();
+  const user = `Give me a briefing. Current state:\n\n${stateContext || "(no projects, calendar, or captures yet)"}\n\nStructure it as: a one-line greeting, then only the sections that have something worth saying — **Focus today**, **Calendar**, **Projects** (active & stalled), **Worth your attention**. Prioritize ruthlessly and recommend what to do first. Keep it tight and editorial; do not pad.`;
+
+  const stream = anthropic.messages.stream({
+    model: MODEL,
+    max_tokens: 1024,
+    system: [{ type: "text", text: ALFRED_SYSTEM, cache_control: { type: "ephemeral" } }],
+    messages: [{ role: "user", content: user }],
+  });
+  for await (const event of stream) {
+    if (event.type === "content_block_delta" && event.delta.type === "text_delta") {
       yield event.delta.text;
     }
   }

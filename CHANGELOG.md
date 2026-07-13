@@ -5,6 +5,21 @@ All notable changes to Valet. Newest first.
 ## [Unreleased]
 
 ### Added
+- **Phases 3–5 — Structure, Intelligence, Calendar.**
+  - Projects (`lib/projects.ts`, `/api/projects`): status, notes, next action,
+    and automatic stalled detection (14+ days inactive → status + notification).
+  - Idea reservoir (`lib/ideas.ts`, `/api/ideas`): add/list, plus embedding-based
+    idea↔item connection discovery that surfaces new links as notifications.
+  - Notification center (`lib/notifications.ts`, `/api/notifications`): quiet by
+    design, with a sidebar badge and optional browser notifications.
+  - "Brief me" (`/api/brief`, `lib/context.ts`, `streamBriefing`): an on-demand,
+    prioritized briefing over projects, calendar, captures, and open items.
+  - Chat is now grounded in a compact state snapshot, so "what should I work on
+    today?" / "what's stalled?" work in normal conversation.
+  - Calendar awareness (`lib/calendar.ts`, `/api/calendar`): reads a published or
+    exported `.ics` (`CALENDAR_ICS_URL` / `CALENDAR_ICS_FILE`) into state + briefings.
+  - **UI shell:** sidebar navigation with Chat, Brief me, Vault, Projects, Ideas,
+    and Notifications views; **voice input** (Web Speech API) in chat.
 - **Phase 2 — Knowledge vault & retrieval (RAG).** Capture URLs, files, and
   notes; everything is chunked, embedded locally, and made searchable so Alfred
   answers from Josh's own knowledge.

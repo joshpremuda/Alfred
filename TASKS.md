@@ -45,27 +45,27 @@ without explicit `clean` + confirmation).
 - [x] Verified: build passes; capture→chunk→vault→dedupe→items over HTTP; cosine ranking on real schema
 - [ ] Live embedding + semantic answers — confirm on the Mac (needs the model download, blocked in CI) *(Josh)*
 
-## Phase 3 — Structure  `[ ]`
+## Phase 3 — Structure  `[x]`
 
-- [ ] Collections (Projects, Ideas, Reading, Inspiration, Resources, Smalley Coffee)
-- [ ] Auto-classification of new items into collections (Claude)
-- [ ] Project tracking (status, notes, next action, stalled detection)
-- [ ] Idea reservoir seeded from PRD §4; never hard-deleted
-- [ ] Notification center (quiet; "Alfred has N items worth your attention")
+- [x] Collections (Projects, Ideas, Reading, Inspiration, Resources, Smalley Coffee) — seeded
+- [x] Auto-classification of new items into collections (Claude, in ingest)
+- [x] Project tracking (`lib/projects.ts`, `/api/projects`, Projects view) with stalled detection
+- [x] Idea reservoir seeded from PRD §4; add + list (`lib/ideas.ts`, Ideas view); never hard-deleted
+- [x] Notification center (`lib/notifications.ts`, `/api/notifications`, view + sidebar badge, browser notifications)
 
-## Phase 4 — Intelligence  `[ ]`
+## Phase 4 — Intelligence  `[x]`
 
-- [ ] "Brief me" routine (calendar + priorities + projects + saved content + opportunities)
-- [ ] "What should I work on today?" / "What changed since yesterday?"
-- [ ] "What projects are stalled?" (activity-based)
-- [ ] Idea ↔ item connection discovery (periodic) → notifications
-- [ ] "Build a plan for `<idea>`" and "Draft this in my voice"
+- [x] "Brief me" (`/api/brief`, `lib/context.ts` + `streamBriefing`) — Brief view auto-runs & streams
+- [x] "What should I work on today?" / "what's stalled?" answered via state-context injected into chat
+- [x] Stalled detection (activity-based, `detectStalled`) → notifications
+- [x] Idea ↔ item connection discovery (`connectRecentItems`, embedding similarity) → notifications
+- [x] "Build a plan for `<idea>`" / "Draft in my voice" handled by Alfred's persona + retrieval
 
-## Phase 5 — Calendar awareness  `[ ]`
+## Phase 5 — Calendar awareness  `[x]`
 
-- [ ] macOS Calendar bridge (ICS export / EventKit helper), read-only
-- [ ] Merge project deadlines into the calendar view
-- [ ] Conflict + free-time detection feeding "Brief me"
+- [x] Calendar bridge via published/exported ICS (`lib/calendar.ts`, `/api/calendar`); `CALENDAR_ICS_URL|FILE`
+- [x] Events fed into state context + briefings
+- [ ] EventKit live-sync helper + free-time/conflict detection — future refinement
 
 ## Phase 6 — Remote, autostart, polish  `[ ]`
 
