@@ -13,54 +13,49 @@ Next.js (App Router) · SQLite (`better-sqlite3`) · Markdown / Obsidian vault �
 Claude API for answers · local in-process embeddings (Transformers.js, free) for
 indexing — no Ollama, no background daemon.
 
-## Setup (macOS)
+## Setup
 
-**1. Prepare the laptop** — audit, clean, and check prerequisites:
+Full step-by-step (laptop prep, calendar, autostart, iPad/phone remote) is in
+**[`docs/SETUP.md`](./docs/SETUP.md)**. The short version:
+
 ```bash
-./scripts/setup-macos.sh                  # read-only report + readiness
-./scripts/setup-macos.sh clean            # optional interactive cleanup
-./scripts/setup-macos.sh uninstall-ollama # remove Ollama if it's still installed
+git clone https://github.com/joshpremuda/Alfred.git valet && cd valet
+./scripts/setup-macos.sh                  # audit + prerequisite check
 ./scripts/setup-macos.sh vault            # point Alfred at your Obsidian vault
-./scripts/setup-macos.sh doctor           # confirm "ready for Valet"
-```
-This checks Node 18+ and writes `BRAIN_VAULT`. Embeddings run in-process (no
-Ollama); model weights download once on first use.
-
-**2. Configure secrets:**
-```bash
-cp .env.example .env
-# then edit .env and add your (rotated) ANTHROPIC_API_KEY
+cp .env.example .env                      # then add your ANTHROPIC_API_KEY
+npm install && npm run dev                # → http://localhost:3210
 ```
 > ⚠️ Never paste your API key into a chat. It lives only in `.env` (gitignored).
 
-**3. Install and run:**
-```bash
-npm install
-npm run dev        # http://localhost:3210   (use `npm run build && npm run start` for production)
-```
-
-## Remote access (iPad / phone)
-
-Install [Tailscale](https://tailscale.com) on the Mac and your devices, then open
-`http://<mac-magicdns-name>:3210` from anywhere on your tailnet. Valet is never
-exposed to the public internet.
+**Always-on:** `./scripts/install-launchd.sh install` runs Valet as a login
+service. **Remote:** install [Tailscale](https://tailscale.com) on the Mac +
+devices and open `http://<mac-magicdns-name>:3210`.
 
 ## Project layout
 
 ```
-app/        Next.js UI + API routes (/api/chat, /api/history)
-lib/        db.ts (SQLite), claude.ts (Anthropic client)
-db/         schema.sql
-scripts/    setup-macos.sh (Phase 0 laptop prep)
-PRD.md ARCHITECTURE.md TASKS.md CHANGELOG.md
+app/            UI shell + views + API routes (chat, capture, brief, projects…)
+app/components/ Sidebar + Chat/Brief/Vault/Projects/Ideas/Notifications views
+lib/            db, claude, embeddings, ingest, retrieval, projects, ideas,
+                notifications, calendar, context
+db/             schema.sql
+scripts/        setup-macos.sh (Phase 0), install-launchd.sh (autostart)
+docs/SETUP.md · PRD.md · ARCHITECTURE.md · TASKS.md · CHANGELOG.md
 ```
 
-## What works today (Phase 1)
+## What works today (MVP complete)
 
-- Browser chat with Alfred, streaming replies, three themes (Light / Dark / Sunny)
-- **Persistent** history in SQLite (survives restarts)
-- Seeded collections and the idea reservoir
-- Local-only data; graceful behavior when the API key isn't set
+- **Chat** with Alfred — streaming, voice input, grounded in your knowledge + a
+  live snapshot of your projects/calendar ("what should I work on today?").
+- **Knowledge vault** — capture URLs/files/notes → summarized, auto-filed into
+  Collections, embedded locally, written to your Obsidian vault, and searchable.
+- **Brief me** — an on-demand, prioritized briefing.
+- **Projects** — status, next actions, automatic stalled detection.
+- **Idea reservoir** — seeded from your list; Alfred links new material to ideas.
+- **Notification center** — quiet by design, with a sidebar badge.
+- **Calendar awareness** — via a published/exported `.ics`.
+- Three themes (Light / Dark / **Sunny**); persistent SQLite; graceful with no key.
 
-Next up: knowledge vault + retrieval (Phase 2), collections/projects/notifications
-(Phase 3), and the "Brief me" command (Phase 4). See [`TASKS.md`](./TASKS.md).
+Future agents (Wayne, Q, Creative, Buffett, 007) and source importers
+(Instapaper, X, Pinterest, Shopify…) are designed for but not built — see
+[`TASKS.md`](./TASKS.md) and [`ARCHITECTURE.md`](./ARCHITECTURE.md).

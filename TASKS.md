@@ -67,12 +67,13 @@ without explicit `clean` + confirmation).
 - [x] Events fed into state context + briefings
 - [ ] EventKit live-sync helper + free-time/conflict detection — future refinement
 
-## Phase 6 — Remote, autostart, polish  `[ ]`
+## Phase 6 — Remote, autostart, polish  `[x]`
 
-- [ ] Tailscale setup guide; bind to Tailscale + localhost only (never public `0.0.0.0`)
-- [ ] launchd LaunchAgent generator (start at login, relaunch on crash)
-- [ ] Voice interface for chat (fast-follow)
-- [ ] Setup guide + local installation instructions (Deliverables)
+- [x] launchd LaunchAgent generator (`scripts/install-launchd.sh`): build, start at login, relaunch on crash
+- [x] Tailscale remote-access guide (`docs/SETUP.md` §6)
+- [x] Voice input for chat (Web Speech API 🎙)
+- [x] Setup guide + local installation instructions (`docs/SETUP.md`)
+- [x] Browser notifications from the notification center
 
 ## Future — additional agents (documented, not built)  `[>]`
 

@@ -5,6 +5,13 @@ All notable changes to Valet. Newest first.
 ## [Unreleased]
 
 ### Added
+- **Phase 6 — Remote, autostart, polish.**
+  - `scripts/install-launchd.sh`: runs Valet as a macOS login service (builds,
+    starts at login, relaunches on crash; install/uninstall/status/logs).
+  - `docs/SETUP.md`: complete setup guide — laptop prep, secrets, calendar,
+    autostart, and Tailscale remote access for iPad/phone.
+  - Voice input in chat (Web Speech API) and browser notifications.
+  - This completes the Phase 1 MVP: Alfred is a working local-first second brain.
 - **Phases 3–5 — Structure, Intelligence, Calendar.**
   - Projects (`lib/projects.ts`, `/api/projects`): status, notes, next action,
     and automatic stalled detection (14+ days inactive → status + notification).
