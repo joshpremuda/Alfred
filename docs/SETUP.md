@@ -94,16 +94,25 @@ Prevent automatic sleeping when the display is off** (or Energy Saver).
 
 ## 6. Remote access from iPad / phone (Tailscale)
 
-Reach Valet securely from anywhere — no ports opened to the internet.
+Valet binds to **localhost only** (`127.0.0.1`) — so it is never exposed on
+coffee-shop wifi or your LAN. To reach it from your devices, use Tailscale's
+`serve`, which proxies your tailnet (only your devices) to the local app over
+HTTPS:
 
 1. Install [Tailscale](https://tailscale.com/download) on the **Mac** and on your
    **iPad/phone**; sign in with the same account on all of them.
-2. On the Mac, find its tailnet name: `tailscale status` (or the menu-bar app) —
-   e.g. `joshs-macbook`.
-3. On the iPad/phone browser, open: **`http://joshs-macbook:3210`**
-   (use your Mac's MagicDNS name). Add it to your home screen for an app feel.
+2. On the Mac, expose Valet to your tailnet only:
+   ```bash
+   tailscale serve --bg 3210
+   tailscale serve status          # shows the https://<mac>.<tailnet>.ts.net URL
+   ```
+3. Open that `https://<mac>.<tailnet>.ts.net` URL on your iPad/phone and add it to
+   your home screen. Only devices signed into your tailnet can reach it.
 
-Valet binds to localhost + your tailnet only. Keep it off untrusted networks.
+To stop sharing: `tailscale serve --https=443 off`.
+
+> Because Valet listens on localhost, nothing is reachable from other networks
+> even if you join an untrusted wifi — only your tailnet, via the step above.
 
 ---
 

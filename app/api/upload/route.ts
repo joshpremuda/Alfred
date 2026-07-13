@@ -21,7 +21,9 @@ export async function POST(req: NextRequest) {
   const buf = Buffer.from(await file.arrayBuffer());
   const dir = path.join(process.cwd(), "data", "documents");
   mkdirSync(dir, { recursive: true });
-  const filePath = path.join(dir, `${Date.now()}-${file.name}`);
+  // Sanitize the client-supplied name to prevent path traversal.
+  const safeName = path.basename(file.name).replace(/[^\w.\-]+/g, "_").slice(0, 120) || "file";
+  const filePath = path.join(dir, `${Date.now()}-${safeName}`);
   writeFileSync(filePath, buf);
 
   try {

@@ -44,6 +44,8 @@ case "${1:-install}" in
     <string>start</string>
     <string>-p</string>
     <string>$PORT</string>
+    <string>-H</string>
+    <string>127.0.0.1</string>
   </array>
   <key>EnvironmentVariables</key>
   <dict>

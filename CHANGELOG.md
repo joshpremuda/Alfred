@@ -103,6 +103,11 @@ All notable changes to Valet. Newest first.
   chat route reaches parity, then removed.
 
 ### Security
+- Valet now binds to **localhost (`127.0.0.1`) only** (dev, start, and the
+  launchd service) — never `0.0.0.0` — so it is not exposed on the LAN or
+  untrusted wifi. Remote access is via `tailscale serve` (tailnet-only, HTTPS).
+- Upload route sanitizes client-supplied filenames (`path.basename` + allowlist)
+  to prevent path traversal.
 - Flagged that a live Anthropic API key was shared in plain text; it must be
   rotated. No key is stored in the repo; secrets live only in the gitignored
   `.env`.

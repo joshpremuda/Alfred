@@ -4,9 +4,9 @@
   "private": true,
   "description": "Valet — a local-first AI operating system. Phase 1: Alfred.",
   "scripts": {
-    "dev": "next dev -p 3210",
+    "dev": "next dev -p 3210 -H 127.0.0.1",
     "build": "next build",
-    "start": "next start -p 3210",
+    "start": "next start -p 3210 -H 127.0.0.1",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
   },

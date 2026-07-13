@@ -32,8 +32,9 @@ npm test                                  # run the unit suite (optional)
 > ⚠️ Never paste your API key into a chat. It lives only in `.env` (gitignored).
 
 **Always-on:** `./scripts/install-launchd.sh install` runs Valet as a login
-service. **Remote:** install [Tailscale](https://tailscale.com) on the Mac +
-devices and open `http://<mac-magicdns-name>:3210`.
+service. **Remote:** Valet binds to localhost only; expose it to your iPad/phone
+tailnet-only with [Tailscale](https://tailscale.com) via `tailscale serve --bg 3210`
+(see [`docs/SETUP.md`](./docs/SETUP.md) §6).
 
 ## Project layout
 
