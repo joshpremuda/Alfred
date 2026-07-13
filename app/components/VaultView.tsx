@@ -63,13 +63,34 @@ export default function VaultView() {
     }
   }
 
+  async function importVault() {
+    setNote("Importing your Obsidian vault…");
+    try {
+      const d = await (await fetch("/api/import/vault", { method: "POST" })).json();
+      setNote(
+        d.error
+          ? `Import error: ${d.error}`
+          : `Imported ${d.imported} of ${d.scanned} notes${d.duplicates ? ` (${d.duplicates} already present)` : ""}.`,
+      );
+      load();
+    } catch (err) {
+      setNote(`Import failed: ${err instanceof Error ? err.message : String(err)}`);
+    }
+  }
+
   return (
     <div className="view">
       <header className="viewhead">
         <h1>Vault</h1>
-        <button className="linkbtn" onClick={reindex}>
-          Reindex
-        </button>
+        <span>
+          <button className="linkbtn" onClick={importVault}>
+            Import Obsidian
+          </button>
+          {" · "}
+          <button className="linkbtn" onClick={reindex}>
+            Reindex
+          </button>
+        </span>
       </header>
 
       <Capture onSaved={load} onMessage={setNote} />

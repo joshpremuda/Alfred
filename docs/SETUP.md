@@ -118,6 +118,11 @@ To stop sharing: `tailscale serve --https=443 off`.
 
 ## 7. Using Valet
 
+**On first run**, open the **Vault** tab and click **Import Obsidian** to ingest
+your existing notes — Alfred can then answer from your whole vault immediately.
+(After the embedding model finishes downloading, click **Reindex** once to add
+semantic search on top of keyword search.)
+
 - **Chat** — ask anything. "What should I work on today?", "What's stalled?",
   "Summarize everything I know about Crema", "Build a plan for the Digital Caddie
   Book", "Draft this in my voice." Tap **🎙** for voice input.

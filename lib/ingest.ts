@@ -12,6 +12,9 @@ export interface IngestInput {
   url?: string;
   source?: string;
   filePath?: string;
+  /** Write a Markdown note into the vault Inbox (default true). Off for content
+   *  imported *from* the vault, to avoid duplicating it. */
+  writeVaultNote?: boolean;
 }
 
 export interface IngestResult {
@@ -86,19 +89,22 @@ export async function ingestItem(input: IngestInput): Promise<IngestResult> {
 
   linkCollections(itemId, collections);
 
-  const note = writeNote({
-    slug: `${slugify(title)}-${itemId}`,
-    title,
-    frontmatter: {
-      valet_id: itemId,
-      type: input.type,
-      source: input.source ?? "manual",
-      url: input.url ?? "",
-      collections,
-      created: new Date().toISOString(),
-    },
-    body: summary + (input.url ? `\n\n[Source](${input.url})` : ""),
-  });
+  const note =
+    input.writeVaultNote === false
+      ? undefined
+      : writeNote({
+          slug: `${slugify(title)}-${itemId}`,
+          title,
+          frontmatter: {
+            valet_id: itemId,
+            type: input.type,
+            source: input.source ?? "manual",
+            url: input.url ?? "",
+            collections,
+            created: new Date().toISOString(),
+          },
+          body: summary + (input.url ? `\n\n[Source](${input.url})` : ""),
+        });
 
   return {
     id: itemId,

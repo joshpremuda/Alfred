@@ -11,6 +11,10 @@ All notable changes to Valet. Newest first.
     — even before embeddings download or if a chunk failed to embed.
   - **`/api/reindex`** + a Vault "Reindex" button: rebuild the keyword index and
     backfill embeddings after the first-run model download.
+  - **Obsidian import** (`/api/import/vault` + Vault "Import Obsidian" button):
+    ingests Josh's existing vault notes on day one (strips frontmatter, skips
+    Valet's own Inbox, dedupes). `ingestItem` gained `writeVaultNote` so imports
+    don't duplicate source notes.
   - **`/api/search`** + a Vault search box (hybrid, item-level results).
   - **Markdown rendering** for chat replies and briefings (safe, node-based).
   - Seeded Josh's active projects (Smalley Coffee, Crema, Paper Filter, Digital
