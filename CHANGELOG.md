@@ -5,6 +5,10 @@ All notable changes to Valet. Newest first.
 ## [Unreleased]
 
 ### Added
+- **`scripts/bootstrap-macos.sh`** — one command to go from a fresh clone to a
+  running app: prereq check, `.env`, Obsidian vault detection, a hidden prompt
+  that writes your API key to `.env`, `npm install` → build → test → start (and
+  frees port 3210 if a stale server holds it).
 - **Hardening & polish (post-MVP).**
   - **Hybrid retrieval:** keyword search via SQLite **FTS5** (`chunks_fts` +
     triggers) merged with vector search, so the vault is searchable *immediately*

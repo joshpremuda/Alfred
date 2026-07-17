@@ -18,17 +18,19 @@ indexing — no Ollama, no background daemon.
 
 ## Setup
 
-Full step-by-step (laptop prep, calendar, autostart, iPad/phone remote) is in
-**[`docs/SETUP.md`](./docs/SETUP.md)**. The short version:
+**Fastest path — two commands** (prereq: Node 18+). Bootstrap handles config,
+vault detection, the key prompt, install, build, test, and start:
 
 ```bash
-git clone https://github.com/joshpremuda/Alfred.git valet && cd valet
-./scripts/setup-macos.sh                  # audit + prerequisite check
-./scripts/setup-macos.sh vault            # point Alfred at your Obsidian vault
-cp .env.example .env                      # then add your ANTHROPIC_API_KEY
-npm install && npm run dev                # → http://localhost:3210
-npm test                                  # run the unit suite (optional)
+git clone -b claude/laptop-second-brain-setup-7jiuw7 https://github.com/joshpremuda/Alfred.git valet && cd valet
+./scripts/bootstrap-macos.sh
 ```
+It asks you to paste your `ANTHROPIC_API_KEY` once (hidden input → saved to the
+gitignored `.env`), then opens **http://localhost:3210**. In the browser: Vault →
+**Import Obsidian**, then **Reindex** after the first message.
+
+Full step-by-step (calendar, autostart, iPad/phone remote) is in
+**[`docs/SETUP.md`](./docs/SETUP.md)**.
 > ⚠️ Never paste your API key into a chat. It lives only in `.env` (gitignored).
 
 **Always-on:** `./scripts/install-launchd.sh install` runs Valet as a login

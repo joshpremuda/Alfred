@@ -18,6 +18,22 @@ iPad and phone. Estimated time: ~15 minutes.
 
 ---
 
+## Fastest path (two commands)
+
+If you just want it running (prereq: Node 18+):
+
+```bash
+git clone -b claude/laptop-second-brain-setup-7jiuw7 https://github.com/joshpremuda/Alfred.git valet && cd valet
+./scripts/bootstrap-macos.sh
+```
+
+`bootstrap-macos.sh` runs everything below for you — prereq check, `.env`, vault
+detection, a hidden prompt for your API key, install, build, test, and start. It
+finishes at `http://localhost:3210`. Then jump to step 7 (Import Obsidian).
+The manual steps below are the same thing, broken out.
+
+---
+
 ## 1. Prep the laptop
 
 ```bash
