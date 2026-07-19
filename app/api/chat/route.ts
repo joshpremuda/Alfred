@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
 import { addMessage, getHistory } from "@/lib/db";
-import { streamAlfred } from "@/lib/claude";
+import { streamAssistant } from "@/lib/claude";
 import { search, assembleContext } from "@/lib/retrieval";
 import { buildStateContext } from "@/lib/context";
 
@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
       try {
-        for await (const chunk of streamAlfred(history, { notes, state })) {
+        for await (const chunk of streamAssistant(history, { notes, state })) {
           full += chunk;
           controller.enqueue(encoder.encode(chunk));
         }

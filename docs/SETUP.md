@@ -80,6 +80,20 @@ For an always-on production run, use the login service in step 5.
 
 ---
 
+## 3b. No API credits yet? (automatic local fallback)
+
+If your Anthropic billing isn't working, Valet still gives you a working Alfred:
+skip the key at the prompt (or leave `ANTHROPIC_API_KEY` blank) and chat/briefings
+run on a **free, in-process local model** (`onnx-community/Qwen2.5-0.5B-Instruct`,
+downloads ~0.4 GB once on first chat). It's a capable stopgap — noticeably less
+sharp than Claude, and the first reply is slow while the model downloads.
+
+- For better local quality, set `LOCAL_MODEL=onnx-community/Qwen2.5-1.5B-Instruct`
+  (or a 3B) in `.env`.
+- The moment a working `ANTHROPIC_API_KEY` (with credits) is present, Valet uses
+  **Claude automatically** — no code change. If a Claude call fails (e.g. no
+  credits), it silently falls back to local for that reply.
+
 ## 4. Calendar (optional)
 
 Give Alfred calendar awareness without any cloud credentials:

@@ -5,6 +5,13 @@ All notable changes to Valet. Newest first.
 ## [Unreleased]
 
 ### Added
+- **Free local-model fallback for chat & briefings** (`lib/localModel.ts`).
+  In-process via Transformers.js (`onnx-community/Qwen2.5-0.5B-Instruct` by
+  default, `LOCAL_MODEL` to override) — no Ollama, no daemon. `streamAssistant`
+  prefers Claude when a working key is present and **falls back to the local
+  model automatically** when there's no key or a Claude call fails before
+  producing output (e.g. billing/credit failure). Chat and "Brief me" both use
+  it. This unblocks Alfred entirely without Anthropic API credits.
 - **`scripts/bootstrap-macos.sh`** — one command to go from a fresh clone to a
   running app: prereq check, `.env`, Obsidian vault detection, a hidden prompt
   that writes your API key to `.env`, `npm install` → build → test → start (and

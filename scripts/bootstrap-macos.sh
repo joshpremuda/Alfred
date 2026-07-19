@@ -49,7 +49,7 @@ else
     sedi "s|^ANTHROPIC_API_KEY=.*|ANTHROPIC_API_KEY=$ESC|" .env
     ok "Saved key to .env (gitignored — never committed)"
   else
-    warn "No key entered. Chat/briefings won't work until you add ANTHROPIC_API_KEY to .env; capture & keyword search still work."
+    warn "No key entered — Alfred will use the free local model (downloads once on first chat). Add ANTHROPIC_API_KEY to .env anytime to switch to Claude."
   fi
 fi
 

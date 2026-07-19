@@ -13,8 +13,9 @@ and [`TASKS.md`](./TASKS.md) for the full plan.
 ## Stack
 
 Next.js (App Router) · SQLite (`better-sqlite3`) · Markdown / Obsidian vault ·
-Claude API for answers · local in-process embeddings (Transformers.js, free) for
-indexing — no Ollama, no background daemon.
+Claude API for answers, with a free **in-process local-model fallback** when no
+key/credits are available · local embeddings (Transformers.js) for indexing —
+no Ollama, no background daemon.
 
 ## Setup
 

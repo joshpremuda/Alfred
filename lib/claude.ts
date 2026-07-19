@@ -1,5 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import type { ChatMessage } from "@/lib/db";
+import { streamLocal } from "@/lib/localModel";
 
 const AGENT_NAME = process.env.AGENT_NAME || "Alfred";
 const MODEL = process.env.ANTHROPIC_MODEL || "claude-sonnet-5";
@@ -22,12 +23,21 @@ let client: Anthropic | null = null;
 function getClient(): Anthropic {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey || apiKey.includes("REPLACE")) {
-    throw new Error(
-      "ANTHROPIC_API_KEY is not set. Add your key to .env (see .env.example).",
-    );
+    throw new Error("ANTHROPIC_API_KEY is not set. Add your key to .env (see .env.example).");
   }
   if (!client) client = new Anthropic({ apiKey });
   return client;
+}
+
+/** True when a usable Anthropic key is configured. */
+export function hasApiKey(): boolean {
+  const k = process.env.ANTHROPIC_API_KEY;
+  return !!k && !k.includes("REPLACE");
+}
+
+function shortErr(err: unknown): string {
+  const m = err instanceof Error ? err.message : String(err);
+  return m.length > 140 ? m.slice(0, 140) + "…" : m;
 }
 
 export interface Grounding {
@@ -37,57 +47,73 @@ export interface Grounding {
   state?: string;
 }
 
-/** Stream Alfred's reply as text chunks, optionally grounded in notes + state. */
-export async function* streamAlfred(
-  history: ChatMessage[],
-  grounding: Grounding = {},
-): AsyncGenerator<string> {
-  const system: Anthropic.TextBlockParam[] = [
+/** Build the system prompt as Claude blocks (cached) and as plain text (local). */
+function composeSystem(grounding: Grounding): { blocks: Anthropic.TextBlockParam[]; text: string } {
+  const blocks: Anthropic.TextBlockParam[] = [
     { type: "text", text: ALFRED_SYSTEM, cache_control: { type: "ephemeral" } },
   ];
+  const parts = [ALFRED_SYSTEM];
   if (grounding.state) {
-    system.push({ type: "text", text: grounding.state });
+    blocks.push({ type: "text", text: grounding.state });
+    parts.push(grounding.state);
   }
   if (grounding.notes) {
-    system.push({
-      type: "text",
-      text: `Relevant notes from Josh's knowledge base are below. Draw on them when they help, and cite the sources you use as [1], [2], etc. If they are not relevant, ignore them.\n\n${grounding.notes}`,
-    });
+    const notes = `Relevant notes from Josh's knowledge base are below. Draw on them when they help, and cite the sources you use as [1], [2], etc. If they are not relevant, ignore them.\n\n${grounding.notes}`;
+    blocks.push({ type: "text", text: notes });
+    parts.push(notes);
   }
+  return { blocks, text: parts.join("\n\n") };
+}
 
+/** Claude streaming path. Throws if no key or on an API error (e.g. no credits). */
+async function* streamClaude(history: ChatMessage[], grounding: Grounding): AsyncGenerator<string> {
+  const { blocks } = composeSystem(grounding);
   const stream = getClient().messages.stream({
     model: MODEL,
     max_tokens: 1024,
-    system,
+    system: blocks,
     messages: history.map((m) => ({ role: m.role, content: m.content })),
-  });
-
-  for await (const event of stream) {
-    if (
-      event.type === "content_block_delta" &&
-      event.delta.type === "text_delta"
-    ) {
-      yield event.delta.text;
-    }
-  }
-}
-
-/** Stream an on-demand briefing built from Josh's current state. */
-export async function* streamBriefing(stateContext: string): AsyncGenerator<string> {
-  const anthropic = getClient();
-  const user = `Give me a briefing. Current state:\n\n${stateContext || "(no projects, calendar, or captures yet)"}\n\nStructure it as: a one-line greeting, then only the sections that have something worth saying — **Focus today**, **Calendar**, **Projects** (active & stalled), **Worth your attention**. Prioritize ruthlessly and recommend what to do first. Keep it tight and editorial; do not pad.`;
-
-  const stream = anthropic.messages.stream({
-    model: MODEL,
-    max_tokens: 1024,
-    system: [{ type: "text", text: ALFRED_SYSTEM, cache_control: { type: "ephemeral" } }],
-    messages: [{ role: "user", content: user }],
   });
   for await (const event of stream) {
     if (event.type === "content_block_delta" && event.delta.type === "text_delta") {
       yield event.delta.text;
     }
   }
+}
+
+/**
+ * Alfred's reply. Uses Claude when a key is configured and working; otherwise —
+ * or if Claude errors before producing output (e.g. billing/credit failure) —
+ * falls back to the free in-process local model so Alfred always answers.
+ */
+export async function* streamAssistant(
+  history: ChatMessage[],
+  grounding: Grounding = {},
+): AsyncGenerator<string> {
+  if (hasApiKey()) {
+    let yielded = false;
+    try {
+      for await (const chunk of streamClaude(history, grounding)) {
+        yielded = true;
+        yield chunk;
+      }
+      return;
+    } catch (err) {
+      if (yielded) {
+        yield `\n\n[Claude error mid-response: ${shortErr(err)}]`;
+        return;
+      }
+      // Nothing streamed yet (usually no credits / auth) → fall back to local.
+      yield `_(Claude unavailable — answering with the local model. ${shortErr(err)})_\n\n`;
+    }
+  }
+  const { text } = composeSystem(grounding);
+  yield* streamLocal(history, text);
+}
+
+/** The user-turn prompt for an on-demand briefing. */
+export function briefPrompt(stateContext: string): string {
+  return `Give me a briefing. Current state:\n\n${stateContext || "(no projects, calendar, or captures yet)"}\n\nStructure it as: a one-line greeting, then only the sections that have something worth saying — **Focus today**, **Calendar**, **Projects** (active & stalled), **Worth your attention**. Prioritize ruthlessly and recommend what to do first. Keep it tight and editorial; do not pad.`;
 }
 
 export const COLLECTIONS = [
