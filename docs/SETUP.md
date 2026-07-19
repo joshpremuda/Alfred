@@ -177,7 +177,17 @@ npm install
 
 ---
 
-## 9. Troubleshooting
+## 9. Verify your setup
+
+With `npm run dev` running, open a second Terminal tab and run:
+```bash
+./scripts/healthcheck.sh
+```
+It checks the server, which chat backend is active (Claude vs local), your vault,
+item/project/idea counts, the search index, and runs live capture→search and
+chat probes. Paste its output to Claude if anything shows `✗` or `!`.
+
+## 10. Troubleshooting
 
 | Symptom | Fix |
 |--------|-----|
