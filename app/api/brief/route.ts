@@ -1,6 +1,5 @@
 import { streamAssistant, briefPrompt } from "@/lib/claude";
 import { buildStateContext, buildDigest } from "@/lib/context";
-import { enrichBriefingBookmarks, readingSection, readingForAI } from "@/lib/briefing";
 import { detectStalled } from "@/lib/projects";
 import { connectRecentItems } from "@/lib/ideas";
 
@@ -28,19 +27,14 @@ export async function POST() {
     async start(controller) {
       const send = (s: string) => controller.enqueue(encoder.encode(s));
       try {
-        // 1) Projects/calendar digest — instant, no network or AI.
-        send(digest + "\n");
-
-        // 2) Fetch + read the Briefing sources, then show a click-through list.
-        send("_Reading your sources…_\n\n");
-        const items = await enrichBriefingBookmarks();
-        send(readingSection(items));
-
-        // 3) The Paper Filter synthesis (Claude if credits, else local model).
-        send("---\n\n### The brief\n\n");
-        const sources = readingForAI(items);
-        const aiState = sources ? `${state}\n\nSOURCES (full text):\n\n${sources}` : state;
-        for await (const chunk of streamAssistant([{ role: "user", content: briefPrompt(aiState) }])) {
+        // Deterministic personal digest — always accurate, shows instantly.
+        send(digest + "\n\n---\n\n### Alfred's take\n\n");
+        // Synthesis via Claude only (no local model → no fabricated details).
+        for await (const chunk of streamAssistant(
+          [{ role: "user", content: briefPrompt(state) }],
+          {},
+          { localFallback: false },
+        )) {
           send(chunk);
         }
       } catch (err) {

@@ -43,9 +43,11 @@ export async function importVault(limit = 500): Promise<{
     } catch {
       continue;
     }
+    // Skip Obsidian templates and trivially-short stubs.
+    if (/\/(templates|\.trash)\//i.test(f) || f.includes("{{")) continue;
     // Strip YAML frontmatter.
     const body = raw.replace(/^---\n[\s\S]*?\n---\n/, "").trim();
-    if (!body) continue;
+    if (body.length < 40 || body.includes("{{")) continue; // template/placeholder or empty
     const title = body.match(/^#\s+(.+)$/m)?.[1]?.trim() || path.basename(f, ".md");
 
     const res = await ingestItem({

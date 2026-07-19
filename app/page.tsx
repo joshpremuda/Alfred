@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Sidebar from "./components/Sidebar";
 import ChatView from "./components/ChatView";
 import BriefView from "./components/BriefView";
+import PaperFilterView from "./components/PaperFilterView";
 import VaultView from "./components/VaultView";
 import ProjectsView from "./components/ProjectsView";
 import IdeasView from "./components/IdeasView";
@@ -55,6 +56,7 @@ export default function Home() {
       <main className="main">
         {view === "chat" && <ChatView />}
         {view === "brief" && <BriefView />}
+        {view === "paper" && <PaperFilterView />}
         {view === "vault" && <VaultView />}
         {view === "projects" && <ProjectsView />}
         {view === "ideas" && <IdeasView />}

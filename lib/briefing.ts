@@ -1,67 +1,79 @@
 import { getBriefingBookmarks } from "@/lib/bookmarks";
+import { fetchHeadlines, relativeTime } from "@/lib/feeds";
 import { extractUrl } from "@/lib/extract";
 
-// Reads the sources in your Chrome "Briefing" folder and turns them into a
-// synthesized brief. This is the engine behind **The Paper Filter** — a quick,
-// relatively unbiased news brief across multiple sources.
+// The Paper Filter: read the news sources in the configured Chrome folder and
+// turn them into today's headlines + a synthesized, relatively-unbiased brief.
 
-export interface BriefingItem {
+export interface Source {
   title: string;
   url: string;
-  summary: string;
-  /** Longer extracted text, for AI synthesis (not shown directly). */
-  body: string;
+  headlines: { title: string; link: string; when: string }[];
+  note?: string; // preview or reason there are no headlines
 }
 
-// In-memory cache so repeat briefs are fast (sources refetched hourly).
-const cache = new Map<string, { item: BriefingItem; ts: number }>();
-const TTL_MS = 60 * 60 * 1000;
+const cache = new Map<string, { source: Source; ts: number }>();
+const TTL_MS = 30 * 60 * 1000; // headlines refresh every 30 min
 
-function preview(ex: { title: string; text: string; excerpt?: string }): string {
-  const raw = ex.excerpt && ex.excerpt.length > 40 ? ex.excerpt : ex.text;
-  return raw.replace(/\s+/g, " ").trim().slice(0, 280);
-}
-
-/** Fetch + extract each Briefing source in parallel (bounded, cached, resilient). */
-export async function enrichBriefingBookmarks(limit = 12): Promise<BriefingItem[]> {
+/** Fetch current headlines for each source (RSS first, preview fallback). */
+export async function gatherSources(limit = 16): Promise<Source[]> {
   const marks = getBriefingBookmarks().slice(0, limit);
   const now = Date.now();
-
   return Promise.all(
-    marks.map(async (m): Promise<BriefingItem> => {
+    marks.map(async (m): Promise<Source> => {
       const cached = cache.get(m.url);
-      if (cached && now - cached.ts < TTL_MS) {
-        return { ...cached.item, title: m.title || cached.item.title };
-      }
+      if (cached && now - cached.ts < TTL_MS) return cached.source;
+
+      let source: Source;
       try {
-        const ex = await extractUrl(m.url, 8000);
-        const item: BriefingItem = {
-          title: m.title || ex.title,
-          url: m.url,
-          summary: preview(ex) || "(no preview available)",
-          body: ex.text.replace(/\s+/g, " ").trim().slice(0, 900),
-        };
-        cache.set(m.url, { item, ts: now });
-        return item;
+        const items = await fetchHeadlines(m.url, 3);
+        if (items.length) {
+          source = {
+            title: m.title,
+            url: m.url,
+            headlines: items.map((i) => ({ title: i.title, link: i.link, when: relativeTime(i.date) })),
+          };
+        } else {
+          const ex = await extractUrl(m.url, 8000);
+          const note = (ex.excerpt || ex.text).replace(/\s+/g, " ").trim().slice(0, 160);
+          source = { title: m.title || ex.title, url: m.url, headlines: [], note: note || "no feed found" };
+        }
       } catch {
-        return { title: m.title, url: m.url, summary: "(couldn't load — click to read)", body: "" };
+        source = { title: m.title, url: m.url, headlines: [], note: "couldn't load — click to read" };
       }
+      cache.set(m.url, { source, ts: now });
+      return source;
     }),
   );
 }
 
-/** Render the sources as a click-through "What to read" section (Markdown). */
-export function readingSection(items: BriefingItem[]): string {
-  if (!items.length) return "";
-  const lines = items.map((i) => `- **[${i.title}](${i.url})** — ${i.summary}`);
-  return `## What to read — from your “Briefing” folder\n${lines.join("\n")}\n\n`;
+/** Headlines grouped by source (Markdown, with click-through links). */
+export function headlinesMarkdown(sources: Source[]): string {
+  const out: string[] = [];
+  for (const s of sources) {
+    if (s.headlines.length) {
+      out.push(`### [${s.title}](${s.url})`);
+      for (const h of s.headlines) out.push(`- [${h.title}](${h.link})${h.when ? ` · ${h.when}` : ""}`);
+    } else {
+      out.push(`### [${s.title}](${s.url}) — _${s.note ?? "open ↗"}_`);
+    }
+    out.push("");
+  }
+  return out.join("\n");
 }
 
-/** Compact source digest fed to the model for synthesis (bounded for small models). */
-export function readingForAI(items: BriefingItem[], maxSources = 8): string {
-  return items
-    .filter((i) => i.body)
-    .slice(0, maxSources)
-    .map((i) => `SOURCE: ${i.title} (${i.url})\n${i.body}`)
-    .join("\n\n---\n\n");
+/** Plain headline list fed to Claude for synthesis (facts only). */
+export function sourcesForAI(sources: Source[], maxHeadlines = 45): string {
+  const lines: string[] = [];
+  let count = 0;
+  for (const s of sources) {
+    if (!s.headlines.length || count >= maxHeadlines) continue;
+    lines.push(`SOURCE — ${s.title}:`);
+    for (const h of s.headlines) {
+      if (count++ >= maxHeadlines) break;
+      lines.push(`- ${h.title}`);
+    }
+    lines.push("");
+  }
+  return lines.join("\n").trim();
 }

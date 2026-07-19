@@ -2,7 +2,9 @@ import { getDb } from "@/lib/db";
 import { listProjects } from "@/lib/projects";
 import { listNotifications } from "@/lib/notifications";
 import { upcomingEvents } from "@/lib/calendar";
-import { getBriefingBookmarks } from "@/lib/bookmarks";
+
+// Ignore Obsidian template/stub artifacts when listing recent captures.
+const isJunkTitle = (t: string) => !t || t.includes("{{") || t.length < 3;
 
 /**
  * A compact snapshot of Josh's world, injected into chat + briefings so Alfred
@@ -25,7 +27,7 @@ export async function buildStateContext(): Promise<string> {
     /* calendar optional */
   }
 
-  const bookmarks = getBriefingBookmarks();
+  const cleanRecent = recent.map((r) => r.title).filter((t) => !isJunkTitle(t));
 
   const lines: string[] = ["Current state of Josh's world (context; use when relevant):"];
   if (active.length)
@@ -35,13 +37,8 @@ export async function buildStateContext(): Promise<string> {
     );
   if (stalled.length) lines.push("Stalled projects: " + stalled.map((p) => p.name).join("; "));
   if (events.length) lines.push("Upcoming events: " + events.join("; "));
-  if (recent.length) lines.push("Recently captured: " + recent.map((r) => r.title).join("; "));
+  if (cleanRecent.length) lines.push("Recently captured: " + cleanRecent.join("; "));
   if (notifs.length) lines.push("Open notifications: " + notifs.map((n) => n.title).join("; "));
-  if (bookmarks.length)
-    lines.push(
-      'Briefing reading list (Chrome "Briefing" folder): ' +
-        bookmarks.map((b) => `${b.title} (${b.url})`).join("; "),
-    );
 
   return lines.length > 1 ? lines.join("\n") : "";
 }
@@ -56,9 +53,6 @@ export async function buildDigest(): Promise<string> {
   const active = projects.filter((p) => p.status === "active");
   const stalled = projects.filter((p) => p.status === "stalled");
   const notifs = listNotifications(false).slice(0, 6);
-  const recent = getDb().prepare("SELECT title FROM items ORDER BY id DESC LIMIT 5").all() as {
-    title: string;
-  }[];
   let events: { start: Date; summary: string }[] = [];
   try {
     events = await upcomingEvents(3);
@@ -84,11 +78,6 @@ export async function buildDigest(): Promise<string> {
   if (events.length) {
     L.push("## Upcoming");
     for (const e of events.slice(0, 6)) L.push(`- ${e.start.toLocaleString()} — ${e.summary}`);
-    L.push("");
-  }
-  if (recent.length) {
-    L.push("## Recently captured");
-    for (const r of recent) L.push(`- ${r.title}`);
     L.push("");
   }
   if (notifs.length) {

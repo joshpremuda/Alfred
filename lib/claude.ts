@@ -81,15 +81,34 @@ async function* streamClaude(history: ChatMessage[], grounding: Grounding): Asyn
   }
 }
 
+function backendNote(err: unknown): string {
+  const m = err instanceof Error ? err.message : String(err);
+  if (/credit balance is too low|insufficient|billing/i.test(m)) {
+    return "_The written brief needs Claude, and the API has no credits yet. Everything above is live and accurate — add credits at console.anthropic.com/keys to enable synthesis._";
+  }
+  return `_AI synthesis unavailable: ${shortErr(err)}_`;
+}
+
+export interface AssistantOpts {
+  /**
+   * If Claude fails/absent, fall back to the free local model. Default true for
+   * interactive chat. Set FALSE for briefings/news so the small local model can
+   * never fabricate facts — those show accurate deterministic content instead.
+   */
+  localFallback?: boolean;
+}
+
 /**
- * Alfred's reply. Uses Claude when a key is configured and working; otherwise —
- * or if Claude errors before producing output (e.g. billing/credit failure) —
- * falls back to the free in-process local model so Alfred always answers.
+ * Alfred's reply. Uses Claude when a key is configured and working; otherwise
+ * falls back to the local model (interactive chat) or a short note (localFallback
+ * = false, used by briefs so the tiny local model never invents facts).
  */
 export async function* streamAssistant(
   history: ChatMessage[],
   grounding: Grounding = {},
+  opts: AssistantOpts = {},
 ): AsyncGenerator<string> {
+  const { localFallback = true } = opts;
   if (hasApiKey()) {
     let yielded = false;
     try {
@@ -103,29 +122,36 @@ export async function* streamAssistant(
         yield `\n\n[Claude error mid-response: ${shortErr(err)}]`;
         return;
       }
-      // Nothing streamed yet (usually no credits / auth) → fall back to local.
+      if (!localFallback) {
+        yield backendNote(err);
+        return;
+      }
       yield `_(Claude unavailable — answering with the local model. ${shortErr(err)})_\n\n`;
     }
+  } else if (!localFallback) {
+    yield "_No Claude API key is set, so the written synthesis is off. The content above is live. Add ANTHROPIC_API_KEY to .env to enable it._";
+    return;
   }
   const { text } = composeSystem(grounding);
   yield* streamLocal(history, text);
 }
 
-/**
- * The user-turn prompt for an on-demand briefing — "The Paper Filter": a quick,
- * relatively unbiased news brief synthesizing Josh's sources.
- */
+/** Personal Chief-of-Staff briefing (projects, calendar, priorities — not news). */
 export function briefPrompt(stateContext: string): string {
-  return `You are writing Josh's briefing — think of it as "The Paper Filter": a quick, relatively unbiased digest that saves him from reading everything himself.
+  return `Give Josh a short, prioritized personal briefing as his Chief of Staff. Based only on the data below (his projects, calendar, and notifications), tell him in 3–5 sentences what to focus on first today and flag anything time-sensitive or stalled. Editorial and decisive; do not invent anything not in the data.\n\nData:\n\n${stateContext || "(no projects or calendar yet)"}`;
+}
 
-Below are the full-text sources from his "Briefing" reading list, plus his projects and calendar. Write a tight brief:
-- Lead with the 3–5 things actually worth knowing across the sources — the stories/themes, in plain language.
-- Stay neutral and factual; where sources emphasize different angles, note it briefly. Don't editorialize or take sides.
-- Then one line on anything time-sensitive in his projects/calendar.
-- Assume he'll click through to the sources you flag; be specific about which are most worth his time and why.
-Keep it skimmable and concise — no filler, no restating the raw list.
+/** The Paper Filter: a neutral news brief synthesized from current headlines. */
+export function paperFilterPrompt(headlines: string): string {
+  return `You are "The Paper Filter" — you turn many news sources into one quick, relatively unbiased brief so Josh doesn't have to read them all.
 
-Data:\n\n${stateContext || "(no sources or projects yet)"}`;
+Below are today's actual headlines from his sources. Write a tight brief:
+- Lead with the 4–6 biggest stories/themes appearing across the sources, in plain, neutral language.
+- Where different outlets emphasize different angles on the same story, note it in a few words. Do not editorialize or take a side.
+- Use ONLY what's in the headlines below — do not invent details, quotes, numbers, or events. If something is unclear from the headline, keep it high-level.
+- Keep it skimmable: short paragraphs or tight bullets. No preamble.
+
+Today's headlines:\n\n${headlines}`;
 }
 
 export const COLLECTIONS = [

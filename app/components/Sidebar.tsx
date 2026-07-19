@@ -5,6 +5,7 @@ import type { View, Theme } from "./types";
 const NAV: { key: View; label: string }[] = [
   { key: "chat", label: "Chat" },
   { key: "brief", label: "Brief me" },
+  { key: "paper", label: "The Paper Filter" },
   { key: "vault", label: "Vault" },
   { key: "projects", label: "Projects" },
   { key: "ideas", label: "Ideas" },

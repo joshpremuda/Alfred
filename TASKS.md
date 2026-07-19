@@ -83,9 +83,10 @@ without explicit `clean` + confirmation).
 - [x] Obsidian import (`/api/import/vault` + button): ingest existing vault notes on day one
 - [x] Free local-model fallback (`lib/localModel.ts`): chat/brief work with no API key/credits; auto-prefers Claude when available
 - [x] "Brief me" reads Chrome "Briefing" bookmarks (`lib/bookmarks.ts`) + deterministic digest so the brief always shows instantly
-- [x] **The Paper Filter MVP**: fetch + extract Briefing sources (`lib/briefing.ts`), click-through reading list + synthesized relatively-unbiased brief
+- [x] **The Paper Filter** as its own feature (separate from personal Brief me): live RSS/Atom headlines per source (`lib/feeds.ts`), click-through by source, Claude-only synthesis
+- [x] Briefs never use the local model (no fabricated facts); import skips template/stub notes
 - [ ] Paper Filter: daily email delivery + scheduling *(future)*
-- [ ] Paper Filter: per-source AI summaries when Claude credits available (upgrade from excerpts) *(future)*
+- [ ] Paper Filter: add feed URLs for paywalled sources that don't auto-discover *(as needed)*
 - [x] Markdown rendering for chat + briefings (`Markdown.tsx`, safe/node-based)
 - [x] Seed active projects (Smalley Coffee, Crema, Paper Filter, Digital Caddie Book, Clubsmanship)
 - [x] `lib/vector.ts` extraction + Vitest suite (`npm test`, 22 tests)

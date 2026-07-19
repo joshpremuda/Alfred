@@ -4,14 +4,19 @@ All notable changes to Valet. Newest first.
 
 ## [Unreleased]
 
-- **The Paper Filter — "Brief me" now reads your sources and synthesizes them.**
-  It reads your Chrome "Briefing" bookmarks folder (`lib/bookmarks.ts`), **fetches
-  and extracts each source** (`lib/briefing.ts`, parallel + timeout + hourly
-  cache), shows a **click-through "What to read" list with real previews**, then
-  streams a **synthesized, relatively-unbiased brief** across the sources — the
-  MVP of the Paper Filter project (future: daily email delivery). Configurable via
-  `BRIEFING_FOLDER` / `CHROME_BOOKMARKS`; `/api/health` reports the source count.
-  The projects/calendar digest still streams first (instant, no AI/network).
+- **The Paper Filter is now its own feature, separate from "Brief me."**
+  - **Brief me** = personal Chief-of-Staff briefing (projects, calendar,
+    priorities). It no longer pulls in news, and its "take" now runs via **Claude
+    only** — the tiny local model is never allowed to write briefs (it was
+    fabricating facts). Without credits it shows the accurate digest + a note.
+  - **The Paper Filter** (`/api/paper-filter`, sidebar view) reads the news
+    sources in your Chrome folder, pulls each site's **live RSS/Atom headlines**
+    (`lib/feeds.ts` — auto-discovers feeds, 30-min cache), shows **today's
+    headlines by source with click-through links + timestamps**, and synthesizes
+    a relatively-unbiased brief across them (Claude only; headlines are shown
+    regardless so it's useful without credits). MVP of the Paper Filter project
+    (future: daily email).
+  - Import now skips Obsidian templates/stubs; briefs ignore `{{template}}` notes.
 - **Free local-model fallback for chat & briefings** (`lib/localModel.ts`).
   In-process via Transformers.js (`onnx-community/Qwen2.5-0.5B-Instruct` by
   default, `LOCAL_MODEL` to override) — no Ollama, no daemon. `streamAssistant`
