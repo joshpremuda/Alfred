@@ -59,7 +59,6 @@ export async function buildDigest(): Promise<string> {
   const recent = getDb().prepare("SELECT title FROM items ORDER BY id DESC LIMIT 5").all() as {
     title: string;
   }[];
-  const bookmarks = getBriefingBookmarks();
   let events: { start: Date; summary: string }[] = [];
   try {
     events = await upcomingEvents(3);
@@ -72,11 +71,6 @@ export async function buildDigest(): Promise<string> {
   const when = now.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
 
   const L: string[] = [`Good ${part}, Josh — ${when}.`, ""];
-  if (bookmarks.length) {
-    L.push(`## Reading — your Chrome “Briefing” folder (${bookmarks.length})`);
-    for (const b of bookmarks.slice(0, 15)) L.push(`- [${b.title}](${b.url})`);
-    L.push("");
-  }
   if (active.length) {
     L.push("## Active projects");
     for (const p of active) L.push(`- **${p.name}**${p.next_action ? ` — next: ${p.next_action}` : ""}`);

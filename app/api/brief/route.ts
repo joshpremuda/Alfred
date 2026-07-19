@@ -1,5 +1,6 @@
 import { streamAssistant, briefPrompt } from "@/lib/claude";
 import { buildStateContext, buildDigest } from "@/lib/context";
+import { enrichBriefingBookmarks, readingSection, readingForAI } from "@/lib/briefing";
 import { detectStalled } from "@/lib/projects";
 import { connectRecentItems } from "@/lib/ideas";
 
@@ -25,14 +26,25 @@ export async function POST() {
 
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
-      // Deterministic digest first — always shows instantly (no AI needed).
-      controller.enqueue(encoder.encode(digest + "\n\n---\n\n### Alfred's take\n\n"));
+      const send = (s: string) => controller.enqueue(encoder.encode(s));
       try {
-        for await (const chunk of streamAssistant([{ role: "user", content: briefPrompt(state) }])) {
-          controller.enqueue(encoder.encode(chunk));
+        // 1) Projects/calendar digest — instant, no network or AI.
+        send(digest + "\n");
+
+        // 2) Fetch + read the Briefing sources, then show a click-through list.
+        send("_Reading your sources…_\n\n");
+        const items = await enrichBriefingBookmarks();
+        send(readingSection(items));
+
+        // 3) The Paper Filter synthesis (Claude if credits, else local model).
+        send("---\n\n### The brief\n\n");
+        const sources = readingForAI(items);
+        const aiState = sources ? `${state}\n\nSOURCES (full text):\n\n${sources}` : state;
+        for await (const chunk of streamAssistant([{ role: "user", content: briefPrompt(aiState) }])) {
+          send(chunk);
         }
       } catch (err) {
-        controller.enqueue(encoder.encode(`\n\n[${(err as Error).message}]`));
+        send(`\n\n[${(err as Error).message}]`);
       } finally {
         controller.close();
       }

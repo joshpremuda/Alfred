@@ -4,13 +4,14 @@ All notable changes to Valet. Newest first.
 
 ## [Unreleased]
 
-### Added
-- **"Brief me" now reads your Chrome "Briefing" bookmarks folder** and builds the
-  brief around it (`lib/bookmarks.ts`, configurable via `BRIEFING_FOLDER` /
-  `CHROME_BOOKMARKS`). The brief also now streams a **deterministic digest first**
-  (`buildDigest` — reading list, projects, calendar, notifications) so it shows
-  instantly even while the local model downloads, with the AI's "take" appended
-  after. `/api/health` reports the bookmark count.
+- **The Paper Filter — "Brief me" now reads your sources and synthesizes them.**
+  It reads your Chrome "Briefing" bookmarks folder (`lib/bookmarks.ts`), **fetches
+  and extracts each source** (`lib/briefing.ts`, parallel + timeout + hourly
+  cache), shows a **click-through "What to read" list with real previews**, then
+  streams a **synthesized, relatively-unbiased brief** across the sources — the
+  MVP of the Paper Filter project (future: daily email delivery). Configurable via
+  `BRIEFING_FOLDER` / `CHROME_BOOKMARKS`; `/api/health` reports the source count.
+  The projects/calendar digest still streams first (instant, no AI/network).
 - **Free local-model fallback for chat & briefings** (`lib/localModel.ts`).
   In-process via Transformers.js (`onnx-community/Qwen2.5-0.5B-Instruct` by
   default, `LOCAL_MODEL` to override) — no Ollama, no daemon. `streamAssistant`

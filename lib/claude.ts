@@ -111,9 +111,21 @@ export async function* streamAssistant(
   yield* streamLocal(history, text);
 }
 
-/** The user-turn prompt for an on-demand briefing. */
+/**
+ * The user-turn prompt for an on-demand briefing — "The Paper Filter": a quick,
+ * relatively unbiased news brief synthesizing Josh's sources.
+ */
 export function briefPrompt(stateContext: string): string {
-  return `Josh has just been shown a data digest (his projects, calendar, recent captures, and his Chrome "Briefing" reading list). Give a short, prioritized TAKE — do not relist the digest. In 3–6 sentences: what he should focus on first today, and which one or two items from his Briefing reading list are most worth his time and why. Editorial and decisive. Current data:\n\n${stateContext || "(no projects, calendar, or captures yet)"}`;
+  return `You are writing Josh's briefing — think of it as "The Paper Filter": a quick, relatively unbiased digest that saves him from reading everything himself.
+
+Below are the full-text sources from his "Briefing" reading list, plus his projects and calendar. Write a tight brief:
+- Lead with the 3–5 things actually worth knowing across the sources — the stories/themes, in plain language.
+- Stay neutral and factual; where sources emphasize different angles, note it briefly. Don't editorialize or take sides.
+- Then one line on anything time-sensitive in his projects/calendar.
+- Assume he'll click through to the sources you flag; be specific about which are most worth his time and why.
+Keep it skimmable and concise — no filler, no restating the raw list.
+
+Data:\n\n${stateContext || "(no sources or projects yet)"}`;
 }
 
 export const COLLECTIONS = [
