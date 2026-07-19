@@ -1,5 +1,6 @@
 import { getDb } from "@/lib/db";
 import { hasApiKey } from "@/lib/claude";
+import { getBriefingBookmarks } from "@/lib/bookmarks";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -25,6 +26,7 @@ export async function GET() {
       projects: count("SELECT COUNT(*) AS c FROM projects"),
       ideas: count("SELECT COUNT(*) AS c FROM ideas"),
       unreadNotifications: count("SELECT COUNT(*) AS c FROM notifications WHERE read_at IS NULL"),
+      briefingBookmarks: getBriefingBookmarks().length,
     },
   });
 }

@@ -82,6 +82,7 @@ without explicit `clean` + confirmation).
 - [x] `/api/search` (+ Vault search box): hybrid, item-level results
 - [x] Obsidian import (`/api/import/vault` + button): ingest existing vault notes on day one
 - [x] Free local-model fallback (`lib/localModel.ts`): chat/brief work with no API key/credits; auto-prefers Claude when available
+- [x] "Brief me" reads Chrome "Briefing" bookmarks (`lib/bookmarks.ts`) + deterministic digest so the brief always shows instantly
 - [x] Markdown rendering for chat + briefings (`Markdown.tsx`, safe/node-based)
 - [x] Seed active projects (Smalley Coffee, Crema, Paper Filter, Digital Caddie Book, Clubsmanship)
 - [x] `lib/vector.ts` extraction + Vitest suite (`npm test`, 22 tests)

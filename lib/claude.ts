@@ -113,7 +113,7 @@ export async function* streamAssistant(
 
 /** The user-turn prompt for an on-demand briefing. */
 export function briefPrompt(stateContext: string): string {
-  return `Give me a briefing. Current state:\n\n${stateContext || "(no projects, calendar, or captures yet)"}\n\nStructure it as: a one-line greeting, then only the sections that have something worth saying — **Focus today**, **Calendar**, **Projects** (active & stalled), **Worth your attention**. Prioritize ruthlessly and recommend what to do first. Keep it tight and editorial; do not pad.`;
+  return `Josh has just been shown a data digest (his projects, calendar, recent captures, and his Chrome "Briefing" reading list). Give a short, prioritized TAKE — do not relist the digest. In 3–6 sentences: what he should focus on first today, and which one or two items from his Briefing reading list are most worth his time and why. Editorial and decisive. Current data:\n\n${stateContext || "(no projects, calendar, or captures yet)"}`;
 }
 
 export const COLLECTIONS = [

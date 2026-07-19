@@ -1,5 +1,5 @@
 import { streamAssistant, briefPrompt } from "@/lib/claude";
-import { buildStateContext } from "@/lib/context";
+import { buildStateContext, buildDigest } from "@/lib/context";
 import { detectStalled } from "@/lib/projects";
 import { connectRecentItems } from "@/lib/ideas";
 
@@ -20,10 +20,13 @@ export async function POST() {
   }
 
   const state = await buildStateContext();
+  const digest = await buildDigest();
   const encoder = new TextEncoder();
 
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
+      // Deterministic digest first — always shows instantly (no AI needed).
+      controller.enqueue(encoder.encode(digest + "\n\n---\n\n### Alfred's take\n\n"));
       try {
         for await (const chunk of streamAssistant([{ role: "user", content: briefPrompt(state) }])) {
           controller.enqueue(encoder.encode(chunk));

@@ -2,6 +2,7 @@ import { getDb } from "@/lib/db";
 import { listProjects } from "@/lib/projects";
 import { listNotifications } from "@/lib/notifications";
 import { upcomingEvents } from "@/lib/calendar";
+import { getBriefingBookmarks } from "@/lib/bookmarks";
 
 /**
  * A compact snapshot of Josh's world, injected into chat + briefings so Alfred
@@ -24,6 +25,8 @@ export async function buildStateContext(): Promise<string> {
     /* calendar optional */
   }
 
+  const bookmarks = getBriefingBookmarks();
+
   const lines: string[] = ["Current state of Josh's world (context; use when relevant):"];
   if (active.length)
     lines.push(
@@ -34,6 +37,70 @@ export async function buildStateContext(): Promise<string> {
   if (events.length) lines.push("Upcoming events: " + events.join("; "));
   if (recent.length) lines.push("Recently captured: " + recent.map((r) => r.title).join("; "));
   if (notifs.length) lines.push("Open notifications: " + notifs.map((n) => n.title).join("; "));
+  if (bookmarks.length)
+    lines.push(
+      'Briefing reading list (Chrome "Briefing" folder): ' +
+        bookmarks.map((b) => `${b.title} (${b.url})`).join("; "),
+    );
 
   return lines.length > 1 ? lines.join("\n") : "";
+}
+
+/**
+ * A deterministic, human-readable briefing digest (Markdown) — needs no AI, so
+ * "Brief me" always shows something useful immediately, even while the local
+ * model downloads or if no backend is available. The AI adds its take after.
+ */
+export async function buildDigest(): Promise<string> {
+  const projects = listProjects();
+  const active = projects.filter((p) => p.status === "active");
+  const stalled = projects.filter((p) => p.status === "stalled");
+  const notifs = listNotifications(false).slice(0, 6);
+  const recent = getDb().prepare("SELECT title FROM items ORDER BY id DESC LIMIT 5").all() as {
+    title: string;
+  }[];
+  const bookmarks = getBriefingBookmarks();
+  let events: { start: Date; summary: string }[] = [];
+  try {
+    events = await upcomingEvents(3);
+  } catch {
+    /* calendar optional */
+  }
+
+  const now = new Date();
+  const part = now.getHours() < 12 ? "morning" : now.getHours() < 18 ? "afternoon" : "evening";
+  const when = now.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
+
+  const L: string[] = [`Good ${part}, Josh — ${when}.`, ""];
+  if (bookmarks.length) {
+    L.push(`## Reading — your Chrome “Briefing” folder (${bookmarks.length})`);
+    for (const b of bookmarks.slice(0, 15)) L.push(`- [${b.title}](${b.url})`);
+    L.push("");
+  }
+  if (active.length) {
+    L.push("## Active projects");
+    for (const p of active) L.push(`- **${p.name}**${p.next_action ? ` — next: ${p.next_action}` : ""}`);
+    L.push("");
+  }
+  if (stalled.length) {
+    L.push("## Stalled");
+    for (const p of stalled) L.push(`- ${p.name}`);
+    L.push("");
+  }
+  if (events.length) {
+    L.push("## Upcoming");
+    for (const e of events.slice(0, 6)) L.push(`- ${e.start.toLocaleString()} — ${e.summary}`);
+    L.push("");
+  }
+  if (recent.length) {
+    L.push("## Recently captured");
+    for (const r of recent) L.push(`- ${r.title}`);
+    L.push("");
+  }
+  if (notifs.length) {
+    L.push("## Worth your attention");
+    for (const n of notifs) L.push(`- ${n.title}`);
+    L.push("");
+  }
+  return L.join("\n");
 }
