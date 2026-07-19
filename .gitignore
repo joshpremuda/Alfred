@@ -22,3 +22,6 @@ data/
 .next/
 out/
 next-env.d.ts
+
+# Paper Filter generated data
+paper-filter/issue-data.json

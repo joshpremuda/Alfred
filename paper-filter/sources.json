@@ -1,0 +1,14 @@
+[
+  { "name": "Reuters", "url": "https://www.reuters.com/world/" },
+  { "name": "AP", "url": "https://apnews.com/hub/world-news" },
+  { "name": "BBC News", "url": "https://www.bbc.com/news" },
+  { "name": "The New York Times", "url": "https://www.nytimes.com/" },
+  { "name": "The Economist", "url": "https://www.economist.com/" },
+  { "name": "Financial Times", "url": "https://www.ft.com/" },
+  { "name": "Semafor", "url": "https://www.semafor.com/" },
+  { "name": "Monocle", "url": "https://monocle.com/" },
+  { "name": "The Free Press", "url": "https://www.thefp.com/" },
+  { "name": "The Week", "url": "https://theweek.com/" },
+  { "name": "Air Mail", "url": "https://airmail.news/" },
+  { "name": "Puck", "url": "https://puck.news/" }
+]
