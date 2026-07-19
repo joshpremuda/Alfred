@@ -42,27 +42,48 @@ waitlist. (Keep the store on Shopify; the newsletter lives on its own subdomain.
 
 ---
 
-## ③ The daily issue (free)
+## ③ The daily issue — automated (free, on your Mac)
 
-The engine gathers today's real headlines; the *writing* is done by an agent
-(Claude Code on your subscription — no API credits needed).
+The full pipeline is built: **gather → write → render → send**. Writing runs on
+your **Claude subscription** (Claude Code headless — no API credits), so the only
+paid-or-limited service is Mailchimp's free tier.
 
-**Each morning:**
-```bash
-cd ~/valet
-node paper-filter/gather.mjs        # → paper-filter/issue-data.json
+**Prereqs:** Claude Code installed and signed in on the Mac (`claude` on PATH);
+Node 18+.
+
+**1. Secrets** — create `paper-filter/.env` (gitignored):
 ```
-Then, in a Claude Code session:
-> "Write today's Paper Filter issue from paper-filter/issue-data.json in the
->  conversational house voice (short reads, links woven in, a Sources line),
->  and give me the email HTML."
+MAILCHIMP_API_KEY=xxxxxxxx-us21     # the -usNN suffix is your server
+MAILCHIMP_LIST_ID=your_audience_id
+PF_FROM_NAME=The Paper Filter
+PF_REPLY_TO=you@smalleycoffee.com
+PF_APPROVE_EMAIL=you@gmail.com      # where the daily review copy goes
+```
+(Mailchimp API key: Account → Extras → API keys. List ID: Audience → Settings →
+Audience name and defaults.)
 
-Paste that HTML into a **Mailchimp → Create → Email → Regular** campaign and send
-to your audience. Two minutes.
+**2. Try one run by hand:**
+```bash
+./paper-filter/run.sh               # gather → write → render → draft + review copy
+```
+You'll get the issue in your inbox and a link to send it from Mailchimp.
 
-**Automate later:** once Mailchimp is connected, add a Mailchimp API key and a
-send step, and a daily scheduled agent can gather → write → send on its own.
-Ask Claude to set that up.
+**3. Schedule it daily (approve mode first):**
+```bash
+./paper-filter/install-schedule.sh install      # runs every day at 06:00
+```
+Each morning it builds the issue and emails you a review copy + a one-click send
+link. Nothing goes to subscribers until you approve.
+
+**4. Flip to fully automatic** once you trust it:
+```bash
+PF_MODE=auto ./paper-filter/install-schedule.sh install
+```
+Now it gathers, writes, and sends on its own — zero involvement.
+
+> If the write step errors, it's usually the `claude -p … --permission-mode
+> acceptEdits` flags in `run.sh` needing a tweak for your Claude Code version —
+> paste the error to Claude and it'll adjust.
 
 ---
 

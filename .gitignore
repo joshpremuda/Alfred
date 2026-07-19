@@ -23,5 +23,9 @@ data/
 out/
 next-env.d.ts
 
-# Paper Filter generated data
+# Paper Filter — generated + secrets
 paper-filter/issue-data.json
+paper-filter/issue-content.json
+paper-filter/issue.html
+paper-filter/.env
+paper-filter/.logs/
