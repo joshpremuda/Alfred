@@ -1,17 +1,23 @@
-# Draft Note to Justin — The Buy-In Idea
+# Draft Note to Justin — Reboot / Buy-In (dollar-light)
 
-Justin,
+Hey Justin,
 
-I've been thinking a lot about your last note — the part about building something together, each of us doing what we're wired for, and growing it for years. That stuck with me, and it pushed my thinking somewhere better than where we started.
+First, thank you for putting a real number on the table.
 
-Here's where I landed. Instead of me paying you a per-pound fee to roast — which honestly makes you my vendor, not my partner — what if you **bought into Smalley and we owned it together?**
+I've spent some time with the $4/lb, and I want to be straight with you: as it stands, it's more than I can make work, especially on the wholesale side. The 5lb bags are the bulk of my volume, and once I add up everything, there just isn't enough margin left there for me.
 
-I know a big check up front isn't realistic, and it doesn't need to be. I'd be glad to structure it as a **buy-in over several years.** And here's the part I like: a lot of it could come from the very work you're already doing. Rather than you charging a markup on roasting, we'd run production at cost, and the margin you'd have earned goes toward your ownership instead. Same value to you — but you'd be building equity in something we grow together, not just sending me invoices.
+Maybe we look at my bag breakdown and price accordingly? They're not all the same amount of work, so it might make sense to price them by what each actually takes:
 
-You'd run production and systems — your engine. I'd run sales, brand, and growth — mine. We'd split what we build. Your trailer and the Humble Joe's name stay entirely yours; this would just be about Smalley.
+- 4oz samples (whole bean)
+- 5.5oz "frac" pack (ground)
+- 8oz grocery (whole and ground)
+- 10oz online (whole and ground)
+- 5lb wholesale (whole and ground)
 
-I don't have every detail worked out, and I'd want us to figure the specifics out together — but I wanted to share the shape of it, because it feels a lot closer to what we both said we wanted when we sat down.
+That said, I keep coming back to something bigger. I originally thought toll roasting was the simplest way to get started — but your last note about building something together, for the long haul, stuck with me. Maybe we reboot and think further: less "I pay you per pound," more "we own and grow this together," each of us running the side we're wired for. I'd rather build something we both have a stake in than nickel-and-dime a roasting rate.
 
-Let me know what you think. I'd love to talk it through.
+I don't have it all worked out — I just think there's a better shape here than where we started, and I'd love to explore it with you.
+
+None of this changes how much I enjoyed the visit. Let's keep talking.
 
 Josh
