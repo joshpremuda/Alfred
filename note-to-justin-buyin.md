@@ -18,6 +18,8 @@ That said, I keep coming back to something bigger. I originally thought toll roa
 
 Here's one shape I've been kicking around: you buy in over time — up to 49% — and you could fund it out of the profits as we grow, so it doesn't take a big check up front. I'd hold onto 51% so I can keep steering the brand, but you'd be a real owner building real equity, not a vendor sending invoices. Instead of charging a markup on roasting, that value could go toward your stake.
 
+And if it goes well and we both like how we work together, that's the kind of thing that could eventually grow into combining everything under one roof — your side and mine as one company. No need to decide any of that now; I just think starting here could open a door to something a lot bigger down the road.
+
 I don't have it all worked out — I just think there's a better shape here than where we started, and I'd love to explore it with you.
 
 None of this changes how much I enjoyed the visit. Let's keep talking.
