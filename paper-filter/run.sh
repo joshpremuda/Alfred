@@ -10,8 +10,16 @@
 set -euo pipefail
 cd "$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-# Load secrets (Mailchimp keys, etc.) if present.
-if [[ -f paper-filter/.env ]]; then set -a; . paper-filter/.env; set +a; fi
+# Load secrets (Mailchimp keys, etc.) if present. Read KEY=VALUE lines literally
+# so values with spaces don't need quoting and are never executed as commands.
+if [[ -f paper-filter/.env ]]; then
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    [[ -z "$line" || "$line" == \#* ]] && continue
+    key="${line%%=*}"; val="${line#*=}"
+    val="${val%\"}"; val="${val#\"}"   # strip optional surrounding quotes
+    [[ "$key" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]] && export "$key=$val"
+  done < paper-filter/.env
+fi
 
 echo "[paper-filter] $(date '+%Y-%m-%d %H:%M')  gathering headlines…"
 node paper-filter/gather.mjs
