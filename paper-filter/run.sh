@@ -26,8 +26,9 @@ node paper-filter/gather.mjs
 
 echo "[paper-filter] writing today's issue (Claude, your subscription)…"
 # Claude Code headless writes paper-filter/issue-content.json from the data.
-# --permission-mode acceptEdits lets it write the file unattended.
-claude -p "$(cat paper-filter/write-prompt.md)" --permission-mode acceptEdits >/dev/null
+# env -u ANTHROPIC_API_KEY forces use of your claude.ai subscription (free)
+# instead of the paid API. --permission-mode acceptEdits lets it write the file.
+env -u ANTHROPIC_API_KEY claude -p "$(cat paper-filter/write-prompt.md)" --permission-mode acceptEdits >/dev/null
 
 if [[ ! -f paper-filter/issue-content.json ]]; then
   echo "[paper-filter] ERROR: the write step produced no issue-content.json" >&2
