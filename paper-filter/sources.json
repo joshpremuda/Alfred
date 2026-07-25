@@ -1,6 +1,6 @@
 [
-  { "name": "Reuters", "url": "https://www.reuters.com/world/" },
-  { "name": "AP", "url": "https://apnews.com/hub/world-news" },
+  { "name": "Reuters", "url": "https://www.reuters.com/world/", "feed": "https://news.google.com/rss/search?q=site:reuters.com+when:1d&hl=en-US&gl=US&ceid=US:en" },
+  { "name": "AP", "url": "https://apnews.com/", "feed": "https://news.google.com/rss/search?q=site:apnews.com+when:1d&hl=en-US&gl=US&ceid=US:en" },
   { "name": "BBC News", "url": "https://www.bbc.com/news" },
   { "name": "The New York Times", "url": "https://www.nytimes.com/" },
   { "name": "The Economist", "url": "https://www.economist.com/" },
@@ -8,7 +8,7 @@
   { "name": "Semafor", "url": "https://www.semafor.com/" },
   { "name": "Monocle", "url": "https://monocle.com/" },
   { "name": "The Free Press", "url": "https://www.thefp.com/" },
-  { "name": "The Week", "url": "https://theweek.com/" },
+  { "name": "The Week", "url": "https://theweek.com/", "feed": "https://news.google.com/rss/search?q=site:theweek.com+when:2d&hl=en-US&gl=US&ceid=US:en" },
   { "name": "Air Mail", "url": "https://airmail.news/" },
-  { "name": "Puck", "url": "https://puck.news/" }
+  { "name": "Puck", "url": "https://puck.news/", "feed": "https://news.google.com/rss/search?q=site:puck.news+when:2d&hl=en-US&gl=US&ceid=US:en" }
 ]

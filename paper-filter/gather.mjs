@@ -78,20 +78,25 @@ async function discoverFeed(pageUrl) {
   return null;
 }
 
-async function headlines(pageUrl, n = 3) {
-  const feed = await discoverFeed(pageUrl);
+// Google News titles come as "Headline - Publisher" — drop the trailing source.
+const cleanTitle = (t, isGoogle) => (isGoogle ? t.replace(/\s+-\s+[^-]+$/, "").trim() : t);
+
+async function headlines(source, n = 3) {
+  // An explicit `feed` (e.g. a Google News RSS search) wins over auto-discovery.
+  const feed = source.feed || (await discoverFeed(source.url));
   if (!feed) return [];
   const xml = await fetchText(feed);
   if (!xml) return [];
+  const isGoogle = /news\.google\.com/.test(feed);
   return parseFeed(xml)
     .sort((a, b) => (b.date ? +b.date : 0) - (a.date ? +a.date : 0))
     .slice(0, n)
-    .map((i) => ({ title: i.title, link: i.link, summary: i.summary }));
+    .map((i) => ({ title: cleanTitle(i.title, isGoogle), link: i.link, summary: i.summary }));
 }
 
 const sources = JSON.parse(readFileSync(new URL("./sources.json", import.meta.url)));
 const result = await Promise.all(
-  sources.map(async (s) => ({ name: s.name, url: s.url, headlines: await headlines(s.url, 3) })),
+  sources.map(async (s) => ({ name: s.name, url: s.url, headlines: await headlines(s, 3) })),
 );
 
 const outPath = new URL("./issue-data.json", import.meta.url);
