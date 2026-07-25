@@ -153,7 +153,7 @@ if (sources.length) {
 }
 
 const result = await Promise.all(
-  sources.map(async (s) => ({ name: s.name, url: s.url, headlines: await headlines(s, 3) })),
+  sources.map(async (s) => ({ name: s.name, url: s.url, headlines: await headlines(s, 4) })),
 );
 
 const outPath = new URL("./issue-data.json", import.meta.url);

@@ -7,7 +7,7 @@ Read `paper-filter/issue-data.json` (today's real headlines grouped by source) a
   "items": [
     {
       "lead": "2–4 word topic",
-      "body": "2–4 sentence plain-prose summary that SYNTHESIZES what several sources are reporting on this story. No links, no markup — just the summary.",
+      "body": "2–4 sentence plain-prose summary with the concrete, pertinent details (who/what, key names, numbers, outcomes), synthesizing multiple sources when they cover it. No links, no markup.",
       "sources": [
         { "name": "Reuters", "url": "https://real-article-url" },
         { "name": "BBC News", "url": "https://real-article-url" },
@@ -22,10 +22,11 @@ Read `paper-filter/issue-data.json` (today's real headlines grouped by source) a
 ```
 
 Rules:
-- 3–5 `items` (the day's biggest stories) + 2–3 `quick` hits.
-- **Synthesize across multiple sources.** Each item's `body` should draw on what *several* outlets are reporting — the shared picture — not restate one headline. Where the coverage differs, note it briefly and neutrally.
+- **6–8 `items`** covering the day broadly — the biggest stories *and* the notable smaller ones — plus **4–6 `quick` hits**. Err toward including more pertinent news, not less.
+- **Be specific and concrete.** Each `body` carries the actual news — the who/what, key names, numbers, outcomes — not a vague high-level gloss. The reader should finish an item actually knowing what happened.
+- **Use multiple sources where they exist, but never drop a story for being single-source.** When several outlets cover something, synthesize the shared picture and note any meaningful difference. When only one source has an important story, include it anyway.
 - **No links or markup in `body` or `text`.** They are plain prose only. **All links live in `sources`** — that's what the reader clicks.
-- Each item's `sources` should list **2–4 real references** (the outlets covering that story), each a real URL from the data. `quick` items carry 1–2 sources. Prefer stories that appear across multiple sources so you can cite several.
+- Each item's `sources` lists **1–4 real references** (every outlet in the data that covers the story), each a real URL from the data. `quick` items carry 1–2 sources.
 - Voice: a sharp friend catching Josh up over coffee. Conversational, tight, no preamble.
 - Neutral and factual. Use **only** facts and URLs present in `issue-data.json` — never invent details, quotes, numbers, or links.
 - **Spread the sourcing** across the range of outlets; don't build the whole issue from one publisher.
