@@ -20,7 +20,7 @@ const sans = "-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-s
 const mono = "'SFMono-Regular',Menlo,Consolas,monospace";
 
 const esc = (s = "") => String(s).replace(/&(?!\w+;)/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-// body/quick text may contain <a href> links written by the agent — keep those.
+// bodies are plain prose (no markup) — links live only in the Sources line.
 
 const sources = (arr = []) =>
   arr
@@ -33,21 +33,24 @@ const sources = (arr = []) =>
 const item = (it) => `
   <tr><td style="padding:18px 0;border-bottom:1px solid ${LINE}">
     <p style="margin:0 0 10px;font-family:${serif};font-size:17px;line-height:1.6;color:${INK}">
-      <strong>${esc(it.lead)} &mdash;</strong> ${it.body}
+      <strong>${esc(it.lead)} &mdash;</strong> ${esc(it.body)}
     </p>
     <p style="margin:0;font-family:${mono};font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:${SOFT}">
       Sources &nbsp;${sources(it.sources)}
     </p>
   </td></tr>`;
 
+const quickRow = (q) => {
+  const text = typeof q === "string" ? q : q.text || "";
+  const src = typeof q === "object" && q.sources?.length
+    ? ` &nbsp;<span style="font-family:${mono};font-size:10px;letter-spacing:.05em;text-transform:uppercase">${sources(q.sources)}</span>`
+    : "";
+  return `<tr><td style="padding:8px 0;font-family:${serif};font-size:16px;line-height:1.55;color:${INK}">&mdash;&nbsp; ${esc(text)}${src}</td></tr>`;
+};
+
 const quick = (c.quick || []).length
   ? `<tr><td style="padding:20px 0 4px;font-family:${mono};font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:${SOFT}">A couple more worth a glance</td></tr>
-     ${(c.quick || [])
-       .map(
-         (q) =>
-           `<tr><td style="padding:6px 0;font-family:${serif};font-size:16px;line-height:1.55;color:${INK}">&mdash;&nbsp; ${q}</td></tr>`,
-       )
-       .join("")}`
+     ${(c.quick || []).map(quickRow).join("")}`
   : "";
 
 const html = `<!doctype html>

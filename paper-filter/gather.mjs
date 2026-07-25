@@ -86,7 +86,9 @@ const cleanTitle = (t, isGoogle) => (isGoogle ? t.replace(/\s+-\s+[^-]+$/, "").t
 // Free, real-time fallback feed for any domain without a normal RSS feed.
 function googleFeed(pageUrl) {
   const host = new URL(pageUrl).hostname.replace(/^www\./, "");
-  return `https://news.google.com/rss/search?q=site:${host}+when:2d&hl=en-US&gl=US&ceid=US:en`;
+  // 7-day window so weeklies (The Week) and thinly-indexed paywalls surface too;
+  // results are date-sorted and trimmed to the newest few, so dailies stay fresh.
+  return `https://news.google.com/rss/search?q=site:${host}+when:7d&hl=en-US&gl=US&ceid=US:en`;
 }
 
 async function headlines(source, n = 3) {
