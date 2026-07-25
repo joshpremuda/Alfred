@@ -9,7 +9,9 @@
 // + common paths). Paywalled sites without an open feed are skipped gracefully.
 
 import { JSDOM } from "jsdom";
-import { readFileSync, writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync, readdirSync, existsSync } from "node:fs";
+import os from "node:os";
+import path from "node:path";
 
 const KNOWN_FEEDS = {
   "nytimes.com": "https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml",
@@ -81,10 +83,15 @@ async function discoverFeed(pageUrl) {
 // Google News titles come as "Headline - Publisher" — drop the trailing source.
 const cleanTitle = (t, isGoogle) => (isGoogle ? t.replace(/\s+-\s+[^-]+$/, "").trim() : t);
 
+// Free, real-time fallback feed for any domain without a normal RSS feed.
+function googleFeed(pageUrl) {
+  const host = new URL(pageUrl).hostname.replace(/^www\./, "");
+  return `https://news.google.com/rss/search?q=site:${host}+when:2d&hl=en-US&gl=US&ceid=US:en`;
+}
+
 async function headlines(source, n = 3) {
-  // An explicit `feed` (e.g. a Google News RSS search) wins over auto-discovery.
-  const feed = source.feed || (await discoverFeed(source.url));
-  if (!feed) return [];
+  let feed = source.feed || (await discoverFeed(source.url));
+  if (!feed) feed = googleFeed(source.url); // no native feed → Google News
   const xml = await fetchText(feed);
   if (!xml) return [];
   const isGoogle = /news\.google\.com/.test(feed);
@@ -94,7 +101,55 @@ async function headlines(source, n = 3) {
     .map((i) => ({ title: cleanTitle(i.title, isGoogle), link: i.link, summary: i.summary }));
 }
 
-const sources = JSON.parse(readFileSync(new URL("./sources.json", import.meta.url)));
+// --- Source list = your Chrome "Briefing" folder (the source of truth) ---
+function chromeBookmarkFiles() {
+  const override = process.env.CHROME_BOOKMARKS?.trim();
+  if (override) return existsSync(override) ? [override] : [];
+  const base = path.join(os.homedir(), "Library", "Application Support", "Google", "Chrome");
+  if (!existsSync(base)) return [];
+  const files = [];
+  for (const e of readdirSync(base, { withFileTypes: true })) {
+    if (!e.isDirectory()) continue;
+    const f = path.join(base, e.name, "Bookmarks");
+    if (existsSync(f)) files.push(f);
+  }
+  return files;
+}
+function collectUrls(node, acc) {
+  if (node.type === "url" && node.url) acc.push({ name: node.name || node.url, url: node.url });
+  for (const c of node.children ?? []) collectUrls(c, acc);
+}
+function findFolder(node, name, acc) {
+  if (node.type === "folder" && node.name?.toLowerCase() === name.toLowerCase()) collectUrls(node, acc);
+  for (const c of node.children ?? []) findFolder(c, name, acc);
+}
+function bookmarkSources(folderName) {
+  const seen = new Set();
+  const out = [];
+  for (const file of chromeBookmarkFiles()) {
+    try {
+      const data = JSON.parse(readFileSync(file, "utf8"));
+      for (const root of Object.values(data.roots ?? {})) {
+        const acc = [];
+        findFolder(root, folderName, acc);
+        for (const b of acc) if (!seen.has(b.url)) { seen.add(b.url); out.push(b); }
+      }
+    } catch {
+      /* skip unreadable file */
+    }
+  }
+  return out;
+}
+
+const folder = process.env.BRIEFING_FOLDER || "Briefing";
+let sources = bookmarkSources(folder);
+if (sources.length) {
+  console.log(`Reading ${sources.length} sources from your Chrome "${folder}" folder.`);
+} else {
+  sources = JSON.parse(readFileSync(new URL("./sources.json", import.meta.url)));
+  console.log(`No Chrome "${folder}" folder found — using paper-filter/sources.json (${sources.length}).`);
+}
+
 const result = await Promise.all(
   sources.map(async (s) => ({ name: s.name, url: s.url, headlines: await headlines(s, 3) })),
 );
@@ -104,4 +159,4 @@ writeFileSync(outPath, JSON.stringify({ generatedAt: new Date().toISOString(), s
 const live = result.filter((s) => s.headlines.length).length;
 const total = result.reduce((n, s) => n + s.headlines.length, 0);
 console.log(`Gathered ${total} headlines from ${live}/${result.length} sources → paper-filter/issue-data.json`);
-for (const s of result) console.log(`  ${s.headlines.length ? "✓" : "·"} ${s.name}${s.headlines.length ? "" : "  (no open feed)"}`);
+for (const s of result) console.log(`  ${s.headlines.length ? "✓" : "·"} ${s.name}${s.headlines.length ? "" : "  (no headlines today)"}`);
