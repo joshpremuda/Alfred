@@ -1,0 +1,20 @@
+[
+  { "name": "The New York Times", "url": "https://www.nytimes.com/" },
+  { "name": "The Wall Street Journal", "url": "https://www.wsj.com/" },
+  { "name": "The Washington Post", "url": "https://www.washingtonpost.com/" },
+  { "name": "BBC News", "url": "https://www.bbc.com/news" },
+  { "name": "Financial Times", "url": "https://www.ft.com/" },
+  { "name": "The Economist", "url": "https://www.economist.com/" },
+  { "name": "Semafor", "url": "https://www.semafor.com/" },
+  { "name": "Puck", "url": "https://puck.news/" },
+  { "name": "The Information", "url": "https://www.theinformation.com/" },
+  { "name": "The Free Press", "url": "https://www.thefp.com/" },
+  { "name": "The Week", "url": "https://theweek.com/" },
+  { "name": "Drudge Report", "url": "https://www.drudgereport.com/" },
+  { "name": "Monocle", "url": "https://monocle.com/" },
+  { "name": "Air Mail", "url": "https://airmail.news/" },
+  { "name": "Harper's Magazine", "url": "https://harpers.org/" },
+  { "name": "The Paris Review", "url": "https://www.theparisreview.org/" },
+  { "name": "Works in Progress", "url": "https://www.worksinprogress.co/" },
+  { "name": "Paperstack", "url": "https://paperstack.com/" }
+]

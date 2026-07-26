@@ -1,97 +1,69 @@
-# Alfred — Personal AI Agent
+# Valet
 
-Alfred is a secured, Docker-isolated instance of [OpenClaw](https://openclaw.ai) running on your laptop as your personal agent.
+A **local-first AI operating system** that runs on Josh's always-on MacBook —
+his Chief of Staff, second brain, and command center. Not a chatbot.
 
-## Quick Start
+> *JARVIS* and *Valet* are the same system (JARVIS = "Josh's Artificial Valet
+> Intelligence System"; Valet is the project name).
 
-### 1. First-time setup (one time only)
-```bash
-./alfred setup
-```
-The wizard will ask for:
-- Your **Anthropic API key** (required) — get one at https://console.anthropic.com/keys
-- Your **Telegram bot token** (optional but recommended for mobile access)
+**Phase 1 (this repo) builds one agent: Alfred** — a browser-based, persistent,
+editorial assistant. See [`PRD.md`](./PRD.md), [`ARCHITECTURE.md`](./ARCHITECTURE.md),
+and [`TASKS.md`](./TASKS.md) for the full plan.
 
-### 2. Start Alfred
-```bash
-./alfred start
-```
+## Stack
 
-### 3. Talk to Alfred
-| Interface | How |
-|-----------|-----|
-| **Web browser** | Open http://localhost:3000 |
-| **Telegram** | Message your bot directly |
+Next.js (App Router) · SQLite (`better-sqlite3`) · Markdown / Obsidian vault ·
+Claude API for answers, with a free **in-process local-model fallback** when no
+key/credits are available · local embeddings (Transformers.js) for indexing —
+no Ollama, no background daemon.
 
----
+## Setup
 
-## All Commands
-
-| Command | What it does |
-|---------|-------------|
-| `./alfred setup` | First-time setup wizard |
-| `./alfred start` | Start Alfred |
-| `./alfred stop` | Stop Alfred |
-| `./alfred restart` | Restart Alfred |
-| `./alfred status` | Show container status |
-| `./alfred logs` | Stream live logs |
-| `./alfred chat` | Open web chat in browser |
-| `./alfred update` | Pull latest OpenClaw version |
-| `./alfred onboard` | Re-run OpenClaw onboarding |
-
----
-
-## Auto-start on Login (optional)
-
-### systemd (Linux)
-```bash
-sudo cp alfred.service /etc/systemd/system/
-sudo systemctl enable alfred
-sudo systemctl start alfred
-```
-
----
-
-## Security Model
-
-- **Docker-isolated** — Alfred runs inside a container with `no-new-privileges` and all capabilities dropped
-- **Localhost-only** — ports are bound to `127.0.0.1`, not exposed to your network
-- **Owner-only access** — DM pairing requires an explicit pairing code; Telegram restricted to your user ID
-- **No host filesystem access** — the container cannot read your files unless you explicitly grant it
-- **Secrets in `.env`** — your API key is never committed to git (`.gitignore` blocks it)
-
----
-
-## Customising Alfred
-
-Edit `config/agent.json` to change:
-- Agent name and persona
-- Which tools are enabled (browser, filesystem, shell)
-- Which channels are active
-
-Then restart: `./alfred restart`
-
----
-
-## Updating OpenClaw
+**Fastest path — two commands** (prereq: Node 18+). Bootstrap handles config,
+vault detection, the key prompt, install, build, test, and start:
 
 ```bash
-./alfred update
+git clone -b claude/laptop-second-brain-setup-7jiuw7 https://github.com/joshpremuda/Alfred.git valet && cd valet
+./scripts/bootstrap-macos.sh
+```
+It asks you to paste your `ANTHROPIC_API_KEY` once (hidden input → saved to the
+gitignored `.env`), then opens **http://localhost:3210**. In the browser: Vault →
+**Import Obsidian**, then **Reindex** after the first message.
+
+Full step-by-step (calendar, autostart, iPad/phone remote) is in
+**[`docs/SETUP.md`](./docs/SETUP.md)**.
+> ⚠️ Never paste your API key into a chat. It lives only in `.env` (gitignored).
+
+**Always-on:** `./scripts/install-launchd.sh install` runs Valet as a login
+service. **Remote:** Valet binds to localhost only; expose it to your iPad/phone
+tailnet-only with [Tailscale](https://tailscale.com) via `tailscale serve --bg 3210`
+(see [`docs/SETUP.md`](./docs/SETUP.md) §6).
+
+## Project layout
+
+```
+app/            UI shell + views + API routes (chat, capture, brief, projects…)
+app/components/ Sidebar + Chat/Brief/Vault/Projects/Ideas/Notifications views
+lib/            db, claude, embeddings, ingest, retrieval, projects, ideas,
+                notifications, calendar, context
+db/             schema.sql
+scripts/        setup-macos.sh (Phase 0), install-launchd.sh (autostart)
+docs/SETUP.md · PRD.md · ARCHITECTURE.md · TASKS.md · CHANGELOG.md
 ```
 
----
+## What works today (MVP complete)
 
-## Troubleshooting
+- **Chat** with Alfred — streaming, voice input, grounded in your knowledge + a
+  live snapshot of your projects/calendar ("what should I work on today?").
+- **Knowledge vault** — capture URLs/files/notes → summarized, auto-filed into
+  Collections, embedded locally, written to your Obsidian vault, and searchable.
+- **Brief me** — an on-demand, prioritized briefing.
+- **Projects** — status, next actions, automatic stalled detection.
+- **Idea reservoir** — seeded from your list; Alfred links new material to ideas.
+- **Notification center** — quiet by design, with a sidebar badge.
+- **Calendar awareness** — via a published/exported `.ics`.
+- Three themes (Light / Dark / **Sunny**); persistent SQLite; graceful with no key.
 
-**Alfred won't start**
-- Run `./alfred logs` to see errors
-- Make sure `.env` has a valid `ANTHROPIC_API_KEY`
-- Make sure Docker is running: `docker info`
-
-**Web chat shows "Connecting…"**
-- Wait ~30 seconds for the container to install OpenClaw on first boot
-- Check logs: `./alfred logs`
-
-**Telegram not working**
-- Confirm `TELEGRAM_BOT_TOKEN` is set in `.env`
-- Re-run onboarding: `./alfred onboard`
+Future agents (Wayne, Q, Creative, Buffett, 007) and source importers
+(Instapaper, X, Pinterest, Shopify…) are designed for but not built — see
+[`TASKS.md`](./TASKS.md) and [`ARCHITECTURE.md`](./ARCHITECTURE.md).

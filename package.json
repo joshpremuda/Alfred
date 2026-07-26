@@ -1,0 +1,33 @@
+{
+  "name": "valet",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Valet — a local-first AI operating system. Phase 1: Alfred.",
+  "scripts": {
+    "dev": "next dev -p 3210 -H 127.0.0.1",
+    "build": "next build",
+    "start": "next start -p 3210 -H 127.0.0.1",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.78.0",
+    "@huggingface/transformers": "^4.2.0",
+    "@mozilla/readability": "^0.6.0",
+    "better-sqlite3": "^11.10.0",
+    "jsdom": "^29.1.1",
+    "next": "^15.5.0",
+    "pdf-parse": "^2.4.5",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.11",
+    "@types/jsdom": "^28.0.3",
+    "@types/node": "^22.10.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "typescript": "^5.6.0",
+    "vitest": "^4.1.10"
+  }
+}

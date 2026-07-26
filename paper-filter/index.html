@@ -1,0 +1,477 @@
+<title>The Paper Filter — the news, filtered</title>
+<meta name="description" content="A daily briefing that reads every source and filters it to one quick, relatively unbiased read." />
+
+<style>
+  :root {
+    --paper: #f4f4f1;
+    --paper-2: #ecece7;
+    --ink: #16181c;
+    --ink-soft: #5b5f67;
+    --line: #dcdcd6;
+    --accent: #33518c;
+    --accent-soft: #33518c22;
+    --good: #2e6b52;
+    --warn: #9a5a2a;
+    --shadow: 0 1px 0 rgba(0, 0, 0, 0.04), 0 12px 32px -18px rgba(20, 24, 40, 0.28);
+    --serif: "Iowan Old Style", "Charter", "Palatino Linotype", Palatino, Georgia, serif;
+    --sans: system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", "IBM Plex Mono", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #111317;
+      --paper-2: #171a1f;
+      --ink: #ecebE6;
+      --ink-soft: #9aa0a8;
+      --line: #282b31;
+      --accent: #86a4de;
+      --accent-soft: #86a4de1f;
+      --good: #7dc0a1;
+      --warn: #d19a5f;
+      --shadow: 0 1px 0 rgba(255, 255, 255, 0.02), 0 16px 40px -20px rgba(0, 0, 0, 0.7);
+    }
+  }
+  :root[data-theme="light"] {
+    --paper: #f4f4f1; --paper-2: #ecece7; --ink: #16181c; --ink-soft: #5b5f67;
+    --line: #dcdcd6; --accent: #33518c; --accent-soft: #33518c22;
+    --good: #2e6b52; --warn: #9a5a2a;
+    --shadow: 0 1px 0 rgba(0,0,0,.04), 0 12px 32px -18px rgba(20,24,40,.28);
+  }
+  :root[data-theme="dark"] {
+    --paper: #111317; --paper-2: #171a1f; --ink: #ecebE6; --ink-soft: #9aa0a8;
+    --line: #282b31; --accent: #86a4de; --accent-soft: #86a4de1f;
+    --good: #7dc0a1; --warn: #d19a5f;
+    --shadow: 0 1px 0 rgba(255,255,255,.02), 0 16px 40px -20px rgba(0,0,0,.7);
+  }
+  :root[data-theme="sunny"] {
+    --paper: #fbf4e6; --paper-2: #f4e9d2; --ink: #2c2413; --ink-soft: #7c6a45;
+    --line: #eaddc2; --accent: #b26a1f; --accent-soft: #b26a1f22;
+    --good: #5c7a2f; --warn: #a8541f;
+    --shadow: 0 1px 0 rgba(0,0,0,.04), 0 14px 34px -18px rgba(90,60,10,.3);
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+  a { color: inherit; }
+
+  /* Masthead */
+  header.masthead {
+    border-bottom: 1px solid var(--line);
+    position: sticky; top: 0; z-index: 20;
+    background: color-mix(in srgb, var(--paper) 88%, transparent);
+    backdrop-filter: saturate(1.1) blur(8px);
+  }
+  .masthead .wrap {
+    display: flex; align-items: center; justify-content: space-between;
+    padding-top: 14px; padding-bottom: 14px; gap: 16px;
+  }
+  .wordmark {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: 1.15rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .wordmark .dot {
+    width: 22px; height: 22px; border-radius: 50%;
+    border: 2px solid var(--accent);
+    display: inline-grid; place-items: center; flex: none;
+  }
+  .wordmark .dot::after {
+    content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--accent);
+  }
+  .themebtn {
+    font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.04em;
+    text-transform: uppercase; color: var(--ink-soft);
+    background: transparent; border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 12px; cursor: pointer;
+  }
+  .themebtn:hover { color: var(--ink); border-color: var(--accent); }
+  .themebtn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .eyebrow {
+    font-family: var(--mono); font-size: 0.74rem; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--accent);
+  }
+
+  /* Hero */
+  .hero .wrap {
+    display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 56px;
+    align-items: center; padding: 72px 24px 64px;
+  }
+  h1.lede {
+    font-family: var(--serif); font-weight: 600;
+    font-size: clamp(2.5rem, 6vw, 4.3rem); line-height: 1.02;
+    letter-spacing: -0.02em; text-wrap: balance; margin: 16px 0 0;
+  }
+  h1.lede em { font-style: italic; color: var(--accent); }
+  .sub { font-size: 1.12rem; color: var(--ink-soft); max-width: 46ch; margin: 20px 0 28px; }
+
+  form.join { display: flex; gap: 8px; flex-wrap: wrap; max-width: 460px; }
+  form.join input[type="email"] {
+    flex: 1 1 220px; min-width: 0; font: inherit; font-size: 0.98rem;
+    color: var(--ink); background: var(--paper-2);
+    border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px;
+  }
+  form.join input[type="email"]:focus { outline: 2px solid var(--accent); outline-offset: 1px; border-color: var(--accent); }
+  form.join button {
+    font: inherit; font-weight: 600; color: var(--paper); background: var(--ink);
+    border: 1px solid var(--ink); border-radius: 10px; padding: 12px 20px; cursor: pointer;
+    transition: transform 0.08s ease;
+  }
+  form.join button:hover { transform: translateY(-1px); }
+  form.join button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .microcopy {
+    margin-top: 12px; font-family: var(--mono); font-size: 0.74rem;
+    letter-spacing: 0.03em; color: var(--ink-soft);
+    display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
+  }
+  .microcopy .sep { opacity: 0.5; }
+  .joined { color: var(--good); font-weight: 600; }
+
+  /* Filter visual */
+  .filter-card {
+    border: 1px solid var(--line); border-radius: 16px; background: var(--paper-2);
+    box-shadow: var(--shadow); padding: 22px; overflow: hidden;
+  }
+  .fc-label {
+    font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--ink-soft); margin-bottom: 12px;
+  }
+  .sources { display: flex; flex-wrap: wrap; gap: 6px; }
+  .src {
+    font-family: var(--mono); font-size: 0.7rem; color: var(--ink-soft);
+    border: 1px solid var(--line); border-radius: 6px; padding: 3px 7px; background: var(--paper);
+    opacity: 0; transform: translateY(-6px);
+    animation: dropin 0.5s ease forwards;
+  }
+  .filter-rule {
+    position: relative; height: 1px; background: var(--line); margin: 20px 0;
+  }
+  .filter-rule span {
+    position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+    background: var(--paper-2); padding: 0 10px;
+    font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--accent);
+  }
+  .filter-rule::before {
+    content: ""; position: absolute; left: 0; right: 0; top: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    opacity: 0; animation: sweep 2.4s ease 0.6s forwards;
+  }
+  .outputs { display: grid; gap: 10px; }
+  .out {
+    font-family: var(--serif); font-size: 1.02rem; line-height: 1.3;
+    padding-left: 14px; border-left: 2px solid var(--accent);
+    opacity: 0; transform: translateY(6px);
+    animation: rise 0.6s ease forwards;
+  }
+  .out small { display: block; font-family: var(--mono); font-size: 0.64rem; letter-spacing: 0.04em; color: var(--ink-soft); text-transform: uppercase; margin-top: 3px; border: 0; padding: 0; }
+
+  @keyframes dropin { to { opacity: 1; transform: none; } }
+  @keyframes rise { to { opacity: 1; transform: none; } }
+  @keyframes sweep { 0% { opacity: 0; } 40% { opacity: 1; } 100% { opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) {
+    .src, .out { animation: none; opacity: 1; transform: none; }
+    .filter-rule::before { animation: none; }
+  }
+
+  /* Section scaffolding */
+  section { border-top: 1px solid var(--line); }
+  section .wrap { padding: 64px 24px; }
+  h2 {
+    font-family: var(--serif); font-weight: 600; font-size: clamp(1.6rem, 3.4vw, 2.2rem);
+    letter-spacing: -0.01em; margin: 10px 0 0; text-wrap: balance;
+  }
+  .section-intro { color: var(--ink-soft); max-width: 58ch; margin-top: 14px; }
+
+  /* How it filters — a real 3-step sequence */
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 40px; }
+  .step { }
+  .step .n {
+    font-family: var(--mono); font-size: 0.74rem; letter-spacing: 0.1em; color: var(--accent);
+    padding-bottom: 12px; border-bottom: 1px solid var(--line); margin-bottom: 14px;
+  }
+  .step h3 { font-family: var(--serif); font-size: 1.28rem; margin: 0 0 8px; font-weight: 600; }
+  .step p { margin: 0; color: var(--ink-soft); font-size: 0.98rem; }
+
+  /* Sample issue */
+  .issue {
+    margin-top: 40px; border: 1px solid var(--line); border-radius: 16px;
+    background: var(--paper-2); box-shadow: var(--shadow); overflow: hidden;
+  }
+  .issue-head {
+    display: flex; align-items: baseline; justify-content: space-between; gap: 16px;
+    padding: 20px 26px; border-bottom: 1px solid var(--line); flex-wrap: wrap;
+  }
+  .issue-head .name { font-family: var(--serif); font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; }
+  .issue-head .meta { font-family: var(--mono); font-size: 0.72rem; color: var(--ink-soft); letter-spacing: 0.04em; }
+  .issue-body { padding: 8px 26px 26px; }
+  .fold-label {
+    font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--ink-soft); margin: 22px 0 4px;
+  }
+  .story { padding: 16px 0; border-bottom: 1px solid var(--line); }
+  .story:last-child { border-bottom: 0; }
+  .story h4 { font-family: var(--serif); font-size: 1.24rem; line-height: 1.25; margin: 0 0 8px; font-weight: 600; }
+  .story p { margin: 0 0 12px; color: var(--ink); }
+  .issue-intro { color: var(--ink); font-size: 1.06rem; margin: 16px 0 4px; }
+  .story p { font-size: 1.05rem; }
+  .sources { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin: 12px 0 0; }
+  .sources .k {
+    font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--ink-soft); margin-right: 2px;
+  }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .chip {
+    font-family: var(--mono); font-size: 0.68rem; color: var(--ink-soft);
+    border: 1px solid var(--line); border-radius: 5px; padding: 2px 6px; background: var(--paper);
+  }
+  .quick { display: grid; gap: 10px; margin-top: 8px; }
+  .quick li { list-style: none; padding-left: 16px; position: relative; color: var(--ink-soft); }
+  .quick li::before { content: "—"; position: absolute; left: 0; color: var(--accent); }
+  .story p a, .quick li a {
+    color: var(--ink); text-decoration: none;
+    border-bottom: 1px solid var(--accent); padding-bottom: 1px;
+    transition: background 0.15s ease;
+  }
+  .story p a:hover, .story p a:focus-visible,
+  .quick li a:hover, .quick li a:focus-visible { background: var(--accent-soft); }
+  a.chip { text-decoration: none; transition: border-color 0.15s ease, color 0.15s ease; }
+  a.chip:hover, a.chip:focus-visible { border-color: var(--accent); color: var(--ink); }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 3px; }
+
+  .issue-note {
+    font-family: var(--mono); font-size: 0.68rem; color: var(--ink-soft);
+    text-align: center; padding: 14px; border-top: 1px solid var(--line); letter-spacing: 0.04em;
+  }
+
+  /* Compare strip */
+  .compare { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; margin-top: 40px; background: var(--line); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+  .cell { background: var(--paper); padding: 22px; }
+  .cell.us { background: var(--accent-soft); }
+  .cell .who { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft); }
+  .cell.us .who { color: var(--accent); }
+  .cell .what { margin-top: 8px; font-family: var(--serif); font-size: 1.06rem; line-height: 1.35; }
+
+  /* CTA + footer */
+  .endcta { text-align: center; }
+  .endcta .wrap { padding: 72px 24px; }
+  .endcta form.join { margin: 26px auto 0; justify-content: center; }
+  footer { border-top: 1px solid var(--line); }
+  footer .wrap {
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    padding: 26px 24px; flex-wrap: wrap;
+    font-family: var(--mono); font-size: 0.72rem; color: var(--ink-soft); letter-spacing: 0.03em;
+  }
+
+  .reveal { opacity: 0; transform: translateY(14px); transition: opacity 0.6s ease, transform 0.6s ease; }
+  .reveal.in { opacity: 1; transform: none; }
+  @media (prefers-reduced-motion: reduce) { .reveal { opacity: 1; transform: none; transition: none; } }
+
+  @media (max-width: 820px) {
+    .hero .wrap { grid-template-columns: 1fr; gap: 40px; padding-top: 52px; }
+    .steps, .compare { grid-template-columns: 1fr; }
+    .compare { gap: 1px; }
+  }
+</style>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="wordmark"><span class="dot"></span> The Paper Filter</div>
+    <button class="themebtn" id="theme" aria-label="Switch theme">Light</button>
+  </div>
+</header>
+
+<section class="hero" style="border-top:0">
+  <div class="wrap">
+    <div>
+      <div class="eyebrow">A daily briefing</div>
+      <h1 class="lede">Every source.<br /><em>None of the spin.</em></h1>
+      <p class="sub">
+        The Paper Filter reads the day across 40+ outlets and hands you one quick, relatively
+        unbiased brief — what happened, and where the coverage diverges. Five minutes, no doomscroll.
+      </p>
+      <!-- MAILCHIMP: replace the action URL + honeypot name with your audience's
+           embedded-form values (Mailchimp → Audience → Signup forms → Embedded form). -->
+      <form class="join" action="https://YOURDC.list-manage.com/subscribe/post?u=YOUR_U&amp;id=YOUR_ID" method="post" target="_blank" novalidate>
+        <input type="email" name="EMAIL" placeholder="you@example.com" aria-label="Email address" required />
+        <div aria-hidden="true" style="position:absolute;left:-5000px"><input type="text" name="b_YOUR_U_YOUR_ID" tabindex="-1" value="" /></div>
+        <button type="submit" name="subscribe">Join the waitlist</button>
+      </form>
+      <div class="microcopy">
+        <span>Free at launch</span><span class="sep">·</span>
+        <span>5-minute read</span><span class="sep">·</span>
+        <span>Filtered from 40+ sources</span>
+      </div>
+    </div>
+
+    <div class="filter-card" aria-hidden="true">
+      <div class="fc-label">Today, filtered</div>
+      <div class="sources" id="sources"></div>
+      <div class="filter-rule"><span>The Filter</span></div>
+      <div class="outputs">
+        <div class="out" style="animation-delay:1.5s">Ceasefire talks resume as both sides signal cautious progress<small>Sources · Reuters · AP · BBC · Al Jazeera</small></div>
+        <div class="out" style="animation-delay:1.75s">Central bank holds rates; markets read it as a pause, not a pivot<small>Sources · WSJ · FT · Bloomberg</small></div>
+        <div class="out" style="animation-delay:2s">New AI rules advance in the EU — scope still contested<small>Sources · Economist · Politico · The Verge</small></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap reveal">
+    <div class="eyebrow">How it filters</div>
+    <h2>Three passes, then a clean cup.</h2>
+    <p class="section-intro">Not one editor's opinion. Not a wall of headlines with bias labels. A synthesis — the signal that survives when you read everyone at once.</p>
+    <div class="steps">
+      <div class="step">
+        <div class="n">Pass 01 — Collect</div>
+        <h3>Read everything</h3>
+        <p>We pull the day from 40+ outlets across the spectrum — wires, papers, and the sharp independents.</p>
+      </div>
+      <div class="step">
+        <div class="n">Pass 02 — Filter</div>
+        <h3>Remove the spin</h3>
+        <p>We keep what the sources agree on, and flag exactly where — and how — their coverage diverges.</p>
+      </div>
+      <div class="step">
+        <div class="n">Pass 03 — Pour</div>
+        <h3>One clean brief</h3>
+        <p>You get a five-minute read in your inbox each morning. What happened, minus the noise.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap reveal">
+    <div class="eyebrow">The product</div>
+    <h2>A sample issue.</h2>
+    <p class="section-intro">It reads like a sharp friend catching you up over coffee — a few short reads on what actually happened, with links woven right into the sentences so you can go to the source whenever you want. Not a wall of headlines. A conversation.</p>
+
+    <article class="issue">
+      <div class="issue-head">
+        <div class="name">The Paper Filter</div>
+        <div class="meta">SAMPLE ISSUE · WEEKDAY MORNING · FILTERED FROM 41 SOURCES</div>
+      </div>
+      <div class="issue-body">
+        <p class="issue-intro">Morning, Josh. Here's the day, filtered — three worth a real read, then a couple of quick ones. Every link goes straight to the source.</p>
+
+        <div class="story">
+          <p><strong>On the ceasefire —</strong> talks <a href="https://www.reuters.com/world/" target="_blank" rel="noreferrer">picked back up</a> after a week's pause, and the read across the wires is cautious optimism. There's <a href="https://apnews.com/hub/world-news" target="_blank" rel="noreferrer">real movement on prisoner exchanges</a>, though nobody's calling it a durable truce yet — expect carefully hedged language from all sides through the weekend.</p>
+          <p class="sources"><span class="k">Sources</span><span class="chips"><a class="chip" href="https://www.reuters.com/world/" target="_blank" rel="noreferrer">Reuters</a><a class="chip" href="https://apnews.com/hub/world-news" target="_blank" rel="noreferrer">AP</a><a class="chip" href="https://www.bbc.com/news/world" target="_blank" rel="noreferrer">BBC</a><a class="chip" href="https://www.aljazeera.com/news/" target="_blank" rel="noreferrer">Al Jazeera</a></span></p>
+        </div>
+
+        <div class="story">
+          <p><strong>The rate decision —</strong> the central bank <a href="https://www.wsj.com/economy/central-banking" target="_blank" rel="noreferrer">held steady</a>, which everyone expected; the tone was the real story. Business desks <a href="https://www.ft.com/global-economy" target="_blank" rel="noreferrer">read it as hawkish</a> and the chair wouldn't rule out one more hike, so markets gave back an early rally to finish flat.</p>
+          <p class="sources"><span class="k">Sources</span><span class="chips"><a class="chip" href="https://www.wsj.com/economy/central-banking" target="_blank" rel="noreferrer">WSJ</a><a class="chip" href="https://www.ft.com/global-economy" target="_blank" rel="noreferrer">FT</a><a class="chip" href="https://www.bloomberg.com/economics" target="_blank" rel="noreferrer">Bloomberg</a></span></p>
+        </div>
+
+        <div class="story">
+          <p><strong>And in tech —</strong> the EU's AI rules <a href="https://www.politico.eu/section/technology/" target="_blank" rel="noreferrer">advanced another step</a>, with the scope of the "high-risk" tier still the main fight. One to watch if you're building with this stuff.</p>
+          <p class="sources"><span class="k">Sources</span><span class="chips"><a class="chip" href="https://www.politico.eu/section/technology/" target="_blank" rel="noreferrer">Politico</a><a class="chip" href="https://www.theverge.com/ai-artificial-intelligence" target="_blank" rel="noreferrer">The Verge</a></span></p>
+        </div>
+
+        <p class="issue-intro">A couple more worth a glance —</p>
+        <ul class="quick">
+          <li>Chip stocks <a href="https://www.bloomberg.com/technology" target="_blank" rel="noreferrer">popped on two earnings beats</a>, though guidance stayed cautious.</li>
+          <li>A climate ruling that's <a href="https://www.bbc.com/news/science-environment" target="_blank" rel="noreferrer">narrow legally but large symbolically</a>.</li>
+        </ul>
+      </div>
+      <div class="issue-note">Illustrative sample — the live edition is generated from that morning's headlines.</div>
+    </article>
+  </div>
+</section>
+
+<section>
+  <div class="wrap reveal">
+    <div class="eyebrow">Why it's different</div>
+    <h2>Aggregators show you the noise. We filter it.</h2>
+    <div class="compare">
+      <div class="cell">
+        <div class="who">Single-voice newsletters</div>
+        <div class="what">One team's read of the day. Efficient — but it's still one point of view.</div>
+      </div>
+      <div class="cell">
+        <div class="who">Bias-label aggregators</div>
+        <div class="what">Ratings on every story. Useful, but you still do the reading and the reconciling.</div>
+      </div>
+      <div class="cell us">
+        <div class="who">The Paper Filter</div>
+        <div class="what">Reads them all and synthesizes — the consensus, plus where the coverage splits. You just read the cup.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="endcta">
+  <div class="wrap reveal">
+    <div class="eyebrow">Launching soon</div>
+    <h2>Start your mornings filtered.</h2>
+    <p class="section-intro" style="margin-left:auto;margin-right:auto">Join the waitlist. We'll send one email — the day it launches.</p>
+    <form class="join" action="https://YOURDC.list-manage.com/subscribe/post?u=YOUR_U&amp;id=YOUR_ID" method="post" target="_blank" novalidate>
+      <input type="email" name="EMAIL" placeholder="you@example.com" aria-label="Email address" required />
+      <div aria-hidden="true" style="position:absolute;left:-5000px"><input type="text" name="b_YOUR_U_YOUR_ID" tabindex="-1" value="" /></div>
+      <button type="submit" name="subscribe">Join the waitlist</button>
+    </form>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <span>The Paper Filter — the news, filtered.</span>
+    <span>A morning companion to Crema &amp; Smalley Coffee.</span>
+  </div>
+</footer>
+
+<script>
+  // Theme cycle: Light → Dark → Sunny
+  (function () {
+    var order = ["light", "dark", "sunny"];
+    var labels = { light: "Light", dark: "Dark", sunny: "Sunny" };
+    var btn = document.getElementById("theme");
+    var mq = window.matchMedia("(prefers-color-scheme: dark)");
+    var cur = mq.matches ? "dark" : "light";
+    function apply(t) { document.documentElement.setAttribute("data-theme", t); btn.textContent = labels[t]; cur = t; }
+    apply(cur);
+    btn.addEventListener("click", function () { apply(order[(order.indexOf(cur) + 1) % order.length]); });
+  })();
+
+  // Source chips drop into the filter
+  (function () {
+    var names = ["Reuters","AP","BBC","NYT","WSJ","The Economist","Guardian","FT","Bloomberg","Al Jazeera","Politico","Semafor","NPR","Axios","The Verge"];
+    var host = document.getElementById("sources");
+    names.forEach(function (n, i) {
+      var el = document.createElement("span");
+      el.className = "src"; el.textContent = n;
+      el.style.animationDelay = (i * 0.06).toFixed(2) + "s";
+      host.appendChild(el);
+    });
+  })();
+
+  // Gentle scroll reveals
+  (function () {
+    var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    var els = document.querySelectorAll(".reveal");
+    if (reduce || !("IntersectionObserver" in window)) { els.forEach(function (e) { e.classList.add("in"); }); return; }
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } });
+    }, { threshold: 0.14 });
+    els.forEach(function (e) { io.observe(e); });
+  })();
+
+  // Waitlist posts directly to Mailchimp (free, no backend) once you set the
+  // action URL above. Nothing else to wire.
+</script>

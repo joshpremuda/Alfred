@@ -9,5 +9,23 @@
 node_modules/
 webchat/node_modules/
 
-# OpenClaw data
+# OpenClaw data (legacy prototype)
 .openclaw/
+
+# Valet local data — never commit the DB, documents, or the vault
+data/
+*.db
+*.sqlite
+*.sqlite3
+
+# Next.js
+.next/
+out/
+next-env.d.ts
+
+# Paper Filter — generated + secrets
+paper-filter/issue-data.json
+paper-filter/issue-content.json
+paper-filter/issue.html
+paper-filter/.env
+paper-filter/.logs/
