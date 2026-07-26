@@ -18,6 +18,12 @@ MODE="${PF_MODE:-approve}"
 [[ "$(uname -s)" == "Darwin" ]] || { echo "macOS only (launchd)." >&2; exit 1; }
 BASH_BIN="$(command -v bash)"
 
+# Bake the real locations of node + claude into the launchd PATH so the
+# scheduled run finds them (launchd starts with a minimal PATH).
+NODE_DIR="$(command -v node >/dev/null 2>&1 && dirname "$(command -v node)" || echo /usr/local/bin)"
+CLAUDE_DIR="$(command -v claude >/dev/null 2>&1 && dirname "$(command -v claude)" || true)"
+PF_PATH="${NODE_DIR}:${CLAUDE_DIR:+${CLAUDE_DIR}:}/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+
 case "${1:-install}" in
   install)
     mkdir -p "$ROOT_DIR/paper-filter/.logs" "$HOME/Library/LaunchAgents"
@@ -36,7 +42,7 @@ case "${1:-install}" in
   <key>EnvironmentVariables</key>
   <dict>
     <key>PF_MODE</key><string>$MODE</string>
-    <key>PATH</key><string>/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+    <key>PATH</key><string>$PF_PATH</string>
   </dict>
   <key>StartCalendarInterval</key>
   <dict><key>Hour</key><integer>$HOUR</integer><key>Minute</key><integer>0</integer></dict>
